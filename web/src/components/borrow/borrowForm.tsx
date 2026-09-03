@@ -2,7 +2,7 @@ import { useAddTokenToWallet } from "@hemilabs/react-hooks/useAddTokenToWallet";
 import { useNativeBalance } from "@hemilabs/react-hooks/useNativeBalance";
 import { useNeedsApproval } from "@hemilabs/react-hooks/useNeedsApproval";
 import { useTokenBalance } from "@hemilabs/react-hooks/useTokenBalance";
-import { getChainAddresses } from "@morpho-org/blue-sdk";
+import { type AccrualPosition, getChainAddresses } from "@morpho-org/blue-sdk";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Button } from "components/base/button";
 import { RenderCryptoValue } from "components/base/cryptoValue";
@@ -18,20 +18,25 @@ import { TokenInput } from "components/tokenInput";
 import { Balance } from "components/tokenInput/balance";
 import type { InputError } from "components/tokenInput/utils";
 import { TokenSelectorReadOnly } from "components/tokenSelectorReadOnly";
+import { useBorrowMoreAssets } from "hooks/borrow/useBorrowMoreAssets";
 import type { MarketData } from "hooks/borrow/useMarketData";
 import { useMorphoMarket } from "hooks/borrow/useMorphoMarket";
 import { useSupplyAndBorrow } from "hooks/borrow/useSupplyAndBorrow";
 import { useTotalSupplyAndBorrowFees } from "hooks/borrow/useSupplyAndBorrowFees";
+import { useSupplyAndBorrowReview } from "hooks/borrow/useSupplyAndBorrowReview";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useMainnet } from "hooks/useMainnet";
 import {
   type FormEvent,
   type SetStateAction,
   useCallback,
+  useRef,
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { getMaxBorrowable } from "utils/borrowLimit";
+import { getBorrowRetryState } from "utils/borrowRetry";
+import { formatLtvAsPercentage } from "utils/borrowReview";
 import { formatNumber } from "utils/format";
 import { isGeoRestricted } from "utils/geoRestriction";
 import { type Address, formatUnits, parseUnits } from "viem";
@@ -39,6 +44,7 @@ import { useAccount } from "wagmi";
 
 import { BorrowDrawer, type BorrowFlowStatus } from "./borrowDrawer";
 import { BorrowingReview } from "./borrowingReview";
+import { PositionReview } from "./positionReview";
 
 type SubmitButtonProps = {
   address: Address | undefined;
@@ -131,6 +137,8 @@ type Props = {
   onBorrowChange: (value: string) => void;
   onCollateralChange: (value: string) => void;
   onDrawerOpenChange: (value: SetStateAction<boolean>) => void;
+  onSuccess?: VoidFunction;
+  position?: AccrualPosition;
 };
 
 export function BorrowForm({
@@ -141,6 +149,8 @@ export function BorrowForm({
   onBorrowChange,
   onCollateralChange,
   onDrawerOpenChange,
+  onSuccess,
+  position,
 }: Props) {
   const { t } = useTranslation();
   const ethereumChain = useMainnet();
@@ -149,9 +159,15 @@ export function BorrowForm({
   const [flowStatus, setFlowStatus] = useState<BorrowFlowStatus>("idle");
   const [showToast, setShowToast] = useState(false);
   const [startedWithApproval, setStartedWithApproval] = useState(false);
+  const supplyCollateralSucceeded = useRef(false);
   const handleDrawerClose = useCallback(
-    () => onDrawerOpenChange(false),
-    [onDrawerOpenChange],
+    function () {
+      onDrawerOpenChange(false);
+      if (flowStatus === "borrowed") {
+        onSuccess?.();
+      }
+    },
+    [flowStatus, onDrawerOpenChange, onSuccess],
   );
 
   const { collateralToken, loanToken, marketId } = market;
@@ -187,7 +203,8 @@ export function BorrowForm({
 
   const maxBorrowable = morphoMarket
     ? getMaxBorrowable({
-        collateral: collateralAmountBigInt,
+        borrowShares: position?.borrowShares,
+        collateral: (position?.collateral ?? 0n) + collateralAmountBigInt,
         market: morphoMarket,
       })
     : undefined;
@@ -249,7 +266,7 @@ export function BorrowForm({
         setFlowStatus("supplying-collateral"),
       );
       emitter.on("supply-collateral-transaction-succeeded", function () {
-        supplyCollateralSucceeded = true;
+        supplyCollateralSucceeded.current = true;
         setFlowStatus("supplied-collateral");
       });
       emitter.on("supply-collateral-transaction-reverted", () =>
@@ -290,6 +307,40 @@ export function BorrowForm({
     },
   });
 
+  const handleBorrowMoreSuccess = function () {
+    onCompleted();
+    setFlowStatus("borrowed");
+    setShowToast(true);
+    watchToken();
+  };
+
+  const handleBorrowMoreFailure = function () {
+    onFailed();
+    setFlowStatus("borrow-error");
+  };
+
+  const borrowMoreMutation = useBorrowMoreAssets({
+    borrowAmount: borrowAmountBigInt,
+    marketId,
+    onEmitter(emitter) {
+      emitter.on("pre-borrow-assets", () => setFlowStatus("borrowing"));
+      emitter.on("user-signed-borrow-assets", function (hash) {
+        onTransactionHash(hash);
+        onPending();
+        setFlowStatus("borrowing");
+      });
+      emitter.on(
+        "borrow-assets-transaction-succeeded",
+        handleBorrowMoreSuccess,
+      );
+      emitter.on("borrow-assets-transaction-reverted", handleBorrowMoreFailure);
+      emitter.on("borrow-assets-failed", handleBorrowMoreFailure);
+      emitter.on("borrow-assets-failed-validation", handleBorrowMoreFailure);
+      emitter.on("user-signing-borrow-assets-error", handleBorrowMoreFailure);
+      emitter.on("unexpected-error", handleBorrowMoreFailure);
+    },
+  });
+
   const nativeBalance = nativeBalanceData?.value;
 
   const inputError = getInputError({
@@ -304,16 +355,34 @@ export function BorrowForm({
   const balancesLoaded =
     nativeBalance !== undefined && collateralBalance !== undefined;
 
+  const { current, updated } = useSupplyAndBorrowReview({
+    borrowApy: market.borrowApy,
+    borrowInput,
+    collateralInput,
+    collateralToken,
+    frozen: isDrawerOpen,
+    loanToken,
+    position,
+  });
+
   const handleRetry = function () {
-    setFlowStatus(
-      startedWithApproval ? "approving" : "supply-collateral-ready",
-    );
+    const { action, flowStatus: retryFlowStatus } = getBorrowRetryState({
+      startedWithApproval,
+      supplyCollateralSucceeded: supplyCollateralSucceeded.current,
+    });
+
+    setFlowStatus(retryFlowStatus);
+    if (action === "borrow-more") {
+      borrowMoreMutation.mutate();
+      return;
+    }
     borrowMutation.mutate();
   };
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!inputError) {
+      supplyCollateralSucceeded.current = false;
       setStartedWithApproval(!!needsApproval);
       setFlowStatus(needsApproval ? "approving" : "supply-collateral-ready");
       borrowMutation.mutate();
@@ -407,14 +476,25 @@ export function BorrowForm({
           </FormSectionItem>
           <FormSectionItem>
             <div className="py-1">
-              <BorrowingReview
-                borrowApy={market.borrowApy}
-                borrowInput={borrowInput}
-                collateralInput={collateralInput}
-                collateralToken={collateralToken}
-                loanToken={loanToken}
-                morphoMarket={morphoMarket}
-              />
+              {position ? (
+                <PositionReview
+                  borrowApy={market.borrowApy}
+                  collateralToken={collateralToken}
+                  current={current}
+                  lltv={formatLtvAsPercentage(market.lltv)}
+                  loanToken={loanToken}
+                  updated={inputError ? null : updated}
+                />
+              ) : (
+                <BorrowingReview
+                  borrowApy={market.borrowApy}
+                  borrowInput={borrowInput}
+                  collateralInput={collateralInput}
+                  collateralToken={collateralToken}
+                  loanToken={loanToken}
+                  morphoMarket={morphoMarket}
+                />
+              )}
             </div>
           </FormSectionItem>
         </FormSection>
