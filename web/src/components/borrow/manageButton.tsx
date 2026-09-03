@@ -81,6 +81,11 @@ export function ManageButton({ marketId, onAction }: Props) {
       label: t("pages.borrow.borrow-more"),
     },
     {
+      icon: <PlusCircleIcon />,
+      key: "supply-collateral-and-borrow" as BorrowAction,
+      label: t("pages.borrow.supply-collateral-and-borrow"),
+    },
+    {
       icon: <RepayIcon />,
       key: "repay-loan" as BorrowAction,
       label: t("pages.borrow.repay-loan"),

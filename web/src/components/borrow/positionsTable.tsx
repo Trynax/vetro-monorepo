@@ -44,6 +44,12 @@ const SupplyCollateralDrawerForm = lazy(() =>
   })),
 );
 
+const SupplyCollateralAndBorrowDrawerForm = lazy(() =>
+  import("./supplyCollateralAndBorrowDrawerForm").then((m) => ({
+    default: m.SupplyCollateralAndBorrowDrawerForm,
+  })),
+);
+
 const RepayLoanDrawerForm = lazy(() =>
   import("./repayLoanDrawerForm").then((m) => ({
     default: m.RepayLoanDrawerForm,
@@ -269,6 +275,14 @@ export function PositionsTable({ marketIds }: Props) {
           {borrowAction === "supply-collateral" && (
             <Suspense>
               <SupplyCollateralDrawerForm
+                market={activeMarket}
+                onClose={clearBorrowAction}
+              />
+            </Suspense>
+          )}
+          {borrowAction === "supply-collateral-and-borrow" && (
+            <Suspense>
+              <SupplyCollateralAndBorrowDrawerForm
                 market={activeMarket}
                 onClose={clearBorrowAction}
               />

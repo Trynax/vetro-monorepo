@@ -4,6 +4,7 @@ const borrowActions = [
   "borrow-more",
   "repay-loan",
   "supply-collateral",
+  "supply-collateral-and-borrow",
   "withdraw-collateral",
 ] as const;
 
