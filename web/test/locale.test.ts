@@ -55,6 +55,8 @@ const dynamicallyReferencedKeys = [
   "common.insufficient-gas",
   "common.insufficient-liquidity",
   "common.insufficient-treasury",
+  "pages.borrow.activity.open-position-text",
+  "pages.borrow.activity.open-position-title",
 ];
 
 const escapeRegExp = (value: string) =>

@@ -243,7 +243,11 @@ export function BorrowForm({
 
   const handleBorrowFailure = function () {
     onFailed();
-    setFlowStatus("borrow-error");
+    setFlowStatus(
+      supplyCollateralSucceeded.current
+        ? "borrow-error"
+        : "supply-collateral-error",
+    );
   };
 
   const borrowMutation = useSupplyAndBorrow({
