@@ -362,6 +362,12 @@ export function BorrowForm({
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!inputError) {
+      if (supplyCollateralSucceeded.current) {
+        handleRetry();
+        onDrawerOpenChange(true);
+        return;
+      }
+
       supplyCollateralSucceeded.current = false;
       setStartedWithApproval(!!needsApproval);
       setFlowStatus(needsApproval ? "approving" : "supply-collateral-ready");
