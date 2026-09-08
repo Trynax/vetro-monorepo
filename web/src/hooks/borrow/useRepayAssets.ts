@@ -4,10 +4,13 @@ import { tokenBalanceQueryKey } from "@hemilabs/react-hooks/useTokenBalance";
 import { useUpdateNativeBalanceAfterReceipt } from "@hemilabs/react-hooks/useUpdateNativeBalanceAfterReceipt";
 import { type AccrualPosition, getChainAddresses } from "@morpho-org/blue-sdk";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { RepayAssetsEvents } from "@vetro-protocol/morpho-blue-market";
+import {
+  morphoBlueAbi,
+  type RepayAssetsEvents,
+} from "@vetro-protocol/morpho-blue-market";
 import { repayAssets } from "@vetro-protocol/morpho-blue-market/actions";
 import type { EventEmitter } from "events";
-import type { Hash } from "viem";
+import { parseEventLogs, type Hash } from "viem";
 import { useAccount } from "wagmi";
 
 import { useEthereumWalletClient } from "../useEthereumWalletClient";
@@ -19,13 +22,17 @@ import { morphoMarketOptions, morphoMarketQueryKey } from "./useMorphoMarket";
 import { positionInfoQueryKey } from "./usePositionInfo";
 
 export const useRepayAssets = function ({
+  approveAmount,
   marketId,
   onEmitter,
   repayAmount,
+  repayShares,
 }: {
+  approveAmount?: bigint;
   marketId: Hash;
   onEmitter?: (emitter: EventEmitter<RepayAssetsEvents>) => void;
   repayAmount: bigint;
+  repayShares?: bigint;
 }) {
   const { address: account } = useAccount();
   const { data: walletClient } = useEthereumWalletClient();
@@ -77,8 +84,10 @@ export const useRepayAssets = function ({
       const { emitter, promise } = repayAssets(walletClient!, {
         address: morphoAddress,
         amount: repayAmount,
+        approveAmount,
         marketId,
         onBehalf: account,
+        shares: repayShares,
       });
 
       onEmitter?.(emitter);
@@ -95,15 +104,26 @@ export const useRepayAssets = function ({
       });
       emitter.on("repay-assets-transaction-succeeded", function (receipt) {
         updateNativeBalanceAfterReceipt(receipt);
+
+        const events = parseEventLogs({
+          abi: morphoBlueAbi,
+          eventName: "Repay",
+          logs: receipt.logs,
+        });
+        const repayment = events[0]?.args ?? {
+          assets: repayAmount,
+          shares: repayShares ?? 0n,
+        };
+
         // Decrease loan token balance
         queryClient.setQueryData(loanBalanceKey, (old?: bigint) =>
-          old !== undefined ? old - repayAmount : old,
+          old !== undefined ? old - repayment.assets : old,
         );
         // Update position's borrow
         queryClient.setQueryData(
           positionInfoKey,
           (old: AccrualPosition | undefined) =>
-            old?.repay(repayAmount, 0n).position,
+            old?.repay(repayment.assets, repayment.shares).position,
         );
         // Update market's liquidity and total borrow
         queryClient.setQueryData(
@@ -115,8 +135,8 @@ export const useRepayAssets = function ({
             old
               ? {
                   ...old,
-                  liquidity: old.liquidity + repayAmount,
-                  totalBorrowAssets: old.totalBorrowAssets - repayAmount,
+                  liquidity: old.liquidity + repayment.assets,
+                  totalBorrowAssets: old.totalBorrowAssets - repayment.assets,
                 }
               : old,
         );

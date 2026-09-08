@@ -16,6 +16,7 @@ export const fetchTotalRepayFees = async function ({
   marketId,
   owner,
   queryClient,
+  shares,
   token,
 }: {
   amount: bigint;
@@ -25,6 +26,7 @@ export const fetchTotalRepayFees = async function ({
   marketId: Hash;
   owner: Address;
   queryClient: QueryClient;
+  shares?: bigint;
   token: Token;
 }) {
   const gasUnits = await queryClient.ensureQueryData(
@@ -36,6 +38,7 @@ export const fetchTotalRepayFees = async function ({
       marketId,
       owner,
       queryClient,
+      shares,
       token,
     }),
   );
