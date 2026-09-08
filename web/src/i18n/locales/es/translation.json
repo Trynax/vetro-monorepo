@@ -404,14 +404,14 @@
         "earned-amount": "Su monto ganado",
         "from-pools": "De {{count}} fondo",
         "from-pools_other": "De {{count}} fondos",
-        "staked-balance": "Su balance stakeado"
+        "staked-balance": "Su balance stakeado",
+        "your-position": "Su posición"
       },
       "title": "Haga stake de activos para ganar un rendimiento variable.",
       "variable-yield": {
         "apy": "TEA",
         "header-title": "Rendimiento variable",
-        "title": "Fondos de rendimiento variable",
-        "your-position": "Su posición"
+        "title": "Fondos de rendimiento variable"
       }
     },
     "faq": {

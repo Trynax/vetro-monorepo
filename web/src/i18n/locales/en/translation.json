@@ -398,14 +398,14 @@
         "earned-amount": "Your earned amount",
         "from-pools": "From {{count}} pool",
         "from-pools_other": "From {{count}} pools",
-        "staked-balance": "Your staked balance"
+        "staked-balance": "Your staked balance",
+        "your-position": "Your position"
       },
       "title": "Stake assets to earn variable yield.",
       "variable-yield": {
         "apy": "APY",
         "header-title": "Variable yield",
-        "title": "Variable yield pools",
-        "your-position": "Your position"
+        "title": "Variable yield pools"
       }
     },
     "faq": {
