@@ -1,5 +1,6 @@
 import type { Token } from "@vetro-protocol/core";
 import { InfoCard } from "components/base/infoCard";
+import { CardRow } from "components/earn/cardRow";
 import { PositionCard } from "components/earn/positionCard";
 import { TrendingUpIcon } from "components/icons/trendingUpIcon";
 import { useEarnedAmountUsd } from "hooks/useEarnedAmountUsd";
@@ -36,15 +37,15 @@ export const VariableYieldPositionCards = ({
   shareToken,
   stakingVaultAddress,
 }: Props) => (
-  <div className="grid border-b border-gray-200 xl:grid-cols-2 xl:gap-x-14 xl:border-t">
-    <div className="xl:pl-14 xl:*:border-0">
-      <PositionCard
-        shareToken={shareToken}
-        stakingVaultAddress={stakingVaultAddress}
-      />
-    </div>
-    <div className="xl:pr-14 xl:*:border-0">
-      <EarnedAmountCard stakingVaultAddress={stakingVaultAddress} />
-    </div>
+  <div className="border-b border-gray-200 xl:border-t">
+    <CardRow
+      left={
+        <PositionCard
+          shareToken={shareToken}
+          stakingVaultAddress={stakingVaultAddress}
+        />
+      }
+      right={<EarnedAmountCard stakingVaultAddress={stakingVaultAddress} />}
+    />
   </div>
 );

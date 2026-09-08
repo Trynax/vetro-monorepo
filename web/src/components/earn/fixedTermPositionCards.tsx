@@ -1,5 +1,6 @@
 import type { Token } from "@vetro-protocol/core";
 import { InfoCard } from "components/base/infoCard";
+import { CardRow } from "components/earn/cardRow";
 import { PositionCard } from "components/earn/positionCard";
 import { InfoIcon } from "components/icons/infoIcon";
 import { RefreshIcon } from "components/icons/refreshIcon";
@@ -71,17 +72,15 @@ export const FixedTermPositionCards = ({
   stakingVaultAddress,
 }: Props) => (
   <div className="border-b border-gray-200 xl:border-t">
-    <div className="grid xl:grid-cols-2 xl:gap-x-14 xl:border-b xl:border-gray-200">
-      <div className="xl:pl-14 xl:*:border-0">
+    <CardRow
+      left={
         <PositionCard
           shareToken={shareToken}
           stakingVaultAddress={stakingVaultAddress}
         />
-      </div>
-      <div className="xl:pr-14 xl:*:border-0">
-        <EarnedThisTermCard stakingVaultAddress={stakingVaultAddress} />
-      </div>
-    </div>
+      }
+      right={<EarnedThisTermCard stakingVaultAddress={stakingVaultAddress} />}
+    />
     <div className="xl:px-14 xl:*:border-0">
       <RolloverStatusCard stakingVaultAddress={stakingVaultAddress} />
     </div>

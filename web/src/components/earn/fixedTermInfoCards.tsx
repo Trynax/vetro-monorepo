@@ -1,4 +1,5 @@
 import { InfoCard } from "components/base/infoCard";
+import { CardRow } from "components/earn/cardRow";
 import { DepositsOverCapacity } from "components/earn/depositsOverCapacity";
 import { CalendarIcon } from "components/icons/calendarIcon";
 import { PieChartIcon } from "components/icons/pieChartIcon";
@@ -133,21 +134,13 @@ const TermEndDateCard = function ({ stakingVaultAddress }: Props) {
 
 export const FixedTermInfoCards = ({ stakingVaultAddress }: Props) => (
   <div className="border-b border-gray-200">
-    <div className="grid xl:grid-cols-2 xl:gap-x-14 xl:border-b xl:border-gray-200">
-      <div className="xl:pl-14 xl:*:border-0">
-        <TargetFixedApyCard stakingVaultAddress={stakingVaultAddress} />
-      </div>
-      <div className="xl:pr-14 xl:*:border-0">
-        <PoolCapacityCard stakingVaultAddress={stakingVaultAddress} />
-      </div>
-    </div>
-    <div className="grid xl:grid-cols-2 xl:gap-x-14">
-      <div className="xl:pl-14 xl:*:border-0">
-        <TermLengthCard stakingVaultAddress={stakingVaultAddress} />
-      </div>
-      <div className="xl:pr-14 xl:*:border-0">
-        <TermEndDateCard stakingVaultAddress={stakingVaultAddress} />
-      </div>
-    </div>
+    <CardRow
+      left={<TargetFixedApyCard stakingVaultAddress={stakingVaultAddress} />}
+      right={<PoolCapacityCard stakingVaultAddress={stakingVaultAddress} />}
+    />
+    <CardRow
+      left={<TermLengthCard stakingVaultAddress={stakingVaultAddress} />}
+      right={<TermEndDateCard stakingVaultAddress={stakingVaultAddress} />}
+    />
   </div>
 );
