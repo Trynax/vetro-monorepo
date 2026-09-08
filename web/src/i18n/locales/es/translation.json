@@ -329,12 +329,17 @@
         "withdrawn": "Retirado"
       },
       "fixed-term": {
+        "auto-rolling": "Renovación automática",
+        "auto-rolling-description": "Se renueva en el próximo plazo salvo que indique una salida",
         "capacity-remaining": "<amount>{{amount}}</amount> restante",
+        "earned-this-term": "Ganado en este plazo",
+        "earned-this-term-info": "El rendimiento que su posición acumuló desde que comenzó este plazo.",
         "fixed-until": "Fija hasta el {{date}}",
         "header-title": "Objetivo de rendimiento fijo",
         "open-to-deposits": "Abierto a depósitos",
         "open-to-exit": "Abierto a salidas",
         "pool-capacity": "Capacidad del fondo",
+        "rollover-status": "Estado de renovación",
         "target-fixed-apy": "TEA fija objetivo",
         "term-end-date": "Fecha de fin del plazo",
         "term-length": "Duración del plazo",

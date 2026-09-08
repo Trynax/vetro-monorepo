@@ -132,20 +132,22 @@ const TermEndDateCard = function ({ stakingVaultAddress }: Props) {
 };
 
 export const FixedTermInfoCards = ({ stakingVaultAddress }: Props) => (
-  <div className="grid border-b border-gray-200 xl:grid-cols-[1fr_3.5rem_1fr]">
-    <div className="xl:pl-14">
-      <TargetFixedApyCard stakingVaultAddress={stakingVaultAddress} />
+  <div className="border-b border-gray-200">
+    <div className="grid xl:grid-cols-2 xl:gap-x-14 xl:border-b xl:border-gray-200">
+      <div className="xl:pl-14 xl:*:border-0">
+        <TargetFixedApyCard stakingVaultAddress={stakingVaultAddress} />
+      </div>
+      <div className="xl:pr-14 xl:*:border-0">
+        <PoolCapacityCard stakingVaultAddress={stakingVaultAddress} />
+      </div>
     </div>
-    <div className="hidden size-full border-b border-gray-200 xl:block" />
-    <div className="xl:pr-14">
-      <PoolCapacityCard stakingVaultAddress={stakingVaultAddress} />
-    </div>
-    <div className="xl:pl-14 xl:*:border-0">
-      <TermLengthCard stakingVaultAddress={stakingVaultAddress} />
-    </div>
-    <div className="hidden size-full xl:block" />
-    <div className="xl:pr-14 xl:*:border-0">
-      <TermEndDateCard stakingVaultAddress={stakingVaultAddress} />
+    <div className="grid xl:grid-cols-2 xl:gap-x-14">
+      <div className="xl:pl-14 xl:*:border-0">
+        <TermLengthCard stakingVaultAddress={stakingVaultAddress} />
+      </div>
+      <div className="xl:pr-14 xl:*:border-0">
+        <TermEndDateCard stakingVaultAddress={stakingVaultAddress} />
+      </div>
     </div>
   </div>
 );
