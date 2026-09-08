@@ -324,6 +324,10 @@ export function RepayLoanForm({ market, onClose }: Props) {
         onFailed();
         setFlowStatus("repay-error");
       });
+      emitter.on("unexpected-error", function () {
+        onFailed();
+        setFlowStatus("repay-error");
+      });
     },
     repayAmount: repayAmountBigInt,
   });

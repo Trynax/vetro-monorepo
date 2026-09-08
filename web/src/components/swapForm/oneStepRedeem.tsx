@@ -164,6 +164,11 @@ export function OneStepRedeem({
   const redeemMutation = useRedeem({
     approveAmount,
     onEmitter(emitter) {
+      const handleFailure = function () {
+        onFailed();
+        setFlowStatus("redeem-error");
+      };
+
       emitter.on("user-signed-approval", () => setFlowStatus("approving"));
       emitter.on("approve-transaction-succeeded", () =>
         setFlowStatus("approved"),
@@ -191,18 +196,11 @@ export function OneStepRedeem({
         });
         setShowToast(true);
       });
-      emitter.on("redeem-transaction-reverted", function () {
-        onFailed();
-        setFlowStatus("redeem-error");
-      });
-      emitter.on("user-signing-redeem-error", function () {
-        onFailed();
-        setFlowStatus("redeem-error");
-      });
-      emitter.on("redeem-failed-validation", function () {
-        onFailed();
-        setFlowStatus("redeem-error");
-      });
+      emitter.on("redeem-transaction-reverted", handleFailure);
+      emitter.on("redeem-failed", handleFailure);
+      emitter.on("user-signing-redeem-error", handleFailure);
+      emitter.on("redeem-failed-validation", handleFailure);
+      emitter.on("unexpected-error", handleFailure);
     },
     peggedToken: fromToken,
     peggedTokenIn: amountBigInt,

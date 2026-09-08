@@ -317,6 +317,10 @@ export function SupplyCollateralForm({ market, onClose }: Props) {
         onFailed();
         setFlowStatus("supply-collateral-error");
       });
+      emitter.on("unexpected-error", function () {
+        onFailed();
+        setFlowStatus("supply-collateral-error");
+      });
     },
   });
 

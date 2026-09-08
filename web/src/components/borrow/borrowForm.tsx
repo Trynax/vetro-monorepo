@@ -215,6 +215,23 @@ export function BorrowForm({
     collateralAmount: collateralAmountBigInt,
     marketId,
     onEmitter(emitter) {
+      let supplyCollateralSucceeded = false;
+
+      const handleFailure = function (
+        status: "borrow-error" | "supply-collateral-error",
+      ) {
+        onFailed();
+        setFlowStatus(status);
+      };
+
+      const handleUnexpectedError = function () {
+        handleFailure(
+          supplyCollateralSucceeded
+            ? "borrow-error"
+            : "supply-collateral-error",
+        );
+      };
+
       emitter.on("user-signed-approval", () => setFlowStatus("approving"));
       emitter.on("approve-transaction-succeeded", () =>
         setFlowStatus("approved"),
@@ -231,9 +248,10 @@ export function BorrowForm({
       emitter.on("user-signed-supply-collateral", () =>
         setFlowStatus("supplying-collateral"),
       );
-      emitter.on("supply-collateral-transaction-succeeded", () =>
-        setFlowStatus("supplied-collateral"),
-      );
+      emitter.on("supply-collateral-transaction-succeeded", function () {
+        supplyCollateralSucceeded = true;
+        setFlowStatus("supplied-collateral");
+      });
       emitter.on("supply-collateral-transaction-reverted", () =>
         setFlowStatus("supply-collateral-error"),
       );
@@ -258,22 +276,17 @@ export function BorrowForm({
         setShowToast(true);
         watchToken();
       });
-      emitter.on("borrow-assets-transaction-reverted", function () {
-        onFailed();
-        setFlowStatus("borrow-error");
-      });
-      emitter.on("borrow-assets-failed", function () {
-        onFailed();
-        setFlowStatus("borrow-error");
-      });
-      emitter.on("borrow-assets-failed-validation", function () {
-        onFailed();
-        setFlowStatus("borrow-error");
-      });
-      emitter.on("user-signing-borrow-assets-error", function () {
-        onFailed();
-        setFlowStatus("borrow-error");
-      });
+      emitter.on("borrow-assets-transaction-reverted", () =>
+        handleFailure("borrow-error"),
+      );
+      emitter.on("borrow-assets-failed", () => handleFailure("borrow-error"));
+      emitter.on("borrow-assets-failed-validation", () =>
+        handleFailure("borrow-error"),
+      );
+      emitter.on("user-signing-borrow-assets-error", () =>
+        handleFailure("borrow-error"),
+      );
+      emitter.on("unexpected-error", handleUnexpectedError);
     },
   });
 

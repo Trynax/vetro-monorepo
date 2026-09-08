@@ -220,6 +220,10 @@ function BridgeFormContent({ tokens }: ContentProps) {
         onFailed();
         setFlowStatus("send-error");
       });
+      emitter.on("unexpected-error", function () {
+        onFailed();
+        setFlowStatus("send-error");
+      });
     },
     sourceChainId: fromToken.chainId,
     sourceTokenAddress: fromToken.address,

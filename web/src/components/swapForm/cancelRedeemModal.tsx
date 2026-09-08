@@ -65,6 +65,10 @@ export function CancelRedeemModal({
         onFailed();
         setIsCancelling(false);
       });
+      emitter.on("unexpected-error", function () {
+        onFailed();
+        setIsCancelling(false);
+      });
     },
     peggedToken,
     redeemableAmount,

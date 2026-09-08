@@ -215,6 +215,10 @@ export function Deposit({
         onFailed();
         setFlowStatus("deposit-error");
       });
+      emitter.on("unexpected-error", function () {
+        onFailed();
+        setFlowStatus("deposit-error");
+      });
     },
     peggedToken: toToken,
     slippage,

@@ -158,6 +158,11 @@ function ActiveRedeemDrawer({
 
   const redeemMutation = useRedeem({
     onEmitter(emitter) {
+      const handleFailure = function () {
+        onFailed();
+        setFlowStatus("redeem-error");
+      };
+
       emitter.on("pre-redeem", () => setFlowStatus("redeem-ready"));
       emitter.on("user-signed-redeem", function (hash) {
         onTransactionHash(hash);
@@ -169,18 +174,11 @@ function ActiveRedeemDrawer({
         setFlowStatus("redeemed");
         onRedeemSuccess(toToken);
       });
-      emitter.on("redeem-transaction-reverted", function () {
-        onFailed();
-        setFlowStatus("redeem-error");
-      });
-      emitter.on("user-signing-redeem-error", function () {
-        onFailed();
-        setFlowStatus("redeem-error");
-      });
-      emitter.on("redeem-failed-validation", function () {
-        onFailed();
-        setFlowStatus("redeem-error");
-      });
+      emitter.on("redeem-transaction-reverted", handleFailure);
+      emitter.on("redeem-failed", handleFailure);
+      emitter.on("user-signing-redeem-error", handleFailure);
+      emitter.on("redeem-failed-validation", handleFailure);
+      emitter.on("unexpected-error", handleFailure);
     },
     peggedToken,
     peggedTokenIn: amountBigInt,

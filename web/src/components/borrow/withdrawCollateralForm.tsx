@@ -257,6 +257,7 @@ export function WithdrawCollateralForm({ market, onClose }: Props) {
       emitter.on("user-signing-withdraw-collateral-error", () =>
         setFlowStatus("withdraw-error"),
       );
+      emitter.on("unexpected-error", () => setFlowStatus("withdraw-error"));
     },
   });
 

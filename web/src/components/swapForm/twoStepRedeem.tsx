@@ -128,6 +128,11 @@ export function TwoStepRedeem({
     approveAmount,
     gatewayAddress: fromToken.gatewayAddress,
     onEmitter(emitter) {
+      const handleFailure = function () {
+        onFailed();
+        setFlowStatus("request-redeem-error");
+      };
+
       emitter.on("user-signed-approval", () => setFlowStatus("approving"));
       emitter.on("approve-transaction-succeeded", () =>
         setFlowStatus("approved"),
@@ -158,18 +163,11 @@ export function TwoStepRedeem({
           .getElementById("redeem-queue")
           ?.scrollIntoView({ behavior: "smooth" });
       });
-      emitter.on("request-redeem-transaction-reverted", function () {
-        onFailed();
-        setFlowStatus("request-redeem-error");
-      });
-      emitter.on("user-signing-request-redeem-error", function () {
-        onFailed();
-        setFlowStatus("request-redeem-error");
-      });
-      emitter.on("request-redeem-failed-validation", function () {
-        onFailed();
-        setFlowStatus("request-redeem-error");
-      });
+      emitter.on("request-redeem-transaction-reverted", handleFailure);
+      emitter.on("request-redeem-failed", handleFailure);
+      emitter.on("user-signing-request-redeem-error", handleFailure);
+      emitter.on("request-redeem-failed-validation", handleFailure);
+      emitter.on("unexpected-error", handleFailure);
     },
     peggedToken: fromToken,
     peggedTokenAmount: amountBigInt,
