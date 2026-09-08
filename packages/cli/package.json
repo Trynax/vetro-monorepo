@@ -44,6 +44,7 @@
     "@vitest/coverage-v8": "4.1.9",
     "esbuild": "0.27.3",
     "typescript": "5.9.3",
+    "viem-erc4626": "1.0.0",
     "vitest": "4.1.9"
   },
   "engines": {

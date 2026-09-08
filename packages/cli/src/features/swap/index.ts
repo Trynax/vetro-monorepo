@@ -12,6 +12,7 @@ import { register as peggedToken } from "./commands/peggedToken.ts";
 import { register as price } from "./commands/price.ts";
 import { register as redeemFee } from "./commands/redeemFee.ts";
 import { register as sendToQueue } from "./commands/sendToQueue.ts";
+import { register as tokenConfig } from "./commands/tokenConfig.ts";
 import { register as treasury } from "./commands/treasury.ts";
 import { register as whitelistedTokens } from "./commands/whitelistedTokens.ts";
 
@@ -28,6 +29,7 @@ const swapCommands = [
   price,
   redeemFee,
   sendToQueue,
+  tokenConfig,
   treasury,
   whitelistedTokens,
 ];

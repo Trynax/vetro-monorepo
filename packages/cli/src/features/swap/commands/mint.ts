@@ -4,7 +4,6 @@ import {
   getTreasury,
   previewDeposit,
 } from "@vetro-protocol/gateway/actions";
-import { getTokenConfig } from "@vetro-protocol/treasury/actions";
 import { type Command } from "commander";
 import { type Address, formatUnits, parseUnits } from "viem";
 
@@ -12,6 +11,7 @@ import { parseAddress, parseAmount, parseSlippage } from "../../../lib/args.ts";
 import { type GlobalOptions, createVetroClient } from "../../../lib/client.ts";
 import { printTransactionRequest } from "../../../lib/output.ts";
 import { DEFAULT_SLIPPAGE, applySlippage } from "../../../lib/slippage.ts";
+import { readTokenConfig } from "../../../lib/tokenConfig.ts";
 import {
   getGatewayPeggedToken,
   isTokenMatch,
@@ -78,9 +78,10 @@ export function register(swap: Command) {
         const treasury = await getTreasury(client, {
           address: tokenIn.gatewayAddress,
         });
-        const [, , , depositActive] = await getTokenConfig(client, {
-          address: treasury,
+        const { depositActive } = await readTokenConfig({
+          client,
           token: tokenIn.address,
+          treasury,
         });
         return depositActive;
       };
