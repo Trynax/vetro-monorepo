@@ -1,5 +1,6 @@
 import { tokenBalanceQueryKey } from "@hemilabs/react-hooks/useTokenBalance";
 import type { Token } from "@vetro-protocol/core";
+import { encodeRepayAssets } from "@vetro-protocol/morpho-blue-market/actions";
 import { type Client, zeroAddress, zeroHash } from "viem";
 import { estimateGas } from "viem/actions";
 import { describe, expect, it, vi } from "vitest";
@@ -109,6 +110,39 @@ describe("fetchRepayGasUnits", function () {
     });
 
     expect(result).toBe(repayGas);
+  });
+
+  it("estimates a share-based full repayment", async function () {
+    const approvalGas = 46000n;
+    const repayGas = 120000n;
+    const queryClient = createPrepopulatedQueryClient();
+
+    vi.mocked(estimateApprovalGasUnits).mockResolvedValue(approvalGas);
+    vi.mocked(estimateGas).mockResolvedValue(repayGas);
+
+    const result = await fetchRepayGasUnits({
+      amount: 990n,
+      approveAmount: 1000n,
+      client: mockClient,
+      marketId: zeroHash,
+      owner: mockOwner,
+      queryClient,
+      shares: 500n,
+      token: mockToken,
+    });
+
+    expect(result).toBe(approvalGas + repayGas);
+    expect(vi.mocked(estimateApprovalGasUnits)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amount: 1000n,
+      }),
+    );
+    expect(vi.mocked(encodeRepayAssets)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amount: 0n,
+        shares: 500n,
+      }),
+    );
   });
 
   it("throws when amount exceeds current debt", async function () {
