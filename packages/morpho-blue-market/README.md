@@ -13,6 +13,7 @@ pnpm add @vetro-protocol/morpho-blue-market viem
 - Every action takes the Morpho Blue contract `address` plus the `marketId`; the market's `MarketParams` struct is read on-chain from `idToMarketParams` and passed to the contract call.
 - Writes emit their progress through an `EventEmitter` and return `{ emitter, promise }`.
 - `supplyCollateral` and `repayAssets` handle the ERC-20 approval themselves: they read the current allowance — of the collateral token and the loan token respectively — and approve only when it falls short. `approveAmount` defaults to `amount`; pass a larger value to approve once for several operations.
+- `repayAssets` accepts an optional `shares` value for full-position repayment. When provided, it sends `assets = 0` and the given borrow-share balance, while `amount` remains the asset estimate used for validation.
 - `supplyCollateralAndBorrow` runs both steps against one emitter and skips the borrow if the supply doesn't succeed. Its event map is the union of both, with a single `supply-collateral-and-borrow-settled` at the end.
 - The `encode*` helpers return the calldata for their contract call without sending anything — useful for gas estimation or for batching into a multicall. They take `marketParams` directly, since there is no client to read them with.
 

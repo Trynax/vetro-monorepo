@@ -365,6 +365,55 @@ describe("repayAssets", function () {
     expect(onSettled).toHaveBeenCalledOnce();
   });
 
+  it("should repay by shares when shares are provided", async function () {
+    const receipt = {
+      status: "success",
+    } as TransactionReceipt;
+    const shares = 500n;
+    const approveAmount = 1200n;
+
+    vi.mocked(readContract).mockResolvedValue(mockMarketParams);
+    vi.mocked(allowance).mockResolvedValue(validParameters.amount);
+    vi.mocked(approve).mockResolvedValue(zeroHash);
+    vi.mocked(writeContract).mockResolvedValue(zeroHash);
+    vi.mocked(waitForTransactionReceipt)
+      .mockResolvedValueOnce(receipt)
+      .mockResolvedValueOnce(receipt);
+
+    const { promise } = repayAssets(mockWalletClient, {
+      ...validParameters,
+      approveAmount,
+      shares,
+    });
+
+    await promise;
+
+    expect(approve).toHaveBeenCalledWith(
+      mockWalletClient,
+      expect.objectContaining({
+        amount: approveAmount,
+      }),
+    );
+    expect(writeContract).toHaveBeenCalledWith(
+      mockWalletClient,
+      expect.objectContaining({
+        args: [
+          expect.objectContaining({
+            collateralToken: mockMarketParams[1],
+            irm: mockMarketParams[3],
+            lltv: mockMarketParams[4],
+            loanToken: mockMarketParams[0],
+            oracle: mockMarketParams[2],
+          }),
+          0n,
+          shares,
+          validParameters.onBehalf,
+          "0x",
+        ],
+      }),
+    );
+  });
+
   it("should approve first if allowance is insufficient, then repay", async function () {
     const successReceipt = {
       status: "success",
