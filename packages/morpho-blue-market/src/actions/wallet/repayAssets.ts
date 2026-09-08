@@ -22,6 +22,7 @@ export type RepayAssetsParams = {
   approveAmount?: bigint;
   marketId: Hash;
   onBehalf: Address;
+  shares?: bigint;
 };
 
 const canRepayAssets = function ({
@@ -31,6 +32,7 @@ const canRepayAssets = function ({
   client,
   marketId,
   onBehalf,
+  shares,
 }: {
   address: Address;
   amount: bigint;
@@ -38,6 +40,7 @@ const canRepayAssets = function ({
   client: WalletClient;
   marketId: Hash;
   onBehalf: Address;
+  shares?: bigint;
 }): {
   canRepayAssets: boolean;
   reason?: string;
@@ -102,6 +105,18 @@ const canRepayAssets = function ({
       reason: "Approve amount must be greater than or equal to amount",
     };
   }
+  if (shares !== undefined && typeof shares !== "bigint") {
+    return {
+      canRepayAssets: false,
+      reason: "Shares must be a bigint",
+    };
+  }
+  if (shares !== undefined && shares <= 0n) {
+    return {
+      canRepayAssets: false,
+      reason: "Shares must be greater than 0",
+    };
+  }
 
   return { canRepayAssets: true };
 };
@@ -114,6 +129,7 @@ const runRepayAssets = (
     approveAmount = amount,
     marketId,
     onBehalf,
+    shares,
   }: RepayAssetsParams,
 ) =>
   async function (emitter: EventEmitter<RepayAssetsEvents>) {
@@ -125,6 +141,7 @@ const runRepayAssets = (
         client: walletClient,
         marketId,
         onBehalf,
+        shares,
       });
 
       if (!canRepayAssetsFlag) {
@@ -144,7 +161,9 @@ const runRepayAssets = (
         spender: address,
       });
 
-      if (currentAllowance < amount) {
+      const requiredAllowance = shares === undefined ? amount : approveAmount;
+
+      if (currentAllowance < requiredAllowance) {
         emitter.emit("pre-approve");
 
         const approvalHash = await approve(walletClient, {
@@ -185,7 +204,13 @@ const runRepayAssets = (
         abi: morphoBlueAbi,
         account: walletClient.account!,
         address,
-        args: [marketParams, amount, 0n, onBehalf, "0x"],
+        args: [
+          marketParams,
+          shares === undefined ? amount : 0n,
+          shares ?? 0n,
+          onBehalf,
+          "0x",
+        ],
         chain: walletClient.chain,
         functionName: "repay",
       }).catch(function (error: Error) {
@@ -231,13 +256,21 @@ export const encodeRepayAssets = ({
   amount,
   marketParams,
   onBehalf,
+  shares,
 }: {
   amount: bigint;
   marketParams: MarketParams;
   onBehalf: Address;
+  shares?: bigint;
 }) =>
   encodeFunctionData({
     abi: morphoBlueAbi,
-    args: [marketParams, amount, 0n, onBehalf, "0x"],
+    args: [
+      marketParams,
+      shares === undefined ? amount : 0n,
+      shares ?? 0n,
+      onBehalf,
+      "0x",
+    ],
     functionName: "repay",
   });
