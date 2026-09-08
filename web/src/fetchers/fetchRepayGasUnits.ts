@@ -14,7 +14,8 @@ import { estimateApprovalGasUnits } from "./estimateApprovalGasUnits";
 /**
  * Estimates gas units for a repay operation. Returns the total gas units
  * for the whole flow (approval + repay).
- * Throws if the amount exceeds the user's current debt or loan token balance.
+ * Throws if the amount exceeds the user's current debt or the required
+ * approval amount exceeds the user's loan token balance.
  */
 export const fetchRepayGasUnits = async function ({
   amount,
@@ -23,6 +24,7 @@ export const fetchRepayGasUnits = async function ({
   marketId,
   owner,
   queryClient,
+  shares,
   token,
 }: {
   amount: bigint;
@@ -31,6 +33,7 @@ export const fetchRepayGasUnits = async function ({
   marketId: Hash;
   owner: Address;
   queryClient: QueryClient;
+  shares?: bigint;
   token: Token;
 }) {
   const chainId = client.chain!.id;
@@ -60,13 +63,16 @@ export const fetchRepayGasUnits = async function ({
     throw new Error("Amount exceeds current debt");
   }
 
-  if (amount > loanBalance) {
+  const amountForApproval =
+    shares === undefined ? amount : (approveAmount ?? amount);
+
+  if (amountForApproval > loanBalance) {
     throw new Error("Insufficient loan token balance");
   }
 
   const [approvalGas, repayGas] = await Promise.all([
     estimateApprovalGasUnits({
-      amount,
+      amount: amountForApproval,
       approveAmount,
       client,
       owner,
@@ -77,9 +83,10 @@ export const fetchRepayGasUnits = async function ({
     estimateGas(client, {
       account: owner,
       data: encodeRepayAssets({
-        amount,
+        amount: shares === undefined ? amount : 0n,
         marketParams: morphoMarket.params,
         onBehalf: owner,
+        shares,
       }),
       stateOverride: createErc20AllowanceStateOverride({
         owner,
