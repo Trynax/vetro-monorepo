@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   getMaxRepayable,
   getRepayApprovalAmount,
+  getRepayPositionArgs,
   getRepayShares,
 } from "../../src/utils/repay";
 
@@ -87,5 +88,27 @@ describe("getMaxRepayable", function () {
         market: undefined,
       }),
     ).toBeUndefined();
+  });
+});
+
+describe("getRepayPositionArgs", function () {
+  it("uses assets only for an asset-based repayment", function () {
+    expect(
+      getRepayPositionArgs({
+        assets: 100n,
+        repayShares: undefined,
+        shares: 50n,
+      }),
+    ).toEqual({ assets: 100n, shares: 0n });
+  });
+
+  it("uses shares only for a share-based repayment", function () {
+    expect(
+      getRepayPositionArgs({
+        assets: 100n,
+        repayShares: 50n,
+        shares: 50n,
+      }),
+    ).toEqual({ assets: 0n, shares: 50n });
   });
 });

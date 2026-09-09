@@ -10,6 +10,7 @@ import {
 } from "@vetro-protocol/morpho-blue-market";
 import { repayAssets } from "@vetro-protocol/morpho-blue-market/actions";
 import type { EventEmitter } from "events";
+import { getRepayPositionArgs } from "utils/repay";
 import { parseEventLogs, type Hash } from "viem";
 import { useAccount } from "wagmi";
 
@@ -114,6 +115,11 @@ export const useRepayAssets = function ({
           assets: repayAmount,
           shares: repayShares ?? 0n,
         };
+        const positionRepay = getRepayPositionArgs({
+          assets: repayment.assets,
+          repayShares,
+          shares: repayment.shares,
+        });
 
         // Decrease loan token balance
         queryClient.setQueryData(loanBalanceKey, (old?: bigint) =>
@@ -123,7 +129,7 @@ export const useRepayAssets = function ({
         queryClient.setQueryData(
           positionInfoKey,
           (old: AccrualPosition | undefined) =>
-            old?.repay(repayment.assets, repayment.shares).position,
+            old?.repay(positionRepay.assets, positionRepay.shares).position,
         );
         // Update market's liquidity and total borrow
         queryClient.setQueryData(
