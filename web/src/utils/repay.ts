@@ -72,3 +72,14 @@ export const getRepayApprovalAmount = ({
   loanTokenBalance: bigint | undefined;
   shares: bigint | undefined;
 }) => (shares === undefined ? amount : (loanTokenBalance ?? amount));
+
+export const getRepayPositionArgs = ({
+  assets,
+  repayShares,
+  shares,
+}: {
+  assets: bigint;
+  repayShares: bigint | undefined;
+  shares: bigint;
+}) =>
+  repayShares === undefined ? { assets, shares: 0n } : { assets: 0n, shares };
