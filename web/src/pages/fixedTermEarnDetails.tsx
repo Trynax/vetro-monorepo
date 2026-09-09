@@ -2,6 +2,7 @@ import { Breadcrumb } from "components/base/breadcrumb";
 import { BreadcrumbSelector } from "components/base/breadcrumb/breadcrumbSelector";
 import { ButtonLink } from "components/base/button";
 import { FixedTermInfoCards } from "components/earn/fixedTermInfoCards";
+import { FixedTermPositionCards } from "components/earn/fixedTermPositionCards";
 import { VaultHeader } from "components/earn/vaultHeader";
 import { EarnIcon } from "components/navbar/earnIcon";
 import { StripedDivider } from "components/stripedDivider";
@@ -111,6 +112,11 @@ const FixedTermEarnDetailsContent = function ({
       <div className="flex flex-col-reverse md:flex-row">
         <div className="min-w-0 flex-1 bg-gray-100">
           <FixedTermInfoCards stakingVaultAddress={stakingVaultAddress} />
+          <StripedDivider variant="small" />
+          <FixedTermPositionCards
+            shareToken={shareToken}
+            stakingVaultAddress={stakingVaultAddress}
+          />
         </div>
         <div className="bg-gray-100 md:hidden">
           <StripedDivider />

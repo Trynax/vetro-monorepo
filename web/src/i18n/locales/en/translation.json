@@ -326,12 +326,17 @@
         "withdrawn": "Withdrawn"
       },
       "fixed-term": {
+        "auto-rolling": "Auto-rolling",
+        "auto-rolling-description": "Rolls into the next term unless you signal an exit",
         "capacity-remaining": "<amount>{{amount}}</amount> remaining",
+        "earned-this-term": "Earned this term",
+        "earned-this-term-info": "The yield your position has accrued since this term started.",
         "fixed-until": "Fixed until {{date}}",
         "header-title": "Target fixed yield",
         "open-to-deposits": "Open to deposits",
         "open-to-exit": "Open to exit",
         "pool-capacity": "Pool capacity",
+        "rollover-status": "Rollover status",
         "target-fixed-apy": "Target fixed APY",
         "term-end-date": "Term end date",
         "term-length": "Term length",
@@ -398,14 +403,14 @@
         "earned-amount": "Your earned amount",
         "from-pools": "From {{count}} pool",
         "from-pools_other": "From {{count}} pools",
-        "staked-balance": "Your staked balance"
+        "staked-balance": "Your staked balance",
+        "your-position": "Your position"
       },
       "title": "Stake assets to earn variable yield.",
       "variable-yield": {
         "apy": "APY",
         "header-title": "Variable yield",
-        "title": "Variable yield pools",
-        "your-position": "Your position"
+        "title": "Variable yield pools"
       }
     },
     "faq": {
