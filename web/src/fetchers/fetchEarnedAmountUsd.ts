@@ -1,9 +1,7 @@
 import { tokenBalanceQueryOptions } from "@hemilabs/react-hooks/useTokenBalance";
 import type { QueryClient } from "@tanstack/react-query";
+import { fetchVaultStakePosition } from "fetchers/fetchVaultStakePosition";
 import { costBasisQueryOptions } from "hooks/useCostBasis";
-import { pricesOptions } from "hooks/usePrices";
-import { stakedBalanceQueryOptions } from "hooks/useStakedBalance";
-import { vaultPeggedTokenQueryOptions } from "hooks/useVaultPeggedToken";
 import { tokenAmountToUsd } from "utils/currency";
 import type { Address, Client } from "viem";
 
@@ -23,31 +21,20 @@ export const fetchEarnedAmountUsd = async function ({
     throw new Error("Client is missing a chain");
   }
 
-  const [costBases, peggedToken, prices, userShares, userStakedAssets] =
+  const [{ peggedToken, prices, stakedAssets }, costBases, userShares] =
     await Promise.all([
+      fetchVaultStakePosition({
+        account,
+        client,
+        queryClient,
+        stakingVaultAddress,
+      }),
       queryClient.ensureQueryData(costBasisQueryOptions({ address: account })),
-      queryClient.ensureQueryData(
-        vaultPeggedTokenQueryOptions({
-          client,
-          queryClient,
-          stakingVaultAddress,
-        }),
-      ),
-      queryClient.ensureQueryData(pricesOptions({ client, queryClient })),
       queryClient.ensureQueryData(
         tokenBalanceQueryOptions({
           account,
           client,
           token: { address: stakingVaultAddress, chainId },
-        }),
-      ),
-      queryClient.ensureQueryData(
-        stakedBalanceQueryOptions({
-          account,
-          chainId,
-          client,
-          queryClient,
-          stakingVaultAddress,
         }),
       ),
     ]);
@@ -62,7 +49,7 @@ export const fetchEarnedAmountUsd = async function ({
   }
 
   return tokenAmountToUsd({
-    amount: userStakedAssets - costBasis,
+    amount: stakedAssets - costBasis,
     prices,
     token: peggedToken,
   });
