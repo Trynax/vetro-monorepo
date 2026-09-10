@@ -161,6 +161,7 @@ export function StakeDepositForm({
     function handleDepositStepChange(step: DepositStep) {
       onDepositStepChange(step);
       const handlers: Partial<Record<DepositStep, () => void>> = {
+        "approve-failed": onFailed,
         completed: onCompleted,
         "deposit-failed": onFailed,
         depositing: onPending,
@@ -184,6 +185,7 @@ export function StakeDepositForm({
   const depositMutation = useStakeDeposit({
     approveAmount,
     assets: amountBigInt,
+    needsApproval,
     onStatusChange: handleDepositStepChange,
     onSuccess: handleDepositSuccess,
     onTransactionHash,
