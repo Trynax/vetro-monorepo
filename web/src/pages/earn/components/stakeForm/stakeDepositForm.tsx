@@ -193,6 +193,13 @@ export function StakeDepositForm({
     stakingVaultAddress,
   });
 
+  function handleRetry() {
+    onDepositStepChange(
+      depositStep === "approve-failed" ? "approving" : "depositing",
+    );
+    depositMutation.mutate();
+  }
+
   const depositFeesQuery = useTotalDepositFees({
     amount: amountBigInt,
     approveAmount,
@@ -311,6 +318,12 @@ export function StakeDepositForm({
               depositStep={depositStep}
               needsApproval={needsApproval}
               networkFee={depositFeesQuery}
+              onRetry={
+                depositStep === "approve-failed" ||
+                depositStep === "deposit-failed"
+                  ? handleRetry
+                  : undefined
+              }
               peggedToken={peggedToken}
               shareToken={shareToken}
               stakingVaultAddress={stakingVaultAddress}

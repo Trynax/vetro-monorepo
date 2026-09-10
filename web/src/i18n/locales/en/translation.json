@@ -379,6 +379,7 @@
         "ready-to-withdraw-in_other": "Ready to withdraw in {{count}} days",
         "request-withdrawal": "Request withdrawal",
         "requesting": "Requesting...",
+        "retry": "Retry",
         "withdraw": "Withdraw",
         "withdraw-in-progress": "Withdrawal in progress",
         "withdraw-progress": "Withdraw progress",

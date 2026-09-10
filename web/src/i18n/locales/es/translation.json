@@ -382,6 +382,7 @@
         "ready-to-withdraw-in_other": "Listo para retirar en {{count}} días",
         "request-withdrawal": "Solicitar retiro",
         "requesting": "Solicitando...",
+        "retry": "Reintentar",
         "withdraw": "Retirar",
         "withdraw-in-progress": "Retiro en progreso",
         "withdraw-progress": "Progreso del retiro",

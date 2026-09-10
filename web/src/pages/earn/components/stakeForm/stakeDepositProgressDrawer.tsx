@@ -1,4 +1,5 @@
 import type { Token } from "@vetro-protocol/core";
+import { Button } from "components/base/button";
 import { RenderCryptoValue } from "components/base/cryptoValue";
 import { DollarSign } from "components/base/dollarSign";
 import { DrawerTitle } from "components/base/drawer/drawerTitle";
@@ -10,6 +11,7 @@ import {
 import { VerticalStepper, stepStatus } from "components/base/verticalStepper";
 import { DrawerFeesContainer } from "components/feesContainer";
 import { NetworkFees } from "components/networkFees";
+import { useAnimatedVisibility } from "hooks/useAnimatedVisibility";
 import { useVaultPreviewDeposit } from "hooks/useVaultPreviewDeposit";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,6 +27,7 @@ type Props = {
   depositStep: DepositStep;
   needsApproval: boolean;
   networkFee: ComponentProps<typeof NetworkFees>["networkFee"];
+  onRetry?: VoidFunction;
   peggedToken: TokenWithGateway;
   shareToken: Token;
   stakingVaultAddress: Address;
@@ -109,6 +112,7 @@ export function StakeDepositProgressDrawer({
   depositStep,
   needsApproval,
   networkFee,
+  onRetry,
   peggedToken,
   shareToken,
   stakingVaultAddress,
@@ -122,6 +126,8 @@ export function StakeDepositProgressDrawer({
     depositStep,
     needsApproval,
   });
+  const { render: renderRetry, show: showRetry } =
+    useAnimatedVisibility(!!onRetry);
 
   const fiatDetail = (
     <>
@@ -169,6 +175,22 @@ export function StakeDepositProgressDrawer({
           <VerticalStepper steps={steps} />
         </div>
       </div>
+
+      {renderRetry && (
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+            showRetry ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 *:w-full">
+              <Button onClick={onRetry} size="small" variant="primary">
+                {t("pages.earn.stake.retry")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
