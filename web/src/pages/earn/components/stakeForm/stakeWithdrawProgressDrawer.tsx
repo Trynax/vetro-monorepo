@@ -1,4 +1,5 @@
 import type { Token } from "@vetro-protocol/core";
+import { Button } from "components/base/button";
 import { RenderCryptoValue } from "components/base/cryptoValue";
 import { DollarSign } from "components/base/dollarSign";
 import { DrawerTitle } from "components/base/drawer/drawerTitle";
@@ -10,6 +11,7 @@ import {
 import { VerticalStepper, stepStatus } from "components/base/verticalStepper";
 import { DrawerFeesContainer } from "components/feesContainer";
 import { NetworkFees } from "components/networkFees";
+import { useAnimatedVisibility } from "hooks/useAnimatedVisibility";
 import { useVaultPreviewWithdraw } from "hooks/useVaultPreviewWithdraw";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,6 +31,7 @@ type Props = SummaryProps & {
   canInstantWithdraw: boolean;
   cooldownDays: number | undefined;
   networkFee: ComponentProps<typeof NetworkFees>["networkFee"];
+  onRetry?: VoidFunction;
   shareToken: Token;
   stakingVaultAddress: Address;
   withdrawStep: WithdrawStep;
@@ -177,6 +180,7 @@ export function StakeWithdrawProgressDrawer({
   canInstantWithdraw,
   cooldownDays,
   networkFee,
+  onRetry,
   peggedToken,
   shareToken,
   stakingVaultAddress,
@@ -189,6 +193,8 @@ export function StakeWithdrawProgressDrawer({
     cooldownDays,
     withdrawStep,
   });
+  const { render: renderRetry, show: showRetry } =
+    useAnimatedVisibility(!!onRetry);
 
   return (
     <div className="flex h-full flex-col">
@@ -227,6 +233,22 @@ export function StakeWithdrawProgressDrawer({
           <VerticalStepper steps={steps} />
         </div>
       </div>
+
+      {renderRetry && (
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+            showRetry ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 *:w-full">
+              <Button onClick={onRetry} size="small" variant="primary">
+                {t("pages.earn.stake.retry")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
