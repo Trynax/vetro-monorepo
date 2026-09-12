@@ -15,20 +15,20 @@ describe("getRepayShares", function () {
     loanTokenBalance: 1000n,
   };
 
-  it("returns the borrow shares for a near-full repayment", function () {
+  it("returns the borrow shares for a full repayment", function () {
     expect(
       getRepayShares({
         ...repayment,
-        amount: 990n,
+        amount: 1000n,
       }),
     ).toBe(repayment.borrowShares);
   });
 
-  it("keeps an ordinary partial repayment asset-based", function () {
+  it("keeps a partial repayment asset-based", function () {
     expect(
       getRepayShares({
         ...repayment,
-        amount: 989n,
+        amount: 995n,
       }),
     ).toBeUndefined();
   });
@@ -37,7 +37,7 @@ describe("getRepayShares", function () {
     expect(
       getRepayShares({
         ...repayment,
-        amount: 990n,
+        amount: 1000n,
         loanTokenBalance: 999n,
       }),
     ).toBeUndefined();
@@ -55,14 +55,24 @@ describe("getRepayApprovalAmount", function () {
     ).toBe(100n);
   });
 
-  it("uses the wallet balance for a share-based repayment", function () {
+  it("adds a small buffer for a share-based repayment", function () {
     expect(
       getRepayApprovalAmount({
-        amount: 990n,
-        loanTokenBalance: 1000n,
+        amount: 1000n,
+        loanTokenBalance: 10_000n,
         shares: 500n,
       }),
-    ).toBe(1000n);
+    ).toBe(1010n);
+  });
+
+  it("caps the share-based approval at the wallet balance", function () {
+    expect(
+      getRepayApprovalAmount({
+        amount: 1000n,
+        loanTokenBalance: 1005n,
+        shares: 500n,
+      }),
+    ).toBe(1005n);
   });
 });
 

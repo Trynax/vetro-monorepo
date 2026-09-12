@@ -1,9 +1,9 @@
 import type { Market } from "@morpho-org/blue-sdk";
 
-import { BPS_DENOMINATOR } from "./bigint";
+import { applyBps, minBigInt } from "./bigint";
 
-// Treat repayments of at least 99% of the debt as an intent to close it fully.
-const FULL_REPAYMENT_THRESHOLD_BPS = 9900n;
+// Allow a small amount of interest to accrue before a full repayment is included.
+const REPAYMENT_BUFFER_BPS = 100n;
 
 export const getCurrentBorrowAssets = function ({
   borrowShares,
@@ -30,7 +30,7 @@ export const getRepayShares = function ({
   borrowShares: bigint | undefined;
   loanTokenBalance: bigint | undefined;
 }) {
-  const isNearFullRepayment =
+  const isFullRepayment =
     amount > 0n &&
     borrowAssets !== undefined &&
     borrowAssets > 0n &&
@@ -38,9 +38,9 @@ export const getRepayShares = function ({
     borrowShares > 0n &&
     loanTokenBalance !== undefined &&
     loanTokenBalance >= borrowAssets &&
-    amount * BPS_DENOMINATOR >= borrowAssets * FULL_REPAYMENT_THRESHOLD_BPS;
+    amount >= borrowAssets;
 
-  return isNearFullRepayment ? borrowShares : undefined;
+  return isFullRepayment ? borrowShares : undefined;
 };
 
 export const getMaxRepayable = function ({
@@ -63,7 +63,7 @@ export const getMaxRepayable = function ({
   return market.getRepayCapacityLimit(borrowShares, loanTokenBalance).value;
 };
 
-export const getRepayApprovalAmount = ({
+export const getRepayApprovalAmount = function ({
   amount,
   loanTokenBalance,
   shares,
@@ -71,7 +71,17 @@ export const getRepayApprovalAmount = ({
   amount: bigint;
   loanTokenBalance: bigint | undefined;
   shares: bigint | undefined;
-}) => (shares === undefined ? amount : (loanTokenBalance ?? amount));
+}) {
+  if (shares === undefined) {
+    return amount;
+  }
+
+  const bufferedAmount = amount + applyBps(amount, REPAYMENT_BUFFER_BPS);
+
+  return loanTokenBalance === undefined
+    ? bufferedAmount
+    : minBigInt(bufferedAmount, loanTokenBalance);
+};
 
 export const getRepayPositionArgs = ({
   assets,
