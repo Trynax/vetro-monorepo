@@ -1,4 +1,8 @@
-import type { Hash, TransactionReceipt } from "viem";
+import {
+  type Hash,
+  TransactionReceiptNotFoundError,
+  type TransactionReceipt,
+} from "viem";
 
 import type { Activity } from "../components/base/activityList/types";
 
@@ -32,7 +36,7 @@ export async function getPendingActivityStatus({
 }: {
   activity: Activity;
   getReceipt: ReceiptReader;
-}): Promise<"completed" | "failed" | undefined> {
+}): Promise<"completed" | "failed" | null | undefined> {
   if (activity.status !== "pending" || activity.page === "bridge") {
     return undefined;
   }
@@ -40,9 +44,15 @@ export async function getPendingActivityStatus({
   try {
     const receipt = await getReceipt(activity.txHash as Hash);
     return receipt.status === "success" ? "completed" : "failed";
-  } catch {
-    // A missing receipt means the transaction is still pending, or the RPC is
-    // temporarily unavailable. Keep the activity pending in both cases.
+  } catch (error) {
+    if (error instanceof TransactionReceiptNotFoundError) {
+      // A missing receipt means the transaction is still pending. The lookup
+      // completed, so stale activities do not need to be checked again.
+      return null;
+    }
+
+    // Keep the activity eligible for another attempt when the RPC is
+    // temporarily unavailable.
     return undefined;
   }
 }

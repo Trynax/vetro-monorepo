@@ -1,4 +1,4 @@
-import type { Hash } from "viem";
+import { TransactionReceiptNotFoundError, type Hash } from "viem";
 import { describe, expect, it, vi } from "vitest";
 
 import type { Activity } from "../../src/components/base/activityList/types";
@@ -25,12 +25,12 @@ describe("getPendingActivitiesToReconcile", function () {
   const maxAge = 100;
 
   it("includes fresh pending activities", function () {
-    const activity = createActivity({ date: now - maxAge });
+    const activity = createActivity({ date: now - maxAge + 1 });
 
     expect(
       getPendingActivitiesToReconcile({
         activities: [activity],
-        checkedHashes: new Set(),
+        checkedHashes: new Set([activity.txHash]),
         maxAge,
         now,
       }),
@@ -127,7 +127,20 @@ describe("getPendingActivityStatus", function () {
   it("keeps an activity pending when no receipt is available", async function () {
     const getReceipt = vi
       .fn()
-      .mockRejectedValue(new Error("Transaction receipt not found"));
+      .mockRejectedValue(
+        new TransactionReceiptNotFoundError({ hash: transactionHash }),
+      );
+
+    await expect(
+      getPendingActivityStatus({
+        activity: createActivity(),
+        getReceipt,
+      }),
+    ).resolves.toBeNull();
+  });
+
+  it("does not mark an activity as checked when the receipt lookup fails", async function () {
+    const getReceipt = vi.fn().mockRejectedValue(new Error("RPC unavailable"));
 
     await expect(
       getPendingActivityStatus({

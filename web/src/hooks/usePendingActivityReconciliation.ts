@@ -97,7 +97,9 @@ export function usePendingActivityReconciliation() {
               activity,
               status,
             }) {
-              checkedHashesRef.current.add(activity.txHash);
+              if (status !== undefined) {
+                checkedHashesRef.current.add(activity.txHash);
+              }
               if (status) {
                 updateActivity(account, activity.txHash, { status });
               }
