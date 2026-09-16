@@ -40,37 +40,32 @@ export const DisplayAmount = function ({
   const notZero = amount !== 0n;
   // Only show dots for small numbers (x < 1), if the amount is not zero and we're truncating decimals
   const showDots = amount < one && notZero && formattedAmount !== stringAmount;
-  const display = (
-    <Container>
-      <AmountContainer>{`${formattedAmount}${
-        showDots ? "..." : ""
-      }`}</AmountContainer>
-      {showSymbol ? (
-        <SymbolContainer>{` ${token.symbol}`}</SymbolContainer>
-      ) : null}
-    </Container>
-  );
-
-  if (!notZero) {
-    return display;
-  }
-
   return (
     <Tooltip
       content={
-        <span className="flex items-center gap-x-1">
-          {showTokenLogo && <TokenLogo {...token} />}
-          <span>{`${new Intl.NumberFormat("en-US", {
-            maximumFractionDigits: token.decimals,
-            useGrouping: true,
-          }).format(
-            // @ts-expect-error NumberFormat.format accept strings, typings are wrong. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/format#parameters
-            stringAmount,
-          )} ${token.symbol}`}</span>
-        </span>
+        notZero ? (
+          <span className="flex items-center gap-x-1">
+            {showTokenLogo && <TokenLogo {...token} />}
+            <span>{`${new Intl.NumberFormat("en-US", {
+              maximumFractionDigits: token.decimals,
+              useGrouping: true,
+            }).format(
+              // @ts-expect-error NumberFormat.format accept strings, typings are wrong. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/format#parameters
+              stringAmount,
+            )} ${token.symbol}`}</span>
+          </span>
+        ) : null
       }
+      visible={notZero ? undefined : false}
     >
-      {display}
+      <Container>
+        <AmountContainer>{`${formattedAmount}${
+          showDots ? "..." : ""
+        }`}</AmountContainer>
+        {showSymbol ? (
+          <SymbolContainer>{` ${token.symbol}`}</SymbolContainer>
+        ) : null}
+      </Container>
     </Tooltip>
   );
 };
