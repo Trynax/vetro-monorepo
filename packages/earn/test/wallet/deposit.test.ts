@@ -427,7 +427,7 @@ describe("deposit", function () {
     expect(onSettled).toHaveBeenCalledOnce();
   });
 
-  it("should emit 'deposit-failed' when approval receipt fails", async function () {
+  it("should emit an unknown approval outcome when approval receipt fails", async function () {
     vi.mocked(allowance).mockResolvedValue(validParameters.assets - BigInt(1));
     vi.mocked(approve).mockResolvedValue(zeroHash);
     vi.mocked(waitForTransactionReceipt).mockRejectedValue(
@@ -438,11 +438,13 @@ describe("deposit", function () {
 
     const onPreApprove = vi.fn();
     const onUserSignedApproval = vi.fn();
+    const onApproveTransactionUnknown = vi.fn();
     const onDepositFailed = vi.fn();
     const onSettled = vi.fn();
 
     emitter.on("pre-approve", onPreApprove);
     emitter.on("user-signed-approval", onUserSignedApproval);
+    emitter.on("approve-transaction-unknown", onApproveTransactionUnknown);
     emitter.on("deposit-failed", onDepositFailed);
     emitter.on("deposit-settled", onSettled);
 
@@ -450,7 +452,11 @@ describe("deposit", function () {
 
     expect(onPreApprove).toHaveBeenCalledOnce();
     expect(onUserSignedApproval).toHaveBeenCalledExactlyOnceWith(zeroHash);
-    expect(onDepositFailed).toHaveBeenCalledExactlyOnceWith(expect.any(Error));
+    expect(onApproveTransactionUnknown).toHaveBeenCalledExactlyOnceWith(
+      zeroHash,
+      expect.any(Error),
+    );
+    expect(onDepositFailed).not.toHaveBeenCalled();
     expect(onSettled).toHaveBeenCalledOnce();
   });
 
@@ -479,7 +485,7 @@ describe("deposit", function () {
     expect(onSettled).toHaveBeenCalledOnce();
   });
 
-  it("should emit 'deposit-failed' when deposit receipt fails", async function () {
+  it("should emit an unknown deposit outcome when deposit receipt fails", async function () {
     vi.mocked(allowance).mockResolvedValue(validParameters.assets);
     vi.mocked(writeContract).mockResolvedValue(zeroHash);
     vi.mocked(waitForTransactionReceipt).mockRejectedValue(
@@ -490,11 +496,13 @@ describe("deposit", function () {
 
     const onPreDeposit = vi.fn();
     const onUserSignedDeposit = vi.fn();
+    const onDepositTransactionUnknown = vi.fn();
     const onDepositFailed = vi.fn();
     const onSettled = vi.fn();
 
     emitter.on("pre-deposit", onPreDeposit);
     emitter.on("user-signed-deposit", onUserSignedDeposit);
+    emitter.on("deposit-transaction-unknown", onDepositTransactionUnknown);
     emitter.on("deposit-failed", onDepositFailed);
     emitter.on("deposit-settled", onSettled);
 
@@ -502,7 +510,11 @@ describe("deposit", function () {
 
     expect(onPreDeposit).toHaveBeenCalledOnce();
     expect(onUserSignedDeposit).toHaveBeenCalledExactlyOnceWith(zeroHash);
-    expect(onDepositFailed).toHaveBeenCalledExactlyOnceWith(expect.any(Error));
+    expect(onDepositTransactionUnknown).toHaveBeenCalledExactlyOnceWith(
+      zeroHash,
+      expect.any(Error),
+    );
+    expect(onDepositFailed).not.toHaveBeenCalled();
     expect(onSettled).toHaveBeenCalledOnce();
   });
 

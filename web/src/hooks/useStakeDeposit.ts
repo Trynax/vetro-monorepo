@@ -21,11 +21,29 @@ import { stakedUsdQueryKey } from "./useStakedUsd";
 
 type DepositStatus =
   | "approve-failed"
+  | "approve-unknown"
   | "approved"
   | "approving"
   | "completed"
   | "deposit-failed"
+  | "deposit-unknown"
   | "depositing";
+
+function getDepositFailureStatus({
+  currentStep,
+  submittedStep,
+}: {
+  currentStep: "approve" | "deposit";
+  submittedStep: "approve" | "deposit" | undefined;
+}): DepositStatus {
+  if (submittedStep === "approve") {
+    return "approve-unknown";
+  }
+  if (submittedStep === "deposit") {
+    return "deposit-unknown";
+  }
+  return currentStep === "approve" ? "approve-failed" : "deposit-failed";
+}
 
 type Params = {
   approveAmount?: bigint;
@@ -54,6 +72,7 @@ export const useStakeDeposit = function ({
   const ensureConnectedTo = useEnsureConnectedTo();
   const queryClient = useQueryClient();
   const currentStep = useRef<"approve" | "deposit">("deposit");
+  const submittedStep = useRef<"approve" | "deposit" | undefined>(undefined);
   const { queryKey: nativeBalanceKey } = useNativeBalance(chain.id);
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
     chain.id,
@@ -88,6 +107,9 @@ export const useStakeDeposit = function ({
       if (!account) {
         throw new Error("No account connected");
       }
+      if (submittedStep.current) {
+        throw new Error("Previous transaction outcome is unknown");
+      }
 
       currentStep.current = needsApproval ? "approve" : "deposit";
       await ensureConnectedTo(chain.id);
@@ -102,6 +124,7 @@ export const useStakeDeposit = function ({
 
       emitter.on("user-signed-approval", function () {
         currentStep.current = "approve";
+        submittedStep.current = "approve";
         onStatusChange?.("approving");
       });
 
@@ -130,14 +153,20 @@ export const useStakeDeposit = function ({
       emitter.on(
         "approve-transaction-reverted",
         function (receipt: TransactionReceipt) {
+          submittedStep.current = undefined;
           updateNativeBalanceAfterReceipt(receipt);
           onStatusChange?.("approve-failed");
         },
       );
 
+      emitter.on("approve-transaction-unknown", function () {
+        onStatusChange?.("approve-unknown");
+      });
+
       emitter.on(
         "approve-transaction-succeeded",
         function (receipt: TransactionReceipt) {
+          submittedStep.current = undefined;
           updateNativeBalanceAfterReceipt(receipt);
           queryClient.invalidateQueries({
             queryKey: allowanceKey,
@@ -147,9 +176,10 @@ export const useStakeDeposit = function ({
 
       emitter.on("deposit-failed", function () {
         onStatusChange?.(
-          currentStep.current === "approve"
-            ? "approve-failed"
-            : "deposit-failed",
+          getDepositFailureStatus({
+            currentStep: currentStep.current,
+            submittedStep: submittedStep.current,
+          }),
         );
       });
 
@@ -159,9 +189,10 @@ export const useStakeDeposit = function ({
 
       emitter.on("unexpected-error", function () {
         onStatusChange?.(
-          currentStep.current === "approve"
-            ? "approve-failed"
-            : "deposit-failed",
+          getDepositFailureStatus({
+            currentStep: currentStep.current,
+            submittedStep: submittedStep.current,
+          }),
         );
       });
 
@@ -169,9 +200,14 @@ export const useStakeDeposit = function ({
         onStatusChange?.("deposit-failed");
       });
 
+      emitter.on("deposit-transaction-unknown", function () {
+        onStatusChange?.("deposit-unknown");
+      });
+
       emitter.on(
         "deposit-transaction-reverted",
         function (receipt: TransactionReceipt) {
+          submittedStep.current = undefined;
           updateNativeBalanceAfterReceipt(receipt);
           onStatusChange?.("deposit-failed");
         },
@@ -180,6 +216,7 @@ export const useStakeDeposit = function ({
       emitter.on(
         "deposit-transaction-succeeded",
         function (receipt: TransactionReceipt) {
+          submittedStep.current = undefined;
           updateNativeBalanceAfterReceipt(receipt);
           onStatusChange?.("completed");
           onSuccess?.();
@@ -211,7 +248,10 @@ export const useStakeDeposit = function ({
     },
     onError() {
       onStatusChange?.(
-        currentStep.current === "approve" ? "approve-failed" : "deposit-failed",
+        getDepositFailureStatus({
+          currentStep: currentStep.current,
+          submittedStep: submittedStep.current,
+        }),
       );
     },
     async onSettled() {

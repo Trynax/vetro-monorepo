@@ -14,9 +14,11 @@ type ApprovalEvents = {
 
 export type DepositEvents = ApprovalEvents &
   CommonEvents & {
+    "approve-transaction-unknown": [Hash, Error];
     "deposit-failed": [Error];
     "deposit-failed-validation": [string];
     "deposit-settled": [];
+    "deposit-transaction-unknown": [Hash, Error];
     "deposit-transaction-reverted": [TransactionReceipt];
     "deposit-transaction-succeeded": [TransactionReceipt];
     "pre-deposit": [];
@@ -40,6 +42,7 @@ export type RequestWithdrawEvents = CommonEvents & {
   "request-withdraw-failed": [Error];
   "request-withdraw-failed-validation": [string];
   "request-withdraw-settled": [];
+  "request-withdraw-transaction-unknown": [Hash, Error];
   "request-withdraw-transaction-reverted": [TransactionReceipt];
   "request-withdraw-transaction-succeeded": [TransactionReceipt];
   "user-signed-request-withdraw": [Hash];

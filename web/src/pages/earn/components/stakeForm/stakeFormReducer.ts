@@ -2,10 +2,12 @@ import { sanitizeAmount } from "utils/sanitizeAmount";
 
 export type DepositStep =
   | "approve-failed"
+  | "approve-unknown"
   | "approved"
   | "approving"
   | "completed"
   | "deposit-failed"
+  | "deposit-unknown"
   | "depositing"
   | "idle";
 
@@ -14,7 +16,9 @@ export type WithdrawStep =
   | "failed"
   | "idle"
   | "request-failed"
+  | "request-unknown"
   | "requesting"
+  | "unknown"
   | "withdrawing";
 
 type StakeFormState = {

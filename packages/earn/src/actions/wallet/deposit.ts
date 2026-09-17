@@ -161,7 +161,7 @@ const runDeposit = (walletClient: WalletClient, params: DepositParams) =>
         const approvalReceipt = await waitForTransactionReceipt(walletClient, {
           hash: approvalHash,
         }).catch(function (error: Error) {
-          emitter.emit("deposit-failed", error);
+          emitter.emit("approve-transaction-unknown", approvalHash, error);
         });
 
         if (!approvalReceipt) {
@@ -198,7 +198,7 @@ const runDeposit = (walletClient: WalletClient, params: DepositParams) =>
       const depositReceipt = await waitForTransactionReceipt(walletClient, {
         hash: depositHash,
       }).catch(function (error: Error) {
-        emitter.emit("deposit-failed", error);
+        emitter.emit("deposit-transaction-unknown", depositHash, error);
       });
 
       if (!depositReceipt) {

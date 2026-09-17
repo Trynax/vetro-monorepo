@@ -73,6 +73,15 @@ function getStakeErrors({
   return undefined;
 }
 
+const isDepositTransactionPending = ({
+  isMutationPending,
+  step,
+}: {
+  isMutationPending: boolean;
+  step: DepositStep;
+}) =>
+  isMutationPending || step === "approve-unknown" || step === "deposit-unknown";
+
 const getSubmitTexts = ({
   depositStep,
   needsApproval,
@@ -86,7 +95,7 @@ const getSubmitTexts = ({
     ? t("pages.earn.stake.approve-and-deposit")
     : t("pages.earn.stake.deposit"),
   pendingText:
-    depositStep === "approving"
+    depositStep === "approving" || depositStep === "approve-unknown"
       ? t("pages.earn.stake.approving")
       : t("pages.earn.stake.depositing"),
 });
@@ -287,7 +296,10 @@ export function StakeDepositForm({
             balancesLoaded={balancesLoaded}
             inputError={inputError}
             isConnected={isConnected}
-            isPending={depositMutation.isPending}
+            isPending={isDepositTransactionPending({
+              isMutationPending: depositMutation.isPending,
+              step: depositStep,
+            })}
             onConnectWallet={openConnectModal}
             pendingText={pendingText}
           />

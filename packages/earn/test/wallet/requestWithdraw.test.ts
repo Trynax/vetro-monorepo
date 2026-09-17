@@ -272,6 +272,35 @@ describe("requestWithdraw", function () {
     expect(onSettled).toHaveBeenCalledOnce();
   });
 
+  it("should emit an unknown outcome when receipt fails", async function () {
+    vi.mocked(writeContract).mockResolvedValue(zeroHash);
+    vi.mocked(waitForTransactionReceipt).mockRejectedValue(
+      new Error("Receipt error"),
+    );
+
+    const { emitter, promise } = requestWithdraw(
+      mockWalletClient,
+      validParameters,
+    );
+
+    const onTransactionUnknown = vi.fn();
+    const onRequestWithdrawFailed = vi.fn();
+    const onSettled = vi.fn();
+
+    emitter.on("request-withdraw-transaction-unknown", onTransactionUnknown);
+    emitter.on("request-withdraw-failed", onRequestWithdrawFailed);
+    emitter.on("request-withdraw-settled", onSettled);
+
+    await promise;
+
+    expect(onTransactionUnknown).toHaveBeenCalledExactlyOnceWith(
+      zeroHash,
+      expect.any(Error),
+    );
+    expect(onRequestWithdrawFailed).not.toHaveBeenCalled();
+    expect(onSettled).toHaveBeenCalledOnce();
+  });
+
   it("should emit 'request-withdraw-transaction-reverted' when transaction reverts", async function () {
     const receipt = {
       status: "reverted",

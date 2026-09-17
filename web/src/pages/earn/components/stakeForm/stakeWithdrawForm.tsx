@@ -40,8 +40,21 @@ const retryWithdrawSteps = {
   "request-failed": "requesting",
 } as const;
 
-const getRetryHandler = (step: WithdrawStep, onRetry: VoidFunction) =>
-  step === "failed" || step === "request-failed" ? onRetry : undefined;
+const getRetryHandler = ({
+  onRetry,
+  step,
+}: {
+  onRetry: VoidFunction;
+  step: WithdrawStep;
+}) => (step === "failed" || step === "request-failed" ? onRetry : undefined);
+
+const isWithdrawTransactionPending = ({
+  isMutationPending,
+  step,
+}: {
+  isMutationPending: boolean;
+  step: WithdrawStep;
+}) => isMutationPending || step === "request-unknown" || step === "unknown";
 
 type Props = {
   inputValue: string;
@@ -293,7 +306,10 @@ export function StakeWithdrawForm({
             balancesLoaded={balancesLoaded && !isWithdrawPathLoading}
             inputError={inputError}
             isConnected={isConnected}
-            isPending={withdrawMutation.isPending}
+            isPending={isWithdrawTransactionPending({
+              isMutationPending: withdrawMutation.isPending,
+              step: withdrawStep,
+            })}
             onConnectWallet={openConnectModal}
             pendingText={pendingText}
           />
@@ -320,7 +336,10 @@ export function StakeWithdrawForm({
               canInstantWithdraw={canInstantWithdraw}
               cooldownDays={cooldownDays}
               networkFee={withdrawFeesQuery}
-              onRetry={getRetryHandler(withdrawStep, handleRetry)}
+              onRetry={getRetryHandler({
+                onRetry: handleRetry,
+                step: withdrawStep,
+              })}
               peggedToken={peggedToken}
               shareToken={shareToken}
               stakingVaultAddress={stakingVaultAddress}

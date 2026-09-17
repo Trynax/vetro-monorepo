@@ -3,6 +3,7 @@ import { useNativeBalance } from "@hemilabs/react-hooks/useNativeBalance";
 import { tokenBalanceQueryKey } from "@hemilabs/react-hooks/useTokenBalance";
 import { useUpdateNativeBalanceAfterReceipt } from "@hemilabs/react-hooks/useUpdateNativeBalanceAfterReceipt";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
 import type { TokenWithGateway } from "types";
 import { type CostBases, reduceCostBasisProportionally } from "utils/costBasis";
 import type { Address } from "viem";
@@ -18,7 +19,7 @@ import { poolDepositsQueryKey } from "./usePoolDeposits";
 import { stakedBalanceQueryKey } from "./useStakedBalance";
 import { stakedUsdQueryKey } from "./useStakedUsd";
 
-type InstantWithdrawStatus = "completed" | "failed" | "withdrawing";
+type InstantWithdrawStatus = "completed" | "failed" | "unknown" | "withdrawing";
 
 type Params = {
   assets: bigint;
@@ -42,6 +43,7 @@ export const useInstantWithdraw = function ({
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
   const queryClient = useQueryClient();
+  const submittedTransaction = useRef(false);
 
   const { queryKey: nativeBalanceKey } = useNativeBalance(chain.id);
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
@@ -71,6 +73,9 @@ export const useInstantWithdraw = function ({
       if (!account) {
         throw new Error("No account connected");
       }
+      if (submittedTransaction.current) {
+        throw new Error("Previous transaction outcome is unknown");
+      }
 
       await ensureConnectedTo(chain.id);
 
@@ -81,6 +86,7 @@ export const useInstantWithdraw = function ({
         receiver: account,
       });
 
+      submittedTransaction.current = true;
       onTransactionHash?.(hash);
       onStatusChange?.("withdrawing");
 
@@ -88,6 +94,7 @@ export const useInstantWithdraw = function ({
         hash,
       });
 
+      submittedTransaction.current = false;
       updateNativeBalanceAfterReceipt(receipt);
 
       if (receipt.status === "reverted") {
@@ -125,7 +132,7 @@ export const useInstantWithdraw = function ({
       );
     },
     onError() {
-      onStatusChange?.("failed");
+      onStatusChange?.(submittedTransaction.current ? "unknown" : "failed");
     },
     async onSettled() {
       queryClient.invalidateQueries({
