@@ -50,9 +50,7 @@ export function usePendingActivityReconciliation() {
       const publicClient = client;
       let isActive = true;
       let isChecking = false;
-      const intervalRef = {
-        current: undefined as ReturnType<typeof setInterval> | undefined,
-      };
+      let intervalId: ReturnType<typeof setInterval> | undefined = undefined;
 
       async function reconcile() {
         if (!isActive || isChecking) {
@@ -72,8 +70,8 @@ export function usePendingActivityReconciliation() {
           pendingActivitiesRef.current = activitiesToReconcile;
 
           if (activitiesToReconcile.length === 0) {
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current);
+            if (intervalId) {
+              clearInterval(intervalId);
             }
             return;
           }
@@ -112,11 +110,8 @@ export function usePendingActivityReconciliation() {
               now: unixNowTimestamp(),
             });
 
-            if (
-              pendingActivitiesRef.current.length === 0 &&
-              intervalRef.current
-            ) {
-              clearInterval(intervalRef.current);
+            if (pendingActivitiesRef.current.length === 0 && intervalId) {
+              clearInterval(intervalId);
             }
           }
         } finally {
@@ -124,7 +119,7 @@ export function usePendingActivityReconciliation() {
         }
       }
 
-      intervalRef.current = setInterval(
+      intervalId = setInterval(
         () => void reconcile(),
         pendingActivityPollInterval,
       );
@@ -132,8 +127,8 @@ export function usePendingActivityReconciliation() {
 
       return function cleanup() {
         isActive = false;
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
+        if (intervalId) {
+          clearInterval(intervalId);
         }
       };
     },
