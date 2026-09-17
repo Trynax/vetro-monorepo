@@ -2,6 +2,7 @@ import type { Market } from "@morpho-org/blue-sdk";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  getEffectiveRepaymentAssets,
   getMaxRepayable,
   getRepayApprovalAmount,
   getRepayPositionArgs,
@@ -12,7 +13,7 @@ describe("getRepayShares", function () {
   const repayment = {
     borrowAssets: 1000n,
     borrowShares: 500n,
-    loanTokenBalance: 1000n,
+    loanTokenBalance: 1010n,
   };
 
   it("returns the borrow shares for a full repayment", function () {
@@ -29,6 +30,16 @@ describe("getRepayShares", function () {
       getRepayShares({
         ...repayment,
         amount: 995n,
+      }),
+    ).toBeUndefined();
+  });
+
+  it("does not use shares when the wallet has no buffer headroom", function () {
+    expect(
+      getRepayShares({
+        ...repayment,
+        amount: 1000n,
+        loanTokenBalance: 1000n,
       }),
     ).toBeUndefined();
   });
@@ -73,6 +84,26 @@ describe("getRepayApprovalAmount", function () {
         shares: 500n,
       }),
     ).toBe(1005n);
+  });
+});
+
+describe("getEffectiveRepaymentAssets", function () {
+  it("caps repayment assets at the cached total borrow assets", function () {
+    expect(
+      getEffectiveRepaymentAssets({
+        assets: 1001n,
+        totalBorrowAssets: 1000n,
+      }),
+    ).toBe(1000n);
+  });
+
+  it("keeps repayment assets below the cached total unchanged", function () {
+    expect(
+      getEffectiveRepaymentAssets({
+        assets: 900n,
+        totalBorrowAssets: 1000n,
+      }),
+    ).toBe(900n);
   });
 });
 
