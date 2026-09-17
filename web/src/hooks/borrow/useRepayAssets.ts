@@ -10,7 +10,7 @@ import {
 } from "@vetro-protocol/morpho-blue-market";
 import { repayAssets } from "@vetro-protocol/morpho-blue-market/actions";
 import type { EventEmitter } from "events";
-import { getRepayPositionArgs } from "utils/repay";
+import { getEffectiveRepaymentAssets, getRepayPositionArgs } from "utils/repay";
 import { parseEventLogs, type Hash } from "viem";
 import { useAccount } from "wagmi";
 
@@ -138,13 +138,23 @@ export const useRepayAssets = function ({
             marketId,
           }),
           (old: MarketData | undefined) =>
-            old
-              ? {
+            old === undefined
+              ? old
+              : {
                   ...old,
-                  liquidity: old.liquidity + repayment.assets,
-                  totalBorrowAssets: old.totalBorrowAssets - repayment.assets,
-                }
-              : old,
+                  liquidity:
+                    old.liquidity +
+                    getEffectiveRepaymentAssets({
+                      assets: repayment.assets,
+                      totalBorrowAssets: old.totalBorrowAssets,
+                    }),
+                  totalBorrowAssets:
+                    old.totalBorrowAssets -
+                    getEffectiveRepaymentAssets({
+                      assets: repayment.assets,
+                      totalBorrowAssets: old.totalBorrowAssets,
+                    }),
+                },
         );
       });
 

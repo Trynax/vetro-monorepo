@@ -37,7 +37,8 @@ export const getRepayShares = function ({
     borrowShares !== undefined &&
     borrowShares > 0n &&
     loanTokenBalance !== undefined &&
-    loanTokenBalance >= borrowAssets &&
+    loanTokenBalance >=
+      borrowAssets + applyBps(borrowAssets, REPAYMENT_BUFFER_BPS) &&
     amount >= borrowAssets;
 
   return isFullRepayment ? borrowShares : undefined;
@@ -82,6 +83,14 @@ export const getRepayApprovalAmount = function ({
     ? bufferedAmount
     : minBigInt(bufferedAmount, loanTokenBalance);
 };
+
+export const getEffectiveRepaymentAssets = ({
+  assets,
+  totalBorrowAssets,
+}: {
+  assets: bigint;
+  totalBorrowAssets: bigint;
+}) => minBigInt(assets, totalBorrowAssets);
 
 export const getRepayPositionArgs = ({
   assets,
