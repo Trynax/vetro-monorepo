@@ -159,10 +159,6 @@ export const useStakeDeposit = function ({
         },
       );
 
-      emitter.on("approve-transaction-unknown", function () {
-        onStatusChange?.("approve-unknown");
-      });
-
       emitter.on(
         "approve-transaction-succeeded",
         function (receipt: TransactionReceipt) {
@@ -198,10 +194,6 @@ export const useStakeDeposit = function ({
 
       emitter.on("user-signing-deposit-error", function () {
         onStatusChange?.("deposit-failed");
-      });
-
-      emitter.on("deposit-transaction-unknown", function () {
-        onStatusChange?.("deposit-unknown");
       });
 
       emitter.on(

@@ -115,10 +115,6 @@ export const useStakeWithdraw = function ({
         );
       });
 
-      emitter.on("request-withdraw-transaction-unknown", function () {
-        onStatusChange?.("request-unknown");
-      });
-
       emitter.on(
         "request-withdraw-transaction-reverted",
         function (receipt: TransactionReceipt) {

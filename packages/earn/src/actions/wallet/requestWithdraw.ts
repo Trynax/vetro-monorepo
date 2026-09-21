@@ -133,11 +133,7 @@ const runRequestWithdraw = (
           hash: requestWithdrawHash,
         },
       ).catch(function (error: Error) {
-        emitter.emit(
-          "request-withdraw-transaction-unknown",
-          requestWithdrawHash,
-          error,
-        );
+        emitter.emit("request-withdraw-failed", error);
       });
 
       if (!requestWithdrawReceipt) {
