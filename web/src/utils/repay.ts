@@ -23,23 +23,24 @@ export const getRepayShares = function ({
   amount,
   borrowAssets,
   borrowShares,
+  isMaxRepayment,
   loanTokenBalance,
 }: {
   amount: bigint;
   borrowAssets: bigint | undefined;
   borrowShares: bigint | undefined;
+  isMaxRepayment: boolean;
   loanTokenBalance: bigint | undefined;
 }) {
   const isFullRepayment =
     amount > 0n &&
+    isMaxRepayment &&
     borrowAssets !== undefined &&
     borrowAssets > 0n &&
     borrowShares !== undefined &&
     borrowShares > 0n &&
     loanTokenBalance !== undefined &&
-    loanTokenBalance >=
-      borrowAssets + applyBps(borrowAssets, REPAYMENT_BUFFER_BPS) &&
-    amount >= borrowAssets;
+    loanTokenBalance >= borrowAssets;
 
   return isFullRepayment ? borrowShares : undefined;
 };

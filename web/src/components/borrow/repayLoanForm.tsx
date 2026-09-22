@@ -234,6 +234,7 @@ export function RepayLoanForm({ market, onClose }: Props) {
 
   const [repayInput, onRepayChange] = useAmount();
   const [flowStatus, setFlowStatus] = useState<RepayFlowStatus>("idle");
+  const [isMaxRepayment, setIsMaxRepayment] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [startedWithApproval, setStartedWithApproval] = useState(false);
 
@@ -275,10 +276,25 @@ export function RepayLoanForm({ market, onClose }: Props) {
     market: morphoMarket,
   });
 
+  const handleRepayChange = function (value: string) {
+    setIsMaxRepayment(false);
+    onRepayChange(value);
+  };
+
+  const handleMaxRepay = function () {
+    if (maxRepayable === undefined) {
+      return;
+    }
+
+    setIsMaxRepayment(true);
+    onRepayChange(formatUnits(maxRepayable, loanToken.decimals));
+  };
+
   const repayShares = getRepayShares({
     amount: repayAmountBigInt,
     borrowAssets: currentBorrowAssets,
     borrowShares: positionInfo?.borrowShares,
+    isMaxRepayment,
     loanTokenBalance: loanBalance,
   });
 
@@ -435,12 +451,10 @@ export function RepayLoanForm({ market, onClose }: Props) {
             maxButton={
               <MaxButton
                 disabled={maxRepayable === undefined}
-                onClick={() =>
-                  onRepayChange(formatUnits(maxRepayable!, loanToken.decimals))
-                }
+                onClick={handleMaxRepay}
               />
             }
-            onChange={onRepayChange}
+            onChange={handleRepayChange}
             tokenSelector={<TokenSelectorReadOnly {...loanToken} />}
             value={repayInput}
           />
