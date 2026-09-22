@@ -13,6 +13,7 @@ describe("getRepayShares", function () {
   const repayment = {
     borrowAssets: 1000n,
     borrowShares: 500n,
+    isMaxRepayment: true,
     loanTokenBalance: 1010n,
   };
 
@@ -30,18 +31,29 @@ describe("getRepayShares", function () {
       getRepayShares({
         ...repayment,
         amount: 995n,
+        isMaxRepayment: false,
       }),
     ).toBeUndefined();
   });
 
-  it("does not use shares when the wallet has no buffer headroom", function () {
+  it("keeps a manually entered full amount asset-based", function () {
+    expect(
+      getRepayShares({
+        ...repayment,
+        amount: 1000n,
+        isMaxRepayment: false,
+      }),
+    ).toBeUndefined();
+  });
+
+  it("uses shares when the wallet balance exactly covers the debt", function () {
     expect(
       getRepayShares({
         ...repayment,
         amount: 1000n,
         loanTokenBalance: 1000n,
       }),
-    ).toBeUndefined();
+    ).toBe(repayment.borrowShares);
   });
 
   it("does not use shares when the wallet cannot cover the debt", function () {
@@ -52,6 +64,16 @@ describe("getRepayShares", function () {
         loanTokenBalance: 999n,
       }),
     ).toBeUndefined();
+  });
+
+  it("keeps MAX on the share path when interest increases the debt", function () {
+    expect(
+      getRepayShares({
+        ...repayment,
+        amount: 1000n,
+        borrowAssets: 1001n,
+      }),
+    ).toBe(repayment.borrowShares);
   });
 });
 
