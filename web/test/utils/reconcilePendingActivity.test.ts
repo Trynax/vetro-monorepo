@@ -5,6 +5,7 @@ import type { Activity } from "../../src/components/base/activityList/types";
 import {
   getPendingActivitiesToReconcile,
   getPendingActivityStatus,
+  shouldMarkPendingActivityAsChecked,
 } from "../../src/utils/reconcilePendingActivity";
 
 const transactionHash =
@@ -172,5 +173,32 @@ describe("getPendingActivityStatus", function () {
       }),
     ).resolves.toBeUndefined();
     expect(getReceipt).not.toHaveBeenCalled();
+  });
+});
+
+describe("shouldMarkPendingActivityAsChecked", function () {
+  const now = 1_000;
+  const maxAge = 100;
+
+  it("marks stale activities after a failed receipt lookup", function () {
+    expect(
+      shouldMarkPendingActivityAsChecked({
+        activity: createActivity({ date: now - maxAge - 1 }),
+        maxAge,
+        now,
+        status: undefined,
+      }),
+    ).toBe(true);
+  });
+
+  it("keeps fresh activities eligible after a failed receipt lookup", function () {
+    expect(
+      shouldMarkPendingActivityAsChecked({
+        activity: createActivity({ date: now - maxAge + 1 }),
+        maxAge,
+        now,
+        status: undefined,
+      }),
+    ).toBe(false);
   });
 });

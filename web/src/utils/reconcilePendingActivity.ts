@@ -6,6 +6,8 @@ import {
 
 import type { Activity } from "../components/base/activityList/types";
 
+type PendingActivityStatus = "completed" | "failed" | null | undefined;
+
 export const getPendingActivitiesToReconcile = ({
   activities,
   checkedHashes,
@@ -25,6 +27,20 @@ export const getPendingActivitiesToReconcile = ({
       activity.page !== "bridge" &&
       (now - activity.date < maxAge || !checkedHashes.has(activity.txHash)),
   );
+
+// Fresh activities can retry transient lookup errors, but stale activities
+// should stop polling after their final lookup regardless of its result.
+export const shouldMarkPendingActivityAsChecked = ({
+  activity,
+  maxAge,
+  now,
+  status,
+}: {
+  activity: Activity;
+  maxAge: number;
+  now: number;
+  status: PendingActivityStatus;
+}) => status !== undefined || now - activity.date >= maxAge;
 
 type ReceiptReader = (
   hash: Hash,

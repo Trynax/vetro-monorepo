@@ -7,6 +7,7 @@ import { SECONDS_PER_DAY, unixNowTimestamp } from "../utils/date";
 import {
   getPendingActivitiesToReconcile,
   getPendingActivityStatus,
+  shouldMarkPendingActivityAsChecked,
 } from "../utils/reconcilePendingActivity";
 
 import { useEthereumClient } from "./useEthereumClient";
@@ -95,7 +96,14 @@ export function usePendingActivityReconciliation() {
               activity,
               status,
             }) {
-              if (status !== undefined) {
+              if (
+                shouldMarkPendingActivityAsChecked({
+                  activity,
+                  maxAge: pendingActivityMaxAge,
+                  now,
+                  status,
+                })
+              ) {
                 checkedHashesRef.current.add(activity.txHash);
               }
               if (status) {
