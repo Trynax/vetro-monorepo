@@ -43,6 +43,7 @@ import {
   getMaxRepayable,
   getRepayApprovalAmount,
   getRepayShares,
+  isFullMaxRepayment,
 } from "utils/repay";
 import { parseTokenUnits } from "utils/token";
 import { formatUnits } from "viem";
@@ -234,7 +235,8 @@ export function RepayLoanForm({ market, onClose }: Props) {
 
   const [repayInput, onRepayChange] = useAmount();
   const [flowStatus, setFlowStatus] = useState<RepayFlowStatus>("idle");
-  const [isMaxRepayment, setIsMaxRepayment] = useState(false);
+  const [isFullMaxRepaymentAtClick, setIsFullMaxRepaymentAtClick] =
+    useState(false);
   const [showToast, setShowToast] = useState(false);
   const [startedWithApproval, setStartedWithApproval] = useState(false);
 
@@ -277,7 +279,7 @@ export function RepayLoanForm({ market, onClose }: Props) {
   });
 
   const handleRepayChange = function (value: string) {
-    setIsMaxRepayment(false);
+    setIsFullMaxRepaymentAtClick(false);
     onRepayChange(value);
   };
 
@@ -286,7 +288,12 @@ export function RepayLoanForm({ market, onClose }: Props) {
       return;
     }
 
-    setIsMaxRepayment(true);
+    setIsFullMaxRepaymentAtClick(
+      isFullMaxRepayment({
+        currentBorrowAssets,
+        maxRepayable,
+      }),
+    );
     onRepayChange(formatUnits(maxRepayable, loanToken.decimals));
   };
 
@@ -294,7 +301,7 @@ export function RepayLoanForm({ market, onClose }: Props) {
     amount: repayAmountBigInt,
     borrowAssets: currentBorrowAssets,
     borrowShares: positionInfo?.borrowShares,
-    isMaxRepayment,
+    isMaxRepayment: isFullMaxRepaymentAtClick,
     loanTokenBalance: loanBalance,
   });
 

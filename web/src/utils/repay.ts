@@ -19,6 +19,17 @@ export const getCurrentBorrowAssets = function ({
   return market.toBorrowAssets(borrowShares);
 };
 
+export const isFullMaxRepayment = ({
+  currentBorrowAssets,
+  maxRepayable,
+}: {
+  maxRepayable: bigint | undefined;
+  currentBorrowAssets: bigint | undefined;
+}) =>
+  currentBorrowAssets !== undefined &&
+  maxRepayable !== undefined &&
+  maxRepayable >= currentBorrowAssets;
+
 export const getRepayShares = function ({
   amount,
   borrowAssets,
