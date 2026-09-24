@@ -7,7 +7,28 @@ import {
   getRepayApprovalAmount,
   getRepayPositionArgs,
   getRepayShares,
+  isFullMaxRepayment,
 } from "../../src/utils/repay";
+
+describe("isFullMaxRepayment", function () {
+  it("recognizes MAX when it covers the full debt", function () {
+    expect(
+      isFullMaxRepayment({
+        currentBorrowAssets: 1000n,
+        maxRepayable: 1000n,
+      }),
+    ).toBe(true);
+  });
+
+  it("does not treat a wallet-limited MAX as a full repayment", function () {
+    expect(
+      isFullMaxRepayment({
+        currentBorrowAssets: 1000n,
+        maxRepayable: 999n,
+      }),
+    ).toBe(false);
+  });
+});
 
 describe("getRepayShares", function () {
   const repayment = {
@@ -74,6 +95,23 @@ describe("getRepayShares", function () {
         borrowAssets: 1001n,
       }),
     ).toBe(repayment.borrowShares);
+  });
+
+  it("keeps a wallet-limited MAX asset-based after a debt refetch", function () {
+    const isFullMaxRepaymentAtClick = isFullMaxRepayment({
+      currentBorrowAssets: 1000n,
+      maxRepayable: 999n,
+    });
+
+    expect(
+      getRepayShares({
+        ...repayment,
+        amount: 999n,
+        borrowAssets: 999n,
+        isMaxRepayment: isFullMaxRepaymentAtClick,
+        loanTokenBalance: 999n,
+      }),
+    ).toBeUndefined();
   });
 });
 
