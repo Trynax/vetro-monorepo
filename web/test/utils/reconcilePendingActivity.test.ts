@@ -1,15 +1,22 @@
-import { TransactionReceiptNotFoundError, type Hash } from "viem";
-import { describe, expect, it, vi } from "vitest";
+import { TransactionReceiptNotFoundError, type Client, type Hash } from "viem";
+import { getTransactionReceipt } from "viem/actions";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Activity } from "../../src/components/base/activityList/types";
 import {
+  createPendingActivityStatus,
   getPendingActivitiesToReconcile,
-  getPendingActivityStatus,
   shouldMarkPendingActivityAsChecked,
 } from "../../src/utils/reconcilePendingActivity";
 
+vi.mock("viem/actions", () => ({
+  getTransactionReceipt: vi.fn(),
+}));
+
 const transactionHash =
   "0x0000000000000000000000000000000000000000000000000000000000000001" as Hash;
+const publicClient = { chain: { id: 1 } } as unknown as Client;
+const getPendingActivityStatus = createPendingActivityStatus(publicClient);
 
 const createActivity = (overrides: Partial<Activity> = {}): Activity => ({
   date: 0,
@@ -102,77 +109,66 @@ describe("getPendingActivitiesToReconcile", function () {
 });
 
 describe("getPendingActivityStatus", function () {
-  it("maps a successful receipt to a completed activity", async function () {
-    const getReceipt = vi.fn(async () => ({ status: "success" as const }));
+  beforeEach(function resetMocks() {
+    vi.clearAllMocks();
+  });
 
-    await expect(
-      getPendingActivityStatus({
-        activity: createActivity(),
-        getReceipt,
-      }),
-    ).resolves.toBe("completed");
-    expect(getReceipt).toHaveBeenCalledExactlyOnceWith(transactionHash);
+  it("maps a successful receipt to a completed activity", async function () {
+    vi.mocked(getTransactionReceipt).mockResolvedValue({
+      status: "success",
+    } as never);
+
+    await expect(getPendingActivityStatus(createActivity())).resolves.toBe(
+      "completed",
+    );
+    expect(getTransactionReceipt).toHaveBeenCalledExactlyOnceWith(
+      publicClient,
+      { hash: transactionHash },
+    );
   });
 
   it("maps a reverted receipt to a failed activity", async function () {
-    const getReceipt = vi.fn(async () => ({ status: "reverted" as const }));
+    vi.mocked(getTransactionReceipt).mockResolvedValue({
+      status: "reverted",
+    } as never);
 
-    await expect(
-      getPendingActivityStatus({
-        activity: createActivity(),
-        getReceipt,
-      }),
-    ).resolves.toBe("failed");
+    await expect(getPendingActivityStatus(createActivity())).resolves.toBe(
+      "failed",
+    );
   });
 
   it("keeps an activity pending when no receipt is available", async function () {
-    const getReceipt = vi
-      .fn()
-      .mockRejectedValue(
-        new TransactionReceiptNotFoundError({ hash: transactionHash }),
-      );
+    vi.mocked(getTransactionReceipt).mockRejectedValue(
+      new TransactionReceiptNotFoundError({ hash: transactionHash }),
+    );
 
     await expect(
-      getPendingActivityStatus({
-        activity: createActivity(),
-        getReceipt,
-      }),
+      getPendingActivityStatus(createActivity()),
     ).resolves.toBeNull();
   });
 
-  it("does not mark an activity as checked when the receipt lookup fails", async function () {
-    const getReceipt = vi.fn().mockRejectedValue(new Error("RPC unavailable"));
+  it("rethrows errors when the receipt lookup fails", async function () {
+    vi.mocked(getTransactionReceipt).mockRejectedValue(
+      new Error("RPC unavailable"),
+    );
 
-    await expect(
-      getPendingActivityStatus({
-        activity: createActivity(),
-        getReceipt,
-      }),
-    ).resolves.toBeUndefined();
+    await expect(getPendingActivityStatus(createActivity())).rejects.toThrow(
+      "RPC unavailable",
+    );
   });
 
   it("does not reconcile bridge activities", async function () {
-    const getReceipt = vi.fn(async () => ({ status: "success" as const }));
-
     await expect(
-      getPendingActivityStatus({
-        activity: createActivity({ page: "bridge" }),
-        getReceipt,
-      }),
+      getPendingActivityStatus(createActivity({ page: "bridge" })),
     ).resolves.toBeUndefined();
-    expect(getReceipt).not.toHaveBeenCalled();
+    expect(getTransactionReceipt).not.toHaveBeenCalled();
   });
 
   it("does not reconcile activities that are no longer pending", async function () {
-    const getReceipt = vi.fn(async () => ({ status: "success" as const }));
-
     await expect(
-      getPendingActivityStatus({
-        activity: createActivity({ status: "completed" }),
-        getReceipt,
-      }),
+      getPendingActivityStatus(createActivity({ status: "completed" })),
     ).resolves.toBeUndefined();
-    expect(getReceipt).not.toHaveBeenCalled();
+    expect(getTransactionReceipt).not.toHaveBeenCalled();
   });
 });
 

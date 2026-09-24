@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useRef } from "react";
-import { getTransactionReceipt } from "viem/actions";
+import { useQueries } from "@tanstack/react-query";
+import { useMemo, useRef, useState } from "react";
 import { useAccount } from "wagmi";
 
 import { updateActivity, useActivities } from "../stores/activityStore";
 import { SECONDS_PER_DAY, unixNowTimestamp } from "../utils/date";
 import {
+  createPendingActivityStatus,
   getPendingActivitiesToReconcile,
-  getPendingActivityStatus,
   shouldMarkPendingActivityAsChecked,
 } from "../utils/reconcilePendingActivity";
 
@@ -15,11 +15,19 @@ import { useEthereumClient } from "./useEthereumClient";
 const pendingActivityPollInterval = 10_000;
 const pendingActivityMaxAge = SECONDS_PER_DAY;
 
+type PendingActivityStatus = "completed" | "failed" | null | undefined;
+
 export function usePendingActivityReconciliation() {
   const { address } = useAccount();
   const activities = useActivities(address);
-  const client = useEthereumClient();
+  const publicClient = useEthereumClient();
   const checkedHashesRef = useRef(new Set<string>());
+  const [checkedHashVersion, setCheckedHashVersion] = useState(0);
+  const getPendingActivityStatus = useMemo(
+    () =>
+      publicClient ? createPendingActivityStatus(publicClient) : undefined,
+    [publicClient],
+  );
 
   // Bridge transactions can start on several chains, and source confirmation
   // does not mean that the bridged funds have arrived. They need separate
@@ -32,114 +40,72 @@ export function usePendingActivityReconciliation() {
         maxAge: pendingActivityMaxAge,
         now: unixNowTimestamp(),
       }),
-    [activities],
-  );
-  const pendingActivitiesRef = useRef(pendingActivities);
-  pendingActivitiesRef.current = pendingActivities;
-  const pendingActivityHashes = useMemo(
-    () => pendingActivities.map(({ txHash }) => txHash).join(","),
-    [pendingActivities],
+    [activities, checkedHashVersion],
   );
 
-  useEffect(
-    function reconcilePendingActivities() {
-      if (!address || !client || pendingActivities.length === 0) {
-        return undefined;
-      }
+  function markStaleActivityAsChecked({
+    activity,
+    now,
+    status,
+  }: {
+    activity: (typeof pendingActivities)[number];
+    now: number;
+    status: PendingActivityStatus;
+  }) {
+    if (
+      now - activity.date < pendingActivityMaxAge ||
+      !shouldMarkPendingActivityAsChecked({
+        activity,
+        maxAge: pendingActivityMaxAge,
+        now,
+        status,
+      }) ||
+      checkedHashesRef.current.has(activity.txHash)
+    ) {
+      return;
+    }
 
-      const account = address;
-      const publicClient = client;
-      let isActive = true;
-      let isChecking = false;
-      let intervalId: ReturnType<typeof setInterval> | undefined = undefined;
+    checkedHashesRef.current.add(activity.txHash);
+    setCheckedHashVersion((version) => version + 1);
+  }
 
-      async function reconcile() {
-        if (!isActive || isChecking) {
-          return;
+  useQueries({
+    queries: pendingActivities.map((activity) => ({
+      enabled: Boolean(address && publicClient),
+      queryFn: async function reconcileActivity() {
+        const now = unixNowTimestamp();
+
+        if (!getPendingActivityStatus) {
+          return null;
         }
 
-        isChecking = true;
         try {
-          const now = unixNowTimestamp();
-          const activitiesToReconcile = getPendingActivitiesToReconcile({
-            activities: pendingActivitiesRef.current,
-            checkedHashes: checkedHashesRef.current,
-            maxAge: pendingActivityMaxAge,
+          const status = await getPendingActivityStatus(activity);
+
+          markStaleActivityAsChecked({ activity, now, status });
+
+          if (status) {
+            updateActivity(address!, activity.txHash, { status });
+          }
+
+          return status ?? null;
+        } catch (error) {
+          markStaleActivityAsChecked({
+            activity,
             now,
+            status: undefined,
           });
-
-          pendingActivitiesRef.current = activitiesToReconcile;
-
-          if (activitiesToReconcile.length === 0) {
-            if (intervalId) {
-              clearInterval(intervalId);
-            }
-            return;
-          }
-
-          const reconciledActivities = await Promise.all(
-            activitiesToReconcile.map(
-              async function reconcileActivity(activity) {
-                const status = await getPendingActivityStatus({
-                  activity,
-                  getReceipt: (hash) =>
-                    getTransactionReceipt(publicClient, { hash }),
-                });
-
-                return { activity, status };
-              },
-            ),
-          );
-
-          if (isActive) {
-            reconciledActivities.forEach(function updateReconciledActivity({
-              activity,
-              status,
-            }) {
-              if (
-                shouldMarkPendingActivityAsChecked({
-                  activity,
-                  maxAge: pendingActivityMaxAge,
-                  now,
-                  status,
-                })
-              ) {
-                checkedHashesRef.current.add(activity.txHash);
-              }
-              if (status) {
-                updateActivity(account, activity.txHash, { status });
-              }
-            });
-
-            pendingActivitiesRef.current = getPendingActivitiesToReconcile({
-              activities: pendingActivitiesRef.current,
-              checkedHashes: checkedHashesRef.current,
-              maxAge: pendingActivityMaxAge,
-              now: unixNowTimestamp(),
-            });
-
-            if (pendingActivitiesRef.current.length === 0 && intervalId) {
-              clearInterval(intervalId);
-            }
-          }
-        } finally {
-          isChecking = false;
+          throw error;
         }
-      }
-
-      intervalId = setInterval(
-        () => void reconcile(),
-        pendingActivityPollInterval,
-      );
-      void reconcile();
-
-      return function cleanup() {
-        isActive = false;
-        if (intervalId) {
-          clearInterval(intervalId);
-        }
-      };
-    },
-    [address, client, pendingActivityHashes],
-  );
+      },
+      queryKey: ["pending-activity-reconciliation", address, activity.txHash],
+      refetchInterval: () =>
+        unixNowTimestamp() - activity.date >= pendingActivityMaxAge &&
+        checkedHashesRef.current.has(activity.txHash)
+          ? false
+          : pendingActivityPollInterval,
+      refetchIntervalInBackground: true,
+      retry: false,
+    })),
+  });
 }

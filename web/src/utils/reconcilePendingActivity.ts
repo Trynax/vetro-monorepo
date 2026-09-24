@@ -1,8 +1,5 @@
-import {
-  type Hash,
-  TransactionReceiptNotFoundError,
-  type TransactionReceipt,
-} from "viem";
+import { type Hash, TransactionReceiptNotFoundError, type Client } from "viem";
+import { getTransactionReceipt } from "viem/actions";
 
 import type { Activity } from "../components/base/activityList/types";
 
@@ -42,33 +39,28 @@ export const shouldMarkPendingActivityAsChecked = ({
   status: PendingActivityStatus;
 }) => status !== undefined || now - activity.date >= maxAge;
 
-type ReceiptReader = (
-  hash: Hash,
-) => Promise<Pick<TransactionReceipt, "status">>;
-
-export async function getPendingActivityStatus({
-  activity,
-  getReceipt,
-}: {
-  activity: Activity;
-  getReceipt: ReceiptReader;
-}): Promise<"completed" | "failed" | null | undefined> {
-  if (activity.status !== "pending" || activity.page === "bridge") {
-    return undefined;
-  }
-
-  try {
-    const receipt = await getReceipt(activity.txHash as Hash);
-    return receipt.status === "success" ? "completed" : "failed";
-  } catch (error) {
-    if (error instanceof TransactionReceiptNotFoundError) {
-      // A missing receipt means the transaction is still pending. The lookup
-      // completed, so stale activities do not need to be checked again.
-      return null;
+export const createPendingActivityStatus = (publicClient: Client) =>
+  async function getPendingActivityStatus(
+    activity: Activity,
+  ): Promise<"completed" | "failed" | null | undefined> {
+    if (activity.status !== "pending" || activity.page === "bridge") {
+      return undefined;
     }
 
-    // Keep the activity eligible for another attempt when the RPC is
-    // temporarily unavailable.
-    return undefined;
-  }
-}
+    try {
+      const receipt = await getTransactionReceipt(publicClient, {
+        hash: activity.txHash as Hash,
+      });
+      return receipt.status === "success" ? "completed" : "failed";
+    } catch (error) {
+      if (error instanceof TransactionReceiptNotFoundError) {
+        // A missing receipt means the transaction is still pending. The lookup
+        // completed, so stale activities do not need to be checked again.
+        return null;
+      }
+
+      // Let React Query handle the failed lookup so the activity remains
+      // eligible for another polling attempt.
+      throw error;
+    }
+  };
