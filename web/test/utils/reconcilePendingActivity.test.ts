@@ -1,4 +1,4 @@
-import { TransactionReceiptNotFoundError, type Client, type Hash } from "viem";
+import { type Client, type Hash, TransactionReceiptNotFoundError } from "viem";
 import { getTransactionReceipt } from "viem/actions";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -6,7 +6,7 @@ import type { Activity } from "../../src/components/base/activityList/types";
 import {
   createPendingActivityStatus,
   getPendingActivitiesToReconcile,
-  shouldMarkPendingActivityAsChecked,
+  shouldStopPendingActivityPolling,
 } from "../../src/utils/reconcilePendingActivity";
 
 vi.mock("viem/actions", () => ({
@@ -29,82 +29,16 @@ const createActivity = (overrides: Partial<Activity> = {}): Activity => ({
 });
 
 describe("getPendingActivitiesToReconcile", function () {
-  const now = 1_000;
-  const maxAge = 100;
-
-  it("includes fresh pending activities", function () {
-    const activity = createActivity({ date: now - maxAge + 1 });
-
-    expect(
-      getPendingActivitiesToReconcile({
-        activities: [activity],
-        checkedHashes: new Set([activity.txHash]),
-        maxAge,
-        now,
-      }),
-    ).toEqual([activity]);
-  });
-
-  it("includes a stale activity until it has been checked", function () {
-    const activity = createActivity({ date: now - maxAge - 1 });
-
-    expect(
-      getPendingActivitiesToReconcile({
-        activities: [activity],
-        checkedHashes: new Set(),
-        maxAge,
-        now,
-      }),
-    ).toEqual([activity]);
-  });
-
-  it("excludes a stale activity after it has been checked", function () {
-    const activity = createActivity({ date: now - maxAge - 1 });
-
-    expect(
-      getPendingActivitiesToReconcile({
-        activities: [activity],
-        checkedHashes: new Set([activity.txHash]),
-        maxAge,
-        now,
-      }),
-    ).toEqual([]);
-  });
-
-  it("applies the cutoff using the current time", function () {
-    const activity = createActivity({ date: now - maxAge + 1 });
-    const checkedHashes = new Set([activity.txHash]);
-
-    expect(
-      getPendingActivitiesToReconcile({
-        activities: [activity],
-        checkedHashes,
-        maxAge,
-        now,
-      }),
-    ).toEqual([activity]);
-    expect(
-      getPendingActivitiesToReconcile({
-        activities: [activity],
-        checkedHashes,
-        maxAge,
-        now: now + 2,
-      }),
-    ).toEqual([]);
-  });
-
-  it("excludes completed and bridge activities", function () {
+  it("includes pending non-bridge activities", function () {
+    const activity = createActivity();
     const completedActivity = createActivity({ status: "completed" });
     const bridgeActivity = createActivity({ page: "bridge" });
 
     expect(
       getPendingActivitiesToReconcile({
-        activities: [completedActivity, bridgeActivity],
-        checkedHashes: new Set(),
-        maxAge,
-        now,
+        activities: [activity, completedActivity, bridgeActivity],
       }),
-    ).toEqual([]);
+    ).toEqual([activity]);
   });
 });
 
@@ -172,28 +106,42 @@ describe("getPendingActivityStatus", function () {
   });
 });
 
-describe("shouldMarkPendingActivityAsChecked", function () {
+describe("shouldStopPendingActivityPolling", function () {
   const now = 1_000;
   const maxAge = 100;
 
-  it("marks stale activities after a failed receipt lookup", function () {
+  it("stops stale activities after a missing receipt", function () {
     expect(
-      shouldMarkPendingActivityAsChecked({
+      shouldStopPendingActivityPolling({
         activity: createActivity({ date: now - maxAge - 1 }),
+        data: null,
+        error: null,
         maxAge,
         now,
-        status: undefined,
       }),
     ).toBe(true);
   });
 
-  it("keeps fresh activities eligible after a failed receipt lookup", function () {
+  it("stops stale activities after an RPC error", function () {
     expect(
-      shouldMarkPendingActivityAsChecked({
-        activity: createActivity({ date: now - maxAge + 1 }),
+      shouldStopPendingActivityPolling({
+        activity: createActivity({ date: now - maxAge - 1 }),
+        data: undefined,
+        error: new Error("RPC unavailable"),
         maxAge,
         now,
-        status: undefined,
+      }),
+    ).toBe(true);
+  });
+
+  it("keeps fresh activities polling after an RPC error", function () {
+    expect(
+      shouldStopPendingActivityPolling({
+        activity: createActivity({ date: now - maxAge + 1 }),
+        data: undefined,
+        error: new Error("RPC unavailable"),
+        maxAge,
+        now,
       }),
     ).toBe(false);
   });

@@ -1,43 +1,32 @@
-import { type Hash, TransactionReceiptNotFoundError, type Client } from "viem";
+import { type Client, type Hash, TransactionReceiptNotFoundError } from "viem";
 import { getTransactionReceipt } from "viem/actions";
 
 import type { Activity } from "../components/base/activityList/types";
 
-type PendingActivityStatus = "completed" | "failed" | null | undefined;
-
 export const getPendingActivitiesToReconcile = ({
   activities,
-  checkedHashes,
-  maxAge,
-  now,
 }: {
   activities: Activity[];
-  checkedHashes: ReadonlySet<string>;
-  maxAge: number;
-  now: number;
 }) =>
-  // Give persisted activities one receipt lookup after a new session starts,
-  // even when they are already older than the polling cutoff.
   activities.filter(
-    (activity) =>
-      activity.status === "pending" &&
-      activity.page !== "bridge" &&
-      (now - activity.date < maxAge || !checkedHashes.has(activity.txHash)),
+    (activity) => activity.status === "pending" && activity.page !== "bridge",
   );
 
 // Fresh activities can retry transient lookup errors, but stale activities
 // should stop polling after their final lookup regardless of its result.
-export const shouldMarkPendingActivityAsChecked = ({
+export const shouldStopPendingActivityPolling = ({
   activity,
+  data,
+  error,
   maxAge,
   now,
-  status,
 }: {
   activity: Activity;
+  data: unknown;
+  error: unknown;
   maxAge: number;
   now: number;
-  status: PendingActivityStatus;
-}) => status !== undefined || now - activity.date >= maxAge;
+}) => now - activity.date >= maxAge && (data !== undefined || error !== null);
 
 export const createPendingActivityStatus = (publicClient: Client) =>
   async function getPendingActivityStatus(

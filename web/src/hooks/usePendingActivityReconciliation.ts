@@ -1,31 +1,24 @@
-import { useQueries } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
-import { useAccount } from "wagmi";
-
-import { updateActivity, useActivities } from "../stores/activityStore";
-import { SECONDS_PER_DAY, unixNowTimestamp } from "../utils/date";
+import { type Query, useQueries } from "@tanstack/react-query";
+import { useEthereumClient } from "hooks/useEthereumClient";
+import { useMemo } from "react";
+import { updateActivity, useActivities } from "stores/activityStore";
+import { SECONDS_PER_DAY, unixNowTimestamp } from "utils/date";
 import {
   createPendingActivityStatus,
   getPendingActivitiesToReconcile,
-  shouldMarkPendingActivityAsChecked,
-} from "../utils/reconcilePendingActivity";
-
-import { useEthereumClient } from "./useEthereumClient";
+  shouldStopPendingActivityPolling,
+} from "utils/reconcilePendingActivity";
+import { useAccount } from "wagmi";
 
 const pendingActivityPollInterval = 10_000;
 const pendingActivityMaxAge = SECONDS_PER_DAY;
-
-type PendingActivityStatus = "completed" | "failed" | null | undefined;
 
 export function usePendingActivityReconciliation() {
   const { address } = useAccount();
   const activities = useActivities(address);
   const publicClient = useEthereumClient();
-  const checkedHashesRef = useRef(new Set<string>());
-  const [checkedHashVersion, setCheckedHashVersion] = useState(0);
   const getPendingActivityStatus = useMemo(
-    () =>
-      publicClient ? createPendingActivityStatus(publicClient) : undefined,
+    () => createPendingActivityStatus(publicClient!),
     [publicClient],
   );
 
@@ -33,78 +26,36 @@ export function usePendingActivityReconciliation() {
   // does not mean that the bridged funds have arrived. They need separate
   // delivery tracking.
   const pendingActivities = useMemo(
-    () =>
-      getPendingActivitiesToReconcile({
-        activities,
-        checkedHashes: checkedHashesRef.current,
-        maxAge: pendingActivityMaxAge,
-        now: unixNowTimestamp(),
-      }),
-    [activities, checkedHashVersion],
+    () => getPendingActivitiesToReconcile({ activities }),
+    [activities],
   );
-
-  function markStaleActivityAsChecked({
-    activity,
-    now,
-    status,
-  }: {
-    activity: (typeof pendingActivities)[number];
-    now: number;
-    status: PendingActivityStatus;
-  }) {
-    if (
-      now - activity.date < pendingActivityMaxAge ||
-      !shouldMarkPendingActivityAsChecked({
-        activity,
-        maxAge: pendingActivityMaxAge,
-        now,
-        status,
-      }) ||
-      checkedHashesRef.current.has(activity.txHash)
-    ) {
-      return;
-    }
-
-    checkedHashesRef.current.add(activity.txHash);
-    setCheckedHashVersion((version) => version + 1);
-  }
 
   useQueries({
     queries: pendingActivities.map((activity) => ({
       enabled: Boolean(address && publicClient),
       queryFn: async function reconcileActivity() {
-        const now = unixNowTimestamp();
+        const status = await getPendingActivityStatus(activity);
 
-        if (!getPendingActivityStatus) {
-          return null;
+        if (status) {
+          updateActivity(address!, activity.txHash, { status });
         }
 
-        try {
-          const status = await getPendingActivityStatus(activity);
-
-          markStaleActivityAsChecked({ activity, now, status });
-
-          if (status) {
-            updateActivity(address!, activity.txHash, { status });
-          }
-
-          return status ?? null;
-        } catch (error) {
-          markStaleActivityAsChecked({
-            activity,
-            now,
-            status: undefined,
-          });
-          throw error;
-        }
+        return status ?? null;
       },
       queryKey: ["pending-activity-reconciliation", address, activity.txHash],
-      refetchInterval: () =>
-        unixNowTimestamp() - activity.date >= pendingActivityMaxAge &&
-        checkedHashesRef.current.has(activity.txHash)
+      refetchInterval: (query: Query) =>
+        shouldStopPendingActivityPolling({
+          activity,
+          data: query.state.data,
+          error: query.state.error,
+          maxAge: pendingActivityMaxAge,
+          now: unixNowTimestamp(),
+        })
           ? false
           : pendingActivityPollInterval,
       refetchIntervalInBackground: true,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
       retry: false,
     })),
   });
