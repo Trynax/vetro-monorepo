@@ -9,6 +9,7 @@ import ReactDOM from "react-dom/client";
 
 import { App } from "./app";
 import { AddressRestriction } from "./components/addressRestriction";
+import { PendingActivityReconciliation } from "./components/pendingActivityReconciliation";
 import { Web3Provider } from "./providers/web3Provider";
 
 initializeI18n();
@@ -35,6 +36,7 @@ ReactDOM.createRoot(document.getElementById("root")!, {
   <React.StrictMode>
     <Web3Provider>
       <AddressRestriction />
+      <PendingActivityReconciliation />
       <App />
     </Web3Provider>
   </React.StrictMode>,
