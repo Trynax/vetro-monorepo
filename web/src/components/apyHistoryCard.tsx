@@ -39,7 +39,7 @@ export function ApyHistoryCard({
   peggedTokenError = false,
 }: Props) {
   const { i18n, t } = useTranslation();
-  const [period, setPeriod] = useState<ChartPeriod>("1w");
+  const [period, setPeriod] = useState<ChartPeriod>("1m");
   const [chartContainerRef, chartWidth] = useElementWidth();
   const {
     data: chartData,

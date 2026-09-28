@@ -60,7 +60,7 @@ export function ShareRatioCard({
   peggedTokenError = false,
 }: Props) {
   const { i18n, t } = useTranslation();
-  const [period, setPeriod] = useState<ChartPeriod>("1w");
+  const [period, setPeriod] = useState<ChartPeriod>("3m");
   const [chartContainerRef, chartWidth] = useElementWidth();
   const {
     data: chartData,
