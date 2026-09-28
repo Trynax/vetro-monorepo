@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { formatEvmAddress, formatPercentage } from "../../src/utils/format";
+import {
+  formatEvmAddress,
+  formatPercentage,
+  formatPercentageTick,
+} from "../../src/utils/format";
 
 describe("utils/format", function () {
   describe("formatEvmAddress", function () {
@@ -74,6 +78,18 @@ describe("utils/format", function () {
 
     it("should format percentage with high precision correctly", function () {
       expect(formatPercentage(99.999999)).toBe("100.00%");
+    });
+  });
+
+  describe("formatPercentageTick", function () {
+    it("should format integer percentage without decimals", function () {
+      expect(formatPercentageTick(0)).toBe("0%");
+      expect(formatPercentageTick(60)).toBe("60%");
+    });
+
+    it("should keep up to two decimals", function () {
+      expect(formatPercentageTick(2.5)).toBe("2.5%");
+      expect(formatPercentageTick(1.234)).toBe("1.23%");
     });
   });
 });

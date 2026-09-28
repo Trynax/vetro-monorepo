@@ -12,10 +12,19 @@ import {
 import { formatShortDate } from "utils/date";
 import { VictoryAxis, VictoryChart } from "victory";
 
+type ChartAxisProps = {
+  padding?: typeof chartPadding;
+  yTickFormat?: (tick: number) => string;
+  yTickValues?: number[];
+};
+
 function EmptyChart({
   chartWidth,
+  padding = chartPadding,
   period,
-}: {
+  yTickFormat = () => "",
+  yTickValues,
+}: ChartAxisProps & {
   chartWidth: number;
   period: ChartPeriod;
 }) {
@@ -24,7 +33,7 @@ function EmptyChart({
   return (
     <VictoryChart
       height={chartHeight}
-      padding={chartPadding}
+      padding={padding}
       width={chartWidth || undefined}
     >
       <VictoryAxis
@@ -34,7 +43,12 @@ function EmptyChart({
         }
         tickValues={getPlaceholderXTicks(period)}
       />
-      <VictoryAxis dependentAxis style={yAxisStyle} tickFormat={() => ""} />
+      <VictoryAxis
+        dependentAxis
+        style={yAxisStyle}
+        tickFormat={yTickFormat}
+        tickValues={yTickValues}
+      />
     </VictoryChart>
   );
 }
@@ -43,9 +57,12 @@ export function ChartPlaceholder({
   chartWidth,
   isError,
   onReload,
+  padding = chartPadding,
   period,
   skeleton,
-}: {
+  yTickFormat,
+  yTickValues,
+}: ChartAxisProps & {
   chartWidth: number;
   isError: boolean;
   onReload: () => void;
@@ -57,8 +74,14 @@ export function ChartPlaceholder({
   if (!isError) {
     return (
       <div className="relative">
-        <EmptyChart chartWidth={chartWidth} period={period} />
-        <div className="absolute" style={chartPadding}>
+        <EmptyChart
+          chartWidth={chartWidth}
+          padding={padding}
+          period={period}
+          yTickFormat={yTickFormat}
+          yTickValues={yTickValues}
+        />
+        <div className="absolute" style={padding}>
           {skeleton}
         </div>
       </div>
@@ -68,11 +91,17 @@ export function ChartPlaceholder({
   return (
     <div className="relative">
       <div className="opacity-32">
-        <EmptyChart chartWidth={chartWidth} period={period} />
+        <EmptyChart
+          chartWidth={chartWidth}
+          padding={padding}
+          period={period}
+          yTickFormat={yTickFormat}
+          yTickValues={yTickValues}
+        />
       </div>
       <div
         className="absolute flex items-center justify-center"
-        style={chartPadding}
+        style={padding}
       >
         <Button onClick={onReload} size="xSmall" variant="primary">
           <span className="opacity-72">
