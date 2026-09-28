@@ -40,6 +40,11 @@ import {
   writeContract,
 } from "viem/actions";
 import { mainnet } from "viem/chains";
+import {
+  defaultAdmin,
+  grantRole,
+  hasRole,
+} from "viem-oz-access-control/actions";
 
 import { type GlobalOptions } from "../../src/lib/client.ts";
 import { printError } from "../../src/lib/output.ts";
@@ -301,9 +306,6 @@ const confirmWrite = async function ({
 };
 
 const treasuryAbi = parseAbi([
-  "function defaultAdmin() view returns (address)",
-  "function grantRole(bytes32 role, address account)",
-  "function hasRole(bytes32 role, address account) view returns (bool)",
   "function setDepositActive(address token, bool active)",
   "function setWithdrawActive(address token, bool active)",
 ]);
@@ -332,11 +334,7 @@ const setTokenActive = async function ({
     functionName: "treasury",
   });
   const [admin, keeperRole] = await Promise.all([
-    readContract(publicClient, {
-      abi: treasuryAbi,
-      address: treasury,
-      functionName: "defaultAdmin",
-    }),
+    defaultAdmin(publicClient, { address: treasury }),
     getKeeperRole(publicClient, { address: treasury }),
   ]);
 
@@ -344,22 +342,22 @@ const setTokenActive = async function ({
   await setBalance(testClient, { address: admin, value: parseEther("1") });
 
   try {
-    const isKeeper = await readContract(publicClient, {
-      abi: treasuryAbi,
+    const isKeeper = await hasRole(publicClient, {
+      account: admin,
       address: treasury,
-      args: [keeperRole, admin],
-      functionName: "hasRole",
+      role: keeperRole,
     });
     if (!isKeeper) {
       await confirmWrite({
         client: publicClient,
-        hash: await writeContract(testClient, {
-          abi: treasuryAbi,
-          account: admin,
-          address: treasury,
-          args: [keeperRole, admin],
-          functionName: "grantRole",
-        }),
+        hash: await grantRole(
+          createWalletClient({
+            account: admin,
+            chain: mainnet,
+            transport: http(rpcUrl),
+          }),
+          { account: admin, address: treasury, role: keeperRole },
+        ),
       });
     }
     await confirmWrite({
@@ -404,32 +402,28 @@ const impersonateMaintainer = async function ({
     }),
     getTreasury(publicClient, { address: gateway }),
   ]);
-  const admin = await readContract(publicClient, {
-    abi: treasuryAbi,
-    address: treasury,
-    functionName: "defaultAdmin",
-  });
+  const admin = await defaultAdmin(publicClient, { address: treasury });
 
   await impersonateAccount(testClient, { address: admin });
   await setBalance(testClient, { address: admin, value: parseEther("1") });
 
   try {
-    const isMaintainer = await readContract(publicClient, {
-      abi: treasuryAbi,
+    const isMaintainer = await hasRole(publicClient, {
+      account: admin,
       address: treasury,
-      args: [maintainerRole, admin],
-      functionName: "hasRole",
+      role: maintainerRole,
     });
     if (!isMaintainer) {
       await confirmWrite({
         client: publicClient,
-        hash: await writeContract(testClient, {
-          abi: treasuryAbi,
-          account: admin,
-          address: treasury,
-          args: [maintainerRole, admin],
-          functionName: "grantRole",
-        }),
+        hash: await grantRole(
+          createWalletClient({
+            account: admin,
+            chain: mainnet,
+            transport: http(rpcUrl),
+          }),
+          { account: admin, address: treasury, role: maintainerRole },
+        ),
       });
     }
   } catch (error) {

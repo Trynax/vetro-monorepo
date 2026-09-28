@@ -272,6 +272,9 @@ importers:
       viem-erc4626:
         specifier: 1.0.0
         version: 1.0.0(viem-erc20@2.2.0(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5)))(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))
+      viem-oz-access-control:
+        specifier: 1.0.0
+        version: 1.0.0(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))
       vitest:
         specifier: 4.1.9
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@24.1.0)(@vitest/coverage-v8@4.1.9)(vite@8.0.13(@types/node@24.1.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.4))
@@ -626,6 +629,9 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      viem-oz-access-control:
+        specifier: 1.0.0
+        version: 1.0.0(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))
       vite:
         specifier: 8.0.13
         version: 8.0.13(@types/node@24.1.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.4)
@@ -8485,6 +8491,12 @@ packages:
       viem: ^2.x
       viem-erc20: ^2.x
       viem-erc4626: ^1.x
+
+  viem-oz-access-control@1.0.0:
+    resolution: {integrity: sha512-w14gagTcCn537URxm36yuQ6ODGDTHCqIMZjfTIs6jYZcGxjW3Efi6JisdiEqzZhU5iPmzQhEDE/kvh5as2AJsQ==, tarball: https://registry.npmjs.org/viem-oz-access-control/-/viem-oz-access-control-1.0.0.tgz}
+    engines: {node: '>=24.0.0'}
+    peerDependencies:
+      viem: ^2.x
 
   viem@2.23.2:
     resolution: {integrity: sha512-NVmW/E0c5crMOtbEAqMF0e3NmvQykFXhLOc/CkLIXOlzHSA6KXVz3CYVmaKqBF8/xtjsjHAGjdJN3Ru1kFJLaA==, tarball: https://registry.npmjs.org/viem/-/viem-2.23.2.tgz}
@@ -18849,6 +18861,10 @@ snapshots:
       viem: 2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5)
       viem-erc20: 2.2.0(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))
       viem-erc4626: 1.0.0(viem-erc20@2.2.0(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5)))(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))
+
+  viem-oz-access-control@1.0.0(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5)):
+    dependencies:
+      viem: 2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5)
 
   viem@2.23.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76):
     dependencies:
