@@ -35,6 +35,26 @@ Where the active instances come from:
 
 **Exit ticket** — An unstake request sitting in cooldown on Earn. States: cooldown → ready → withdrawn (or cancelled if the ticket is deleted). Deleting puts funds back to staked.
 
+**Target-yield vault** — An ERC-8416 vault that takes a pegged token and pays a target rate for a fixed term (Earn → Target Yield). Deposits and withdrawals are asynchronous (ERC-7540). Canonical instance `VUSDx`, over `VUSD`.
+
+**Keeper** — An off-chain operator on the vault's keeper list. It starts each epoch and fulfills deposit and withdrawal requests. Users must wait for it before they can claim.
+
+**Epoch** — One fixed-rate term of a target-yield vault. It has an id (starts at `1`; `0` means no epoch yet), a target rate, a deposit cap, and three windows. A keeper starts each epoch. Its values do not change after it starts. The epoch end is the maturity.
+
+**Entry window** — The part of an epoch when users can request a deposit. It starts at the epoch start.
+
+**Accrual interval** — The part of an epoch when interest accrues, at the epoch's target rate. It ends at the maturity.
+
+**Exit window** — The part of an epoch when users can request a withdrawal. It ends at the maturity. If a user misses it, the funds stay in the vault for one more epoch.
+
+**Maturity** — The end of an epoch. Interest stops. From this time, the keeper can fulfill withdrawal requests.
+
+**Limbo** — The gap between the end of one epoch and the start of the next. No interest accrues, and users cannot request a deposit or a withdrawal. `epochId()` still returns the epoch that ended.
+
+**Target rate** — The rate of an epoch. It is a simple annual rate (APR), and it applies only during the accrual interval. It is a target, not a guarantee.
+
+**Fulfillment / claim** — The steps after a target-yield request. The keeper fulfills a request, and then the user claims it. `deposit`/`mint` claim shares, and `redeem`/`withdraw` claim the pegged token.
+
 **Borrow / CDP** — Deposit crypto collateral (e.g. hemiBTC, WETH) and borrow a pegged token (VUSD today) against it via Morpho Blue, without selling the crypto.
 
 **Health factor** — Borrow position safety score. Above 1.0 is safe; at or below 1.0 the position can be liquidated.

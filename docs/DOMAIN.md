@@ -70,7 +70,7 @@ graph TD
 
 **Pause switches.** Each whitelisted token's Treasury config (`getTokenConfig`, `packages/treasury`) carries two independent flags the app must respect — they are **per whitelisted token**, not per gateway:
 
-- `depositActive` — when `false`, minting from that whitelisted token is paused. The Swap CTA reads "Swaps are paused for this token" and is disabled when swapping Whitelisted tokens to Pegged Tokens.
+- `depositActive` — when `false`, minting from that whitelisted token is paused. The Swap CTA reads "Swaps are paused for this token" and is disabled when swapping whitelisted tokens to pegged tokens.
 - `withdrawActive` — when `false`, **paying out** that whitelisted token is paused. This covers the one-step instant redeem and the _second_ step of the two-step redeem; **sending to the Redeem Queue is not affected**, since no whitelisted token is paid out yet. One-step redeem shows "Swaps are paused for this token" and the queue's claim drawer shows "Redeems are paused for this token" on the CTA for the selected _to_ token — both keep listing paused tokens in the picker, so the message names what is blocked instead of silently hiding the option. The queue row's Redeem button is disabled with a "Redeems are paused" tooltip only when the gateway has **no** withdraw-active whitelisted token left, because at that point the ticket has nothing it can be paid out in.
 
 **Peg band.** Mint and redeem aren't always 1:1. The Gateway prices each whitelisted token against its Treasury oracle: while the token stays within a small **peg band** around its peg, the rate is a flat 1:1 (after fees); once the price moves outside the band, the rate follows the oracle instead. The Swap quote already reflects this.
@@ -79,7 +79,13 @@ Edge cases: a redemption pays from the Treasury's idle balance first, then withd
 
 ### Earn — stake a pegged token for yield
 
-"Stake assets to earn variable yield." Deposit a pegged token into its staking vault → receive the corresponding share token. Yield accrues as price-per-share appreciation; the headline number is the **APY**. There is one pool per pegged token; the active set is `stakingVaultAddresses` (`packages/earn`), which the page maps over — don't assume a single hardcoded pool.
+Here there are 2 options:
+
+#### Variable yield
+
+"Stake assets to earn variable yield." Listed under `/earn/variable-yield/:stakingVaultAddress`.
+
+Deposit a pegged token into its staking vault → receive the corresponding share token. Yield accrues as price-per-share appreciation; the headline number is the **APY**. The APY is variable and depends on the performance of the treasury strategies. There is one pool per pegged token; the active set is `stakingVaultAddresses` (`packages/earn`), which the page maps over — don't assume a single hardcoded pool.
 
 Withdrawing has two paths:
 
@@ -87,6 +93,44 @@ Withdrawing has two paths:
 - **Request withdrawal → cooldown → exit ticket:** the standard path. Requesting moves funds into a **cooldown** (multi-day, read on-chain via `getCooldownDuration`), during which they are locked and **earn no yield**. Each request becomes an **exit ticket** (cooldown → ready → withdrawn, or cancelled if deleted). A ticket can be **deleted** to cancel and put funds back to staked-and-earning. "Withdraw all" claims every ready ticket.
 
 Why the cooldown: it prevents reward sniping and gives the treasury a predictable liquidity horizon. Exit tickets render in their own table, gated by `useShowExitTickets`.
+
+#### Target Yield
+
+> [!IMPORTANT]
+> This module is under development and is not ready for production. Some features below may not be complete. To enable this module locally, set the env variable `VITE_FIXED_TERM_YIELD_ENABLED` to true.
+
+The page is listed under `/earn/fixed-term/:stakingVaultAddress`. This module may also be informally called `VUSDx`, only because it is the first instance of a target-yield vault, over the `VUSD` pegged token.
+
+A **target-yield vault** takes a pegged token and pays a fixed rate for a fixed term. This term is known as an **epoch**. The vault implements [ERC-8416](https://ethereum-magicians.org/t/erc-8416-epoch-based-fixed-rate-vault/29669). The rate is a target, not a guarantee.
+
+The user deposits pegged tokens into the vault, and after some internal processing, they will receive the corresponding share token. Users can request a deposit during the entry window, at the beginning of the epoch. Each epoch has a target rate. It is a simple annual rate (APR). Interest accrues linearly, without compounding, from the start of the accrual interval until the end of the epoch (the maturity). A deposit earns interest only after the keeper fulfills it. Thus, an entry after the accrual interval starts earns interest only for the remaining part of the interval. Before the end of the epoch, the exit window opens so users can request a withdrawal.
+
+Refer to this diagram to understand the different periods inside one epoch:
+
+```text
+start                                                         end (maturity)
+|---- entry window ----|                                                   |
+                              |------------- accrual interval -------------|
+                                                    |---- exit window -----|
+```
+
+The diagram shows one possible configuration. The windows can overlap, and each one can be as long as the epoch. The accrual interval and the exit window always end at the maturity. All windows are half-open: `[start, end)`.
+
+Deposits are a 2-step process. First, users request a deposit of the pegged token during the entry window. A user can add more requests during this period. Each epoch has a deposit cap. A request above the remaining capacity (`maxRequestDeposit`) fails. Then, users must wait for the keeper to fulfill the requests. On fulfillment, the vault sets the share price, mints the shares, and makes them available for users to claim. The claim sends the shares to the users. A pending request earns no interest. Minted shares earn interest, even before the claim.
+
+Users can cancel a deposit request at any time before the keeper fulfills it. The vault then sends the deposited tokens back. After fulfillment, users cannot cancel.
+
+Minted shares stay in the vault from one epoch to the next. They earn the target rate of each epoch until the keeper fulfills a withdrawal. A withdrawal is also a 2-step process. During the exit window, the user requests a redeem of a number of shares. The vault merges multiple requests from the same user in this window into one request. The vault holds these shares in escrow, and the shares continue to earn interest. After maturity, the keeper fulfills the requests. The keeper cannot fulfill before maturity, and nothing happens automatically at maturity. On fulfillment, the vault sets the share price, burns the shares, and makes the assets available for users to claim. Then users can redeem the assets.
+
+Users can cancel a withdrawal request only during the exit window of the same epoch, and before the keeper fulfills it. The vault then sends the shares back.
+
+Between the end of one epoch and the start of the next, the vault is in **limbo**. No interest accrues, and users cannot request a deposit or a withdrawal. If a user misses the exit window, the funds stay in the vault for one more epoch.
+
+Additionally, the vault can reach the following states:
+
+- **Paused**: stops new deposit requests only.
+- **Shutdown**: stops all requests and all claims. Cancel still works.
+- **Terminated**: the vault closes after an epoch ends, or before the first epoch, and after all batches are fulfilled. The vault gets all assets back. No new epoch, no new deposits, no fulfillment. A withdrawal request is claimable immediately, at any time when the vault is not shut down. It uses the share price at termination. Claimable deposits stay claimable.
 
 ### Borrow — CDP against crypto
 
