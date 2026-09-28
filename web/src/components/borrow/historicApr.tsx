@@ -96,7 +96,7 @@ function ChartTooltipLabel({
 
 export function HistoricApr({ marketId }: Props) {
   const { i18n, t } = useTranslation();
-  const [period, setPeriod] = useState<ChartPeriod>("1w");
+  const [period, setPeriod] = useState<ChartPeriod>("1m");
   const { data: chartData, isError, refetch } = useAprHistory(marketId, period);
 
   return (
