@@ -5,6 +5,7 @@ import { ExitCooldownCard } from "components/exitCooldownCard";
 import { ShareRatioCard } from "components/shareRatioCard";
 import { StakedCard } from "components/stakedCard";
 import { StripedDivider } from "components/stripedDivider";
+import { TvlHistoryCard } from "components/tvlHistoryCard";
 import { YieldCard } from "components/yieldCard";
 import { usePeggedTokensByGateway } from "hooks/usePeggedTokensByGateway";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
@@ -105,6 +106,14 @@ export const Analytics = function () {
           peggedToken={selectedToken}
           peggedTokenError={isPeggedTokensError}
         />
+      </AllocationRow>
+      <AllocationRow>
+        <div className="flex-1 px-3 md:px-14">
+          <TvlHistoryCard
+            peggedToken={selectedToken}
+            peggedTokenError={isPeggedTokensError}
+          />
+        </div>
       </AllocationRow>
       <AllocationRow className="md:divide-x md:divide-gray-200">
         <div className="flex-1 px-3 *:border-0 md:px-11 lg:px-14">

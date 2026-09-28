@@ -1,5 +1,5 @@
-import { Button } from "components/base/button";
 import { SegmentedControl } from "components/base/segmentedControl";
+import { ChartPlaceholder } from "components/chartPlaceholders";
 import { ClockRevertedIcon } from "components/icons/clockRevertedIcon";
 import { useElementWidth } from "hooks/useElementWidth";
 import { useShareTokenForPeggedToken } from "hooks/useShareTokenForPeggedToken";
@@ -68,7 +68,8 @@ export function ShareRatioCard({
     refetch,
   } = useShareValueHistory({ peggedToken, period });
 
-  const isError = peggedTokenError || isHistoryError;
+  const isError =
+    peggedTokenError || (isHistoryError && chartData === undefined);
   // The API appends the current on-chain share value as the final point, so the last
   // datapoint is the current value (share token measured in pegged tokens) shown on
   // top of the card.
@@ -115,18 +116,18 @@ export function ShareRatioCard({
         ref={chartContainerRef}
         style={{ height: chartHeight }}
       >
-        {isError ? (
+        {peggedTokenError ? (
           <div className="flex h-full items-center justify-center">
-            {isHistoryError ? (
-              <Button onClick={() => refetch()} size="xSmall" variant="primary">
-                {t("common.charts.reload-chart")}
-              </Button>
-            ) : (
-              <span className="text-gray-500">-</span>
-            )}
+            <span className="text-gray-500">-</span>
           </div>
         ) : chartData === undefined ? (
-          <Skeleton height={chartHeight} />
+          <ChartPlaceholder
+            chartWidth={chartWidth}
+            isError={isHistoryError}
+            onReload={() => refetch()}
+            period={period}
+            skeleton={<Skeleton height="100%" />}
+          />
         ) : (
           <VictoryChart
             containerComponent={

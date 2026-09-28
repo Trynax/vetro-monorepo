@@ -1,5 +1,5 @@
-import { Button } from "components/base/button";
 import { SegmentedControl } from "components/base/segmentedControl";
+import { ChartPlaceholder } from "components/chartPlaceholders";
 import { ClockRevertedIcon } from "components/icons/clockRevertedIcon";
 import { useApyHistory } from "hooks/useApyHistory";
 import { useElementWidth } from "hooks/useElementWidth";
@@ -47,7 +47,8 @@ export function ApyHistoryCard({
     refetch,
   } = useApyHistory({ peggedToken, period });
 
-  const isError = peggedTokenError || isHistoryError;
+  const isError =
+    peggedTokenError || (isHistoryError && chartData === undefined);
   // The API appends the current on-chain APY as the final point, so the last
   // datapoint is the current value shown on top of the card.
   const currentApy = chartData?.at(-1)?.y;
@@ -88,18 +89,18 @@ export function ApyHistoryCard({
         ref={chartContainerRef}
         style={{ height: chartHeight }}
       >
-        {isError ? (
+        {peggedTokenError ? (
           <div className="flex h-full items-center justify-center">
-            {isHistoryError ? (
-              <Button onClick={() => refetch()} size="xSmall" variant="primary">
-                {t("common.charts.reload-chart")}
-              </Button>
-            ) : (
-              <span className="text-gray-500">-</span>
-            )}
+            <span className="text-gray-500">-</span>
           </div>
         ) : chartData === undefined ? (
-          <Skeleton height={chartHeight} />
+          <ChartPlaceholder
+            chartWidth={chartWidth}
+            isError={isHistoryError}
+            onReload={() => refetch()}
+            period={period}
+            skeleton={<Skeleton height="100%" />}
+          />
         ) : chartData.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <span className="text-gray-500">-</span>

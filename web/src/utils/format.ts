@@ -12,6 +12,7 @@ const cryptoRounder = smartRound(6, 0, 6);
 const fiatRounder = smartRound(6, 2, 2);
 // Same config as fiatRounder, but I think it reads better to use a different rounder
 const percentageRounder = smartRound(6, 2, 2);
+const percentageTickRounder = smartRound(6, 0, 2);
 
 export const formatFiatNumber = (value: number | string) =>
   fiatRounder(value, { shouldFormat: true });
@@ -26,3 +27,6 @@ export const formatPercentage = function (value: number | string) {
   }
   return `${percentageRounder(value, { shouldFormat: true })}%`;
 };
+
+export const formatPercentageTick = (value: number) =>
+  `${percentageTickRounder(value, { shouldFormat: true })}%`;

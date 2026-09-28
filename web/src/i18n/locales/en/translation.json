@@ -13,6 +13,7 @@
       "reload-chart": "Reload chart",
       "reserve-buffer-label": "Reserve buffer",
       "share-ratio-label": "{{shareSymbol}} / {{peggedSymbol}} ratio",
+      "total-label": "Total",
       "yield-label": "Yield allocation",
       "yield-value": "{{count}} strategy",
       "yield-value_other": "{{count}} strategies"
@@ -63,6 +64,7 @@
   "pages": {
     "analytics": {
       "collateralization-ratio-label": "Collateralization ratio",
+      "historic-tvl-label": "Historic TVL",
       "liquid-reserves-label": "Liquid Reserves",
       "strategic-reserves-label": "Strategic Reserves",
       "surplus-label": "Surplus",

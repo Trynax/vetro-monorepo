@@ -42,7 +42,7 @@ export const AllocationCard = function ({
             <span className="text-b-medium text-gray-900">{label}</span>
             <div className="size-4">{icon}</div>
           </div>
-          <h3 className="text-h3 text-gray-900">{renderValue()}</h3>
+          <h3 className="text-gray-900">{renderValue()}</h3>
         </div>
       </div>
       {items !== undefined && (
