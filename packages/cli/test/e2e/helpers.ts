@@ -132,6 +132,12 @@ export const requestArgs = (extra: string[] = []) => [
   ...extra,
 ];
 
+export const cancelRedeemArgs = (extra: string[] = []) => [
+  "swap",
+  "cancel-redeem",
+  ...extra,
+];
+
 export const approveArgs = (token: string) => [
   "swap",
   "approve",

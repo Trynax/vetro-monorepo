@@ -2,6 +2,7 @@ import { type Command } from "commander";
 
 import { register as allowance } from "./commands/allowance.ts";
 import { register as approve } from "./commands/approve.ts";
+import { register as cancelRedeem } from "./commands/cancelRedeem.ts";
 import { register as cooldown } from "./commands/cooldown.ts";
 import { register as cooldownEnabled } from "./commands/cooldownEnabled.ts";
 import { register as isInstantRedeem } from "./commands/isInstantRedeem.ts";
@@ -23,6 +24,7 @@ import { register as whitelistedTokens } from "./commands/whitelistedTokens.ts";
 const swapCommands = [
   allowance,
   approve,
+  cancelRedeem,
   cooldown,
   cooldownEnabled,
   isInstantRedeem,
