@@ -4,7 +4,7 @@ import {
   getRedeemRequest,
   getWithdrawalDelay,
 } from "@vetro-protocol/gateway/actions";
-import { decodeFunctionData, parseUnits } from "viem";
+import { decodeFunctionData, isAddressEqual, parseUnits } from "viem";
 import { getBlock, increaseTime, mine, revert, snapshot } from "viem/actions";
 import { balanceOf } from "viem-erc20/actions";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
@@ -13,6 +13,7 @@ import {
   type RedeemRequest,
   type TransactionRequest,
   approveArgs,
+  cancelRedeemArgs,
   createClients,
   depositAbi,
   fundTestAccount,
@@ -39,6 +40,9 @@ const readBalances = () =>
     balanceOf(publicClient, { account: TEST_ADDRESS, address: usdc.address }),
     balanceOf(publicClient, { account: TEST_ADDRESS, address: vusd.address }),
   ]);
+
+const readVusdBalance = () =>
+  balanceOf(publicClient, { account: TEST_ADDRESS, address: vusd.address });
 
 const broadcast = async function (args: string[]) {
   const receipt = await sendTransactionRequest({
@@ -87,8 +91,9 @@ describe("swap out in two steps (VUSD → queue → USDC) and swap request", fun
 
   const queuedAmount = "50";
 
-  const requestOnFork = () =>
-    onFork(requestArgs(["--account", TEST_ADDRESS, "--gateway", gateway]));
+  const accountArgs = ["--account", TEST_ADDRESS, "--gateway", gateway];
+
+  const requestOnFork = () => onFork(requestArgs(accountArgs));
 
   let restoreQueue: (() => Promise<void>) | undefined;
 
@@ -153,6 +158,36 @@ describe("swap out in two steps (VUSD → queue → USDC) and swap request", fun
       const request = await runCli<RedeemRequest>(requestOnFork());
 
       expect(request.status).toBe("ready");
+    } finally {
+      await revert(testClient, { id });
+    }
+  });
+
+  it("returns the locked amount to the wallet once the cancel-redeem calldata is broadcast", async function () {
+    const id = await snapshot(testClient);
+    try {
+      const [cancelRequest, [amountLocked], vusdBefore] = await Promise.all([
+        runCli<TransactionRequest>(onFork(cancelRedeemArgs(accountArgs))),
+        getRedeemRequest(publicClient, {
+          address: gateway,
+          user: TEST_ADDRESS,
+        }),
+        readVusdBalance(),
+      ]);
+      expect(isAddressEqual(cancelRequest.to, gateway)).toBe(true);
+
+      const receipt = await sendTransactionRequest({
+        request: cancelRequest,
+        rpcUrl,
+      });
+      expect(receipt.status).toBe("success");
+
+      const [request, vusdAfter] = await Promise.all([
+        runCli<RedeemRequest>(requestOnFork()),
+        readVusdBalance(),
+      ]);
+      expect(request.status).toBe("none");
+      expect(vusdAfter - vusdBefore).toBe(amountLocked);
     } finally {
       await revert(testClient, { id });
     }
