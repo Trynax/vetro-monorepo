@@ -17,11 +17,13 @@ import {
 describe("swap approve", function () {
   const rpcUrl = inject("anvilUrl");
 
-  const approveOnFork = (token: string) => [
-    ...approveArgs(token),
-    "--rpc-url",
-    rpcUrl,
-  ];
+  const approveOnFork = ({
+    extra = [],
+    token,
+  }: {
+    extra?: string[];
+    token: string;
+  }) => [...approveArgs({ extra, token }), "--rpc-url", rpcUrl];
 
   const readAllowance = (token: string) =>
     runCli([
@@ -38,7 +40,7 @@ describe("swap approve", function () {
   it("grants the gateway a USDC allowance once the approve calldata is broadcast", async function () {
     await fundTestAccount({ amount: "1000", rpcUrl });
     const request = await runCli<TransactionRequest>(
-      approveOnFork(usdc.symbol),
+      approveOnFork({ token: usdc.symbol }),
     );
     expect(isAddressEqual(request.to, usdc.address)).toBe(true);
 
@@ -51,7 +53,7 @@ describe("swap approve", function () {
   it("grants the gateway an allowance on the pegged token", async function () {
     await fundTestAccount({ amount: "1000", rpcUrl });
     const request = await runCli<TransactionRequest>(
-      approveOnFork(vusd.symbol),
+      approveOnFork({ token: vusd.symbol }),
     );
     expect(isAddressEqual(request.to, vusd.address)).toBe(true);
 
@@ -63,13 +65,15 @@ describe("swap approve", function () {
 
   it("resolves a token given a non-checksummed address", async function () {
     const request = await runCli<TransactionRequest>(
-      approveOnFork(usdc.address.toLowerCase()),
+      approveOnFork({ token: usdc.address.toLowerCase() }),
     );
     expect(isAddressEqual(request.to, usdc.address)).toBe(true);
   });
 
   it("rejects a token the protocol does not know", async function () {
-    const { exitCode, stderr } = await runCliRaw(approveOnFork("USDX"));
+    const { exitCode, stderr } = await runCliRaw(
+      approveOnFork({ token: "USDX" }),
+    );
     expect(exitCode).toBe(1);
     expect(JSON.parse(stderr).error).toBe(
       'Not a whitelisted or pegged token: "USDX"',
@@ -77,16 +81,9 @@ describe("swap approve", function () {
   });
 
   it("rejects an amount with more decimals than the token supports", async function () {
-    const { exitCode, stderr } = await runCliRaw([
-      "swap",
-      "approve",
-      "--token",
-      usdc.symbol,
-      "--amount",
-      "0.0000001",
-      "--rpc-url",
-      rpcUrl,
-    ]);
+    const { exitCode, stderr } = await runCliRaw(
+      approveOnFork({ extra: ["--amount", "0.0000001"], token: usdc.symbol }),
+    );
     expect(exitCode).toBe(1);
     expect(JSON.parse(stderr).error).toBe(
       `Amount has more decimals than "${usdc.symbol}" supports: ${usdc.decimals}`,
@@ -96,15 +93,15 @@ describe("swap approve", function () {
   it("resets the allowance to 0", async function () {
     await fundTestAccount({ amount: "1000", rpcUrl });
     await sendTransactionRequest({
-      request: await runCli<TransactionRequest>(approveOnFork(usdc.symbol)),
+      request: await runCli<TransactionRequest>(
+        approveOnFork({ token: usdc.symbol }),
+      ),
       rpcUrl,
     });
 
-    const request = await runCli<TransactionRequest>([
-      ...approveOnFork(usdc.symbol),
-      "--amount",
-      "0",
-    ]);
+    const request = await runCli<TransactionRequest>(
+      approveOnFork({ extra: ["--amount", "0"], token: usdc.symbol }),
+    );
     const receipt = await sendTransactionRequest({ request, rpcUrl });
     expect(receipt.status).toBe("success");
 

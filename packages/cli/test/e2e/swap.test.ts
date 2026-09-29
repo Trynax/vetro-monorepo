@@ -61,7 +61,7 @@ describe("swap in (USDC → VUSD)", function () {
     );
     await fundTestAccount({ amount: "1000", rpcUrl });
     // Approving sets the allowance, so this is safe however often it runs.
-    await broadcast(approveArgs(usdc.symbol));
+    await broadcast(approveArgs({ token: usdc.symbol }));
 
     const { args } = decodeFunctionData({
       abi: depositAbi,
@@ -109,9 +109,9 @@ describe("swap out in two steps (VUSD → queue → USDC) and swap request", fun
 
   it("locks the pegged token once the send-to-queue calldata is broadcast", async function () {
     await fundTestAccount({ amount: "1000", rpcUrl });
-    await broadcast(approveArgs(usdc.symbol));
+    await broadcast(approveArgs({ token: usdc.symbol }));
     await broadcast(mintArgs());
-    await broadcast(approveArgs(vusd.symbol));
+    await broadcast(approveArgs({ token: vusd.symbol }));
 
     const [amountLockedBefore] = await getRedeemRequest(publicClient, {
       address: gateway,
@@ -259,9 +259,9 @@ describe("swap out in one step (VUSD → USDC)", function () {
 
   it("burns the pegged token from the wallet once the redeem calldata is broadcast", async function () {
     await fundTestAccount({ amount: "1000", rpcUrl });
-    await broadcast(approveArgs(usdc.symbol));
+    await broadcast(approveArgs({ token: usdc.symbol }));
     await broadcast(mintArgs());
-    await broadcast(approveArgs(vusd.symbol));
+    await broadcast(approveArgs({ token: vusd.symbol }));
 
     const redeemRequest = await runCli<TransactionRequest>(
       onFork(redeemArgs(["--slippage", slippage])),

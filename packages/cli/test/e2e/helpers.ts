@@ -138,14 +138,13 @@ export const cancelRedeemArgs = (extra: string[] = []) => [
   ...extra,
 ];
 
-export const approveArgs = (token: string) => [
-  "swap",
-  "approve",
-  "--token",
+export const approveArgs = ({
+  extra = [],
   token,
-  "--amount",
-  swapAmount,
-];
+}: {
+  extra?: string[];
+  token: string;
+}) => ["swap", "approve", "--token", token, "--amount", swapAmount, ...extra];
 
 const captureStream = function (stream: NodeJS.WriteStream) {
   const chunks: string[] = [];

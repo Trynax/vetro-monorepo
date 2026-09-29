@@ -63,6 +63,11 @@ export function register(swap: Command) {
         client,
         value: options.from,
       });
+      const amountIn = parseTokenAmount({
+        amount: options.amount,
+        decimals: tokenIn.decimals,
+        token: options.from,
+      });
 
       if (options.to !== undefined) {
         const peggedToken = await getGatewayPeggedToken({
@@ -75,12 +80,6 @@ export function register(swap: Command) {
           );
         }
       }
-
-      const amountIn = parseTokenAmount({
-        amount: options.amount,
-        decimals: tokenIn.decimals,
-        token: options.from,
-      });
 
       const [peggedTokenOut, maxMint, { depositActive }] = await Promise.all([
         previewDeposit(client, {

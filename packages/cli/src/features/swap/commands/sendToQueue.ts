@@ -31,6 +31,11 @@ export function register(swap: Command) {
         client,
         value: options.from,
       });
+      const peggedTokenAmount = parseTokenAmount({
+        amount: options.amount,
+        decimals: peggedToken.decimals,
+        token: options.from,
+      });
 
       const delayEnabled = await getWithdrawalDelayEnabled(client, {
         address: peggedToken.gatewayAddress,
@@ -40,12 +45,6 @@ export function register(swap: Command) {
           `The redeem queue is disabled: redeem "${options.from}" in one step instead`,
         );
       }
-
-      const peggedTokenAmount = parseTokenAmount({
-        amount: options.amount,
-        decimals: peggedToken.decimals,
-        token: options.from,
-      });
 
       printTransactionRequest({
         chainId,
