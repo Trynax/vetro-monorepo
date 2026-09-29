@@ -22,7 +22,7 @@ https://github.com/vetro-protocol/vetro-monorepo/pull/844 | Add swap redeem comm
 
 `closes` lists the issues that the PR closes, with their titles. `refs` lists the other issues and PRs that its description mentions. All issues and PRs are full URLs, because some are in other repositories. A `refs` URL with `/issues/` can also be a PR.
 
-If it exits with an error, show the error to the user and stop.
+If it exits with an error, show the error to the user and stop. If it prints a warning, show the warning to the user.
 
 ## 2. Group the PRs into changes
 

@@ -6,8 +6,13 @@ git fetch --quiet origin master prod
 numbers=$(git log origin/prod..origin/master --merges --pretty=format:"%s" |
   sed -nE 's/^Merge pull request #([0-9]+) from .*/\1/p')
 
+unmerged=$(git log origin/prod..origin/master --first-parent --no-merges --oneline)
+if [ -n "$unmerged" ]; then
+  printf 'Warning: these commits are not from a merge commit, so their PRs are not in the list:\n%s\n' "$unmerged" >&2
+fi
+
 if [ -z "$numbers" ]; then
-  echo "master and prod are in sync. Nothing to release." >&2
+  echo "No merged PRs to release." >&2
   exit 1
 fi
 
