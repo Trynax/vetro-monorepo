@@ -16,11 +16,11 @@ Run the scripts in this order, from the repo root. Do not run other commands, ex
 It prints one line per PR in `master` that is not in `prod`, newest first:
 
 ```markdown
-#845 | Add historic TVL chart to the analytics page | branch: tvl-historic-chart-pt3 | closes: #825 (Add TVL stacked bar chart with historic data)
-#844 | Add swap redeem command to the CLI | branch: cli-swap-redeem | refs: #445
+https://github.com/vetro-protocol/vetro-monorepo/pull/845 | Add historic TVL chart to the analytics page | branch: tvl-historic-chart-pt3 | closes: https://github.com/vetro-protocol/vetro-monorepo/issues/825 (Add TVL stacked bar chart with historic data)
+https://github.com/vetro-protocol/vetro-monorepo/pull/844 | Add swap redeem command to the CLI | branch: cli-swap-redeem | refs: https://github.com/vetro-protocol/vetro-monorepo/issues/445
 ```
 
-`closes` lists the issues that the PR closes, with their titles. `refs` lists the other issues and PRs that its description mentions.
+`closes` lists the issues that the PR closes, with their titles. `refs` lists the other issues and PRs that its description mentions. All issues and PRs are full URLs, because some are in other repositories. A `refs` URL with `/issues/` can also be a PR.
 
 If it exits with an error, show the error to the user and stop.
 
@@ -32,9 +32,9 @@ The goal: a reader of the PR description knows which changes go to production. A
 - One PR refers to another PR in the list.
 - They work toward the same result, for example the branches `tvl-historic-chart-pt1`, `-pt2` and `-pt3`.
 
-These signs are not rules. A PR can mention a new issue for follow-up work, or a PR that gave an idea, and these do not make it part of the same change. If you do not know what a `refs` issue is about, read its title with `gh issue view <number> --json title -q .title`.
+These signs are not rules. A PR can mention a new issue for follow-up work, or a PR that gave an idea, and these do not make it part of the same change. If you do not know what a `refs` issue is about, read its title with `gh issue view <url> --json title -q .title`.
 
-Write each change as one short line in imperative mood, then the PRs that deliver it. Include every PR exactly once. Put each change in one of these sections, in this order, and omit empty sections:
+Write each change as one short line in imperative mood, then the PRs that deliver it as `#<number>`. Include every PR exactly once. Put each change in one of these sections, in this order, and omit empty sections:
 
 - **Features**: new or changed behavior for users or for developers that use the packages, API, or CLI.
 - **Bug fixes**: corrections of wrong behavior.

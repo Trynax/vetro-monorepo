@@ -15,26 +15,32 @@ fields=""
 index=0
 for number in $numbers; do
   index=$((index + 1))
-  fields+=$(printf 'pr%03d: pullRequest(number: %s) { body closingIssuesReferences(first: 20) { nodes { number title } } headRefName number title } ' "$index" "$number")
+  fields+=$(printf 'pr%03d: pullRequest(number: %s) { body closingIssuesReferences(first: 20) { nodes { title url } } headRefName title url } ' "$index" "$number")
 done
 
 gh api graphql \
   -F owner='{owner}' \
   -F repo='{repo}' \
-  -f query="query(\$owner: String!, \$repo: String!) { repository(owner: \$owner, name: \$repo) { $fields } }" \
+  -f query="query(\$owner: String!, \$repo: String!) { repository(owner: \$owner, name: \$repo) { nameWithOwner $fields } }" \
   -q '
     def tag($label; $items): if ($items | length) > 0 then "\($label): " + ($items | join(", ")) else empty end;
-    .data.repository[]
-    | (.number | tostring) as $self
-    | [.closingIssuesReferences.nodes[] | {number: (.number | tostring), title}] as $closes
-    | ([.body | gsub("(?s)<!--.*?-->"; "") | scan("(?:#|/(?:issues|pull)/)([0-9]+)")[0]]
-      | unique - [$closes[].number] - [$self]) as $refs
+    def key: capture("github\\.com/(?<repo>[^/]+/[^/]+)/(?:issues|pull)/(?<number>[0-9]+)") | "\(.repo)#\(.number)" | ascii_downcase;
+    .data.repository
+    | .nameWithOwner as $repo
+    | del(.nameWithOwner)[]
+    | .url as $self
+    | [.closingIssuesReferences.nodes[] | {title, url}] as $closes
+    | ([.body | gsub("(?s)<!--.*?-->"; "")
+        | scan("(https?://github\\.com/[\\w.-]+/[\\w.-]+/(?:issues|pull)/[0-9]+)|(?:^|[^\\w/.-])(?:([\\w.-]+/[\\w.-]+))?#([0-9]+)")
+        | .[0] // "https://github.com/\(.[1] // $repo)/issues/\(.[2])"]
+      | unique_by(key)
+      | map(select(key as $k | [$closes[].url, $self] | map(key) | index($k) | not))) as $refs
     | [
-        "#\($self)",
+        $self,
         .title,
         "branch: \(.headRefName)",
-        tag("closes"; [$closes[] | "#\(.number) (\(.title))"]),
-        tag("refs"; $refs | map("#" + .))
+        tag("closes"; [$closes[] | "\(.url) (\(.title))"]),
+        tag("refs"; $refs)
       ]
     | join(" | ")
   '
