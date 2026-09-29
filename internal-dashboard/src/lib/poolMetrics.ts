@@ -18,8 +18,6 @@ export const summarizeDexTvl = function (pools: TrackedPool[]) {
   let totalTvlUsd = 0;
   let unpricedPoolCount = 0;
   for (const pool of pools) {
-    // Range views are a slice of a pool whose full entry is also listed, so
-    // counting them would double count that liquidity.
     if (pool.isRangeView) {
       continue;
     }
