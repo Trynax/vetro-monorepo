@@ -3,9 +3,8 @@ import {
   getWithdrawalDelayEnabled,
 } from "@vetro-protocol/gateway/actions";
 import { type Command } from "commander";
-import { parseUnits } from "viem";
 
-import { parseAmount } from "../../../lib/args.ts";
+import { parseAmount, parseTokenAmount } from "../../../lib/args.ts";
 import { type GlobalOptions, createVetroClient } from "../../../lib/client.ts";
 import { printTransactionRequest } from "../../../lib/output.ts";
 import { resolvePeggedToken } from "../../../lib/tokens.ts";
@@ -42,15 +41,11 @@ export function register(swap: Command) {
         );
       }
 
-      const peggedTokenAmount = parseUnits(
-        options.amount,
-        peggedToken.decimals,
-      );
-      if (peggedTokenAmount === 0n) {
-        throw new Error(
-          `Amount is below one unit of "${options.from}": it rounds down to 0`,
-        );
-      }
+      const peggedTokenAmount = parseTokenAmount({
+        amount: options.amount,
+        decimals: peggedToken.decimals,
+        token: options.from,
+      });
 
       printTransactionRequest({
         chainId,

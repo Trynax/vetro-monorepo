@@ -4,9 +4,14 @@ import {
   previewRedeem,
 } from "@vetro-protocol/gateway/actions";
 import { type Command } from "commander";
-import { type Address, formatUnits, parseUnits } from "viem";
+import { type Address, formatUnits } from "viem";
 
-import { parseAddress, parseAmount, parseSlippage } from "../../../lib/args.ts";
+import {
+  parseAddress,
+  parseAmount,
+  parseSlippage,
+  parseTokenAmount,
+} from "../../../lib/args.ts";
 import { type GlobalOptions, createVetroClient } from "../../../lib/client.ts";
 import { printTransactionRequest } from "../../../lib/output.ts";
 import { DEFAULT_SLIPPAGE, applySlippage } from "../../../lib/slippage.ts";
@@ -63,12 +68,11 @@ export function register(swap: Command) {
         gatewayAddress: tokenOut.gatewayAddress,
       });
 
-      const peggedTokenIn = parseUnits(options.amount, peggedToken.decimals);
-      if (peggedTokenIn === 0n) {
-        throw new Error(
-          `Amount is below one unit of "${peggedToken.symbol}": it rounds down to 0`,
-        );
-      }
+      const peggedTokenIn = parseTokenAmount({
+        amount: options.amount,
+        decimals: peggedToken.decimals,
+        token: peggedToken.symbol,
+      });
 
       const [amountOut, maxWithdraw, { withdrawActive }] = await Promise.all([
         previewRedeem(client, {

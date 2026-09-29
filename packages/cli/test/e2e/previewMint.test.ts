@@ -71,13 +71,13 @@ describe("swap preview-mint", function () {
     },
   );
 
-  it("rejects an amount that rounds down to zero", async function () {
+  it("rejects an amount with more decimals than the token supports", async function () {
     const { exitCode, stderr } = await runCliRaw(
       previewMintOnFork(["--from", usdc.symbol, "--amount", "0.0000001"]),
     );
     expect(exitCode).toBe(1);
     expect(JSON.parse(stderr).error).toBe(
-      `Amount is below one unit of "${usdc.symbol}": it rounds down to 0`,
+      `Amount has more decimals than "${usdc.symbol}" supports: ${usdc.decimals}`,
     );
   });
 

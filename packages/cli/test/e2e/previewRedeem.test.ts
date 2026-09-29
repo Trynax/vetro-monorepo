@@ -71,7 +71,7 @@ describe("swap preview-redeem", function () {
     },
   );
 
-  it("rejects an amount that rounds down to zero", async function () {
+  it("rejects an amount with more decimals than the token supports", async function () {
     const { exitCode, stderr } = await runCliRaw(
       previewRedeemOnFork([
         "--to",
@@ -82,7 +82,7 @@ describe("swap preview-redeem", function () {
     );
     expect(exitCode).toBe(1);
     expect(JSON.parse(stderr).error).toBe(
-      `Amount is below one unit of "${vusd.symbol}": it rounds down to 0`,
+      `Amount has more decimals than "${vusd.symbol}" supports: ${vusd.decimals}`,
     );
   });
 

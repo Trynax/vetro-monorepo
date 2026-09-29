@@ -19,7 +19,7 @@
     "tiny-fetch-json": "2.0.1",
     "tiny-post-json": "1.0.0",
     "viem": "2.44.4",
-    "viem-erc20": "2.2.0",
+    "viem-erc20": "2.2.1",
     "viem-erc4626": "1.0.0"
   },
   "devDependencies": {

@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "to-promise-event": "1.0.0",
-    "viem-erc20": "2.2.0"
+    "viem-erc20": "2.2.1"
   },
   "devDependencies": {
     "@tsconfig/node24": "24.0.4",

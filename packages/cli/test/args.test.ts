@@ -4,8 +4,10 @@ import {
   parseAddress,
   parseAmount,
   parseGateway,
+  parseNonNegativeAmount,
   parseRpcUrl,
   parseSlippage,
+  parseTokenAmount,
 } from "../src/lib/args.ts";
 
 describe("parseAddress", function () {
@@ -53,6 +55,65 @@ describe("parseAmount", function () {
     expect(() => parseAmount("1.2.3")).toThrow('Invalid amount: "1.2.3"');
     expect(() => parseAmount("1e18")).toThrow('Invalid amount: "1e18"');
     expect(() => parseAmount("")).toThrow('Invalid amount: ""');
+  });
+});
+
+describe("parseNonNegativeAmount", function () {
+  it("accepts zero", function () {
+    expect(parseNonNegativeAmount("0")).toBe("0");
+    expect(parseNonNegativeAmount("0.0")).toBe("0.0");
+  });
+
+  it("throws for malformed values", function () {
+    expect(() => parseNonNegativeAmount("-1")).toThrow('Invalid amount: "-1"');
+    expect(() => parseNonNegativeAmount("")).toThrow('Invalid amount: ""');
+  });
+});
+
+describe("parseTokenAmount", function () {
+  it("returns the amount in the token's decimals", function () {
+    expect(
+      parseTokenAmount({ amount: "1.5", decimals: 6, token: "USDC" }),
+    ).toBe(1_500_000n);
+    expect(
+      parseTokenAmount({ amount: "0.000001", decimals: 6, token: "USDC" }),
+    ).toBe(1n);
+  });
+
+  it("ignores trailing zeros past the token's decimals", function () {
+    expect(
+      parseTokenAmount({ amount: "1.5000000", decimals: 6, token: "USDC" }),
+    ).toBe(1_500_000n);
+    expect(parseTokenAmount({ amount: "3.00", decimals: 0, token: "T" })).toBe(
+      3n,
+    );
+  });
+
+  it("returns 0 for a zero amount", function () {
+    expect(parseTokenAmount({ amount: "0", decimals: 6, token: "USDC" })).toBe(
+      0n,
+    );
+  });
+
+  it("throws for an amount below one unit of the token", function () {
+    expect(() =>
+      parseTokenAmount({ amount: "0.0000001", decimals: 6, token: "USDC" }),
+    ).toThrow('Amount has more decimals than "USDC" supports: 6');
+  });
+
+  it("throws instead of rounding up an amount of half a unit or more", function () {
+    expect(() =>
+      parseTokenAmount({ amount: "0.0000005", decimals: 6, token: "USDC" }),
+    ).toThrow('Amount has more decimals than "USDC" supports: 6');
+    expect(() =>
+      parseTokenAmount({ amount: "1.9999999", decimals: 6, token: "USDC" }),
+    ).toThrow('Amount has more decimals than "USDC" supports: 6');
+  });
+
+  it("throws for a fraction on a token with 0 decimals", function () {
+    expect(() =>
+      parseTokenAmount({ amount: "0.5", decimals: 0, token: "T" }),
+    ).toThrow('Amount has more decimals than "T" supports: 0');
   });
 });
 

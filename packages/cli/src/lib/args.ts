@@ -1,6 +1,6 @@
 import { gatewayAddresses } from "@vetro-protocol/gateway";
 import { InvalidArgumentError } from "commander";
-import { getAddress, isAddressEqual } from "viem";
+import { getAddress, isAddressEqual, parseUnits } from "viem";
 
 import { MAX_SLIPPAGE } from "./slippage.ts";
 
@@ -12,14 +12,37 @@ export function parseAddress(value: string) {
   }
 }
 
-export function parseAmount(value: string) {
+export function parseNonNegativeAmount(value: string) {
   if (!/^\d+(\.\d+)?$/.test(value)) {
     throw new InvalidArgumentError(`Invalid amount: "${value}"`);
   }
+  return value;
+}
+
+export function parseAmount(value: string) {
+  parseNonNegativeAmount(value);
   if (Number(value) === 0) {
     throw new InvalidArgumentError(`Amount must be greater than 0: "${value}"`);
   }
   return value;
+}
+
+export function parseTokenAmount({
+  amount,
+  decimals,
+  token,
+}: {
+  amount: string;
+  decimals: number;
+  token: string;
+}) {
+  const fraction = amount.split(".")[1]?.replace(/0+$/, "") ?? "";
+  if (fraction.length > decimals) {
+    throw new Error(
+      `Amount has more decimals than "${token}" supports: ${decimals}`,
+    );
+  }
+  return parseUnits(amount, decimals);
 }
 
 export function parseGateway(value: string) {

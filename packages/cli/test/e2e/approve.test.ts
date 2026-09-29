@@ -75,4 +75,39 @@ describe("swap approve", function () {
       'Not a whitelisted or pegged token: "USDX"',
     );
   });
+
+  it("rejects an amount with more decimals than the token supports", async function () {
+    const { exitCode, stderr } = await runCliRaw([
+      "swap",
+      "approve",
+      "--token",
+      usdc.symbol,
+      "--amount",
+      "0.0000001",
+      "--rpc-url",
+      rpcUrl,
+    ]);
+    expect(exitCode).toBe(1);
+    expect(JSON.parse(stderr).error).toBe(
+      `Amount has more decimals than "${usdc.symbol}" supports: ${usdc.decimals}`,
+    );
+  });
+
+  it("resets the allowance to 0", async function () {
+    await fundTestAccount({ amount: "1000", rpcUrl });
+    await sendTransactionRequest({
+      request: await runCli<TransactionRequest>(approveOnFork(usdc.symbol)),
+      rpcUrl,
+    });
+
+    const request = await runCli<TransactionRequest>([
+      ...approveOnFork(usdc.symbol),
+      "--amount",
+      "0",
+    ]);
+    const receipt = await sendTransactionRequest({ request, rpcUrl });
+    expect(receipt.status).toBe("success");
+
+    expect(await readAllowance(usdc.symbol)).toBe("0");
+  });
 });

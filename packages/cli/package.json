@@ -34,7 +34,7 @@
     "@vetro-protocol/treasury": "workspace:*",
     "commander": "15.0.0",
     "viem": "2.44.4",
-    "viem-erc20": "2.2.0"
+    "viem-erc20": "2.2.1"
   },
   "devDependencies": {
     "@hemilabs/anvil-fork-setup": "2.0.0",
