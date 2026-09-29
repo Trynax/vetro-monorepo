@@ -25,6 +25,10 @@ const BORROW_MORE_DISPLAY = "500";
 const BORROW_MORE_AMOUNT = parseUnits(BORROW_MORE_DISPLAY, vusd.decimals);
 const SUPPLY_MORE_DISPLAY = "0.02";
 const SUPPLY_MORE_AMOUNT = parseUnits(SUPPLY_MORE_DISPLAY, hemiBtc.decimals);
+// Partial on purpose: the form has no max button, and a full repay by assets
+// would race the interest accrued per block.
+const REPAY_DISPLAY = "400";
+const REPAY_AMOUNT = parseUnits(REPAY_DISPLAY, vusd.decimals);
 
 const escapeRegExp = (text: string) =>
   text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -296,6 +300,69 @@ test("supply more collateral to an open hemiBTC / VUSD position", async function
     row.getByText(collateralCellText(totalCollateralDisplay)),
   ).toBeVisible({ timeout: 30_000 });
   await expect(row.getByText(loanCellText(BORROW_DISPLAY))).toBeVisible();
+
+  const after = await readHealthFactorAndLtv();
+  expect(after.healthFactor).toBeGreaterThan(before.healthFactor);
+  expect(after.ltv).toBeLessThan(before.ltv);
+});
+
+test("repay part of the loan on an open hemiBTC / VUSD position", async function ({
+  page,
+}) {
+  const publicClient = createEthereumClient();
+
+  await openPositionsPage({ client: publicClient, page });
+
+  const [vusdBefore, positionBefore] = await Promise.all([
+    balanceOf(publicClient, {
+      account: TEST_ADDRESS,
+      address: vusd.address,
+    }),
+    fetchPosition(TEST_ADDRESS, hemiBtcVusdMarketId, publicClient),
+  ]);
+
+  const { readHealthFactorAndLtv, row } = getPositionRow(page);
+
+  await expect(row.getByText(loanCellText(BORROW_DISPLAY))).toBeVisible({
+    timeout: 30_000,
+  });
+  const before = await readHealthFactorAndLtv();
+
+  const drawer = await openManageAction({ action: "Repay loan", page });
+  await drawer
+    .locator('input[type="text"]:not([disabled])')
+    .fill(REPAY_DISPLAY);
+
+  const submitButton = drawer.getByRole("button", {
+    exact: true,
+    name: "Repay",
+  });
+  await expect(submitButton).toBeEnabled({ timeout: 20_000 });
+  await submitButton.click();
+
+  await expect(page.getByText("Loan repaid")).toBeVisible({
+    timeout: 60_000,
+  });
+
+  await waitForBalance({ client: publicClient, token: vusd.address }).toBe(
+    vusdBefore - REPAY_AMOUNT,
+  );
+
+  const positionAfter = await fetchPosition(
+    TEST_ADDRESS,
+    hemiBtcVusdMarketId,
+    publicClient,
+  );
+  expect(positionAfter.collateral).toBe(COLLATERAL_AMOUNT);
+  expect(positionAfter.borrowShares).toBeLessThan(positionBefore.borrowShares);
+
+  const remainingBorrowDisplay = formatUnits(
+    BORROW_AMOUNT - REPAY_AMOUNT,
+    vusd.decimals,
+  );
+  await expect(row.getByText(loanCellText(remainingBorrowDisplay))).toBeVisible(
+    { timeout: 30_000 },
+  );
 
   const after = await readHealthFactorAndLtv();
   expect(after.healthFactor).toBeGreaterThan(before.healthFactor);
