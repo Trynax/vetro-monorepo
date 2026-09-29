@@ -38,8 +38,6 @@ const TotalTvlCard = function ({
         label="Total DEX TVL"
         value={
           unpricedPoolCount > 0 ? (
-            // The icon goes at the card's right edge because the tooltip opens
-            // to the left, which keeps it on screen on narrow viewports.
             <span className="flex items-center justify-between gap-x-2">
               <span>{formatUsd(totalTvlUsd)}</span>
               <Tooltip label="Some pools may be missing a USD price">
