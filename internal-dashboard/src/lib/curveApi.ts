@@ -12,7 +12,7 @@ type CurveCoin = {
   decimals: string;
   poolBalance: string;
   symbol: string;
-  usdPrice: number;
+  usdPrice: number | null;
 };
 
 type CurvePool = {
