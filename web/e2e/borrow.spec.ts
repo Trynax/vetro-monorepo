@@ -1,8 +1,8 @@
 import { TEST_ADDRESS } from "@hemilabs/anvil-fork-setup/utils";
 import type { MarketId } from "@morpho-org/blue-sdk";
 import { fetchPosition } from "@morpho-org/blue-sdk-viem";
-import { expect } from "@playwright/test";
-import { formatUnits, parseUnits } from "viem";
+import { type Page, expect } from "@playwright/test";
+import { type PublicClient, formatUnits, parseUnits } from "viem";
 import { getBlock } from "viem/actions";
 import { balanceOf } from "viem-erc20/actions";
 
@@ -24,10 +24,77 @@ const BORROW_AMOUNT = parseUnits(BORROW_DISPLAY, vusd.decimals);
 const BORROW_MORE_DISPLAY = "500";
 const BORROW_MORE_AMOUNT = parseUnits(BORROW_MORE_DISPLAY, vusd.decimals);
 
+const escapeRegExp = (text: string) =>
+  text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // The loan cell adds the interest accrued since the borrow, so the decimals
 // are not fixed.
 const loanCellText = (display: string) =>
-  new RegExp(`^${formatNumber(display)}(\\.\\d+)? ${vusd.symbol}$`);
+  new RegExp(
+    `^${escapeRegExp(formatNumber(display))}(\\.\\d+)? ${escapeRegExp(vusd.symbol)}$`,
+  );
+const collateralCellText = (display: string) =>
+  new RegExp(
+    `^${escapeRegExp(formatNumber(display))} ${escapeRegExp(hemiBtc.symbol)}$`,
+  );
+
+async function openPositionsPage({
+  client,
+  page,
+}: {
+  client: PublicClient;
+  page: Page;
+}) {
+  await openBorrowPosition({
+    address: TEST_ADDRESS,
+    borrowAmount: BORROW_DISPLAY,
+    collateralAmount: COLLATERAL_DISPLAY,
+    forkUrl: ANVIL_URL,
+    marketId: hemiBtcVusdMarketId,
+  });
+
+  // The seed moves the fork ahead of wall time; the app accrues to Date.now.
+  const { timestamp: chainNow } = await getBlock(client);
+  await page.clock.install({ time: Number(chainNow) * 1000 });
+
+  await page.goto("/borrow");
+
+  await expect(
+    page.getByRole("button", { name: /^0x[a-f0-9]{4}/i }),
+  ).toBeVisible({ timeout: 30_000 });
+}
+
+function getPositionRow(page: Page) {
+  const row = page
+    .locator("#borrow-positions tr")
+    .filter({ has: page.locator(`#manage-${hemiBtcVusdMarketId}`) });
+  const positionCells = row.locator("td");
+  const healthFactorCell = positionCells.nth(2);
+  const ltvCell = positionCells.nth(4).locator("span").first();
+
+  async function readHealthFactorAndLtv() {
+    await expect(healthFactorCell).toHaveText(/^\d+\.\d{2}$/);
+    await expect(ltvCell).toHaveText(/%$/);
+    return {
+      healthFactor: parseFloat(await healthFactorCell.innerText()),
+      ltv: parseFloat(await ltvCell.innerText()),
+    };
+  }
+
+  return { readHealthFactorAndLtv, row };
+}
+
+async function openManageAction({
+  action,
+  page,
+}: {
+  action: string;
+  page: Page;
+}) {
+  await page.locator(`#manage-${hemiBtcVusdMarketId}`).click();
+  await page.getByRole("menuitem", { name: action }).click();
+  return page.getByRole("heading", { name: action }).locator("..");
+}
 
 test("start a borrow position on the hemiBTC / VUSD market", async function ({
   page,
@@ -91,9 +158,7 @@ test("start a borrow position on the hemiBTC / VUSD market", async function ({
 
   const positions = page.locator("#borrow-positions");
   await expect(
-    positions.getByText(
-      `${formatNumber(COLLATERAL_DISPLAY)} ${hemiBtc.symbol}`,
-    ),
+    positions.getByText(collateralCellText(COLLATERAL_DISPLAY)),
   ).toBeVisible({ timeout: 30_000 });
 
   await expect(positions.getByText(loanCellText(BORROW_DISPLAY))).toBeVisible();
@@ -108,13 +173,7 @@ test("borrow more on an open hemiBTC / VUSD position", async function ({
 }) {
   const publicClient = createEthereumClient();
 
-  await openBorrowPosition({
-    address: TEST_ADDRESS,
-    borrowAmount: BORROW_DISPLAY,
-    collateralAmount: COLLATERAL_DISPLAY,
-    forkUrl: ANVIL_URL,
-    marketId: hemiBtcVusdMarketId,
-  });
+  await openPositionsPage({ client: publicClient, page });
 
   const [vusdBefore, positionBefore] = await Promise.all([
     balanceOf(publicClient, {
@@ -124,37 +183,14 @@ test("borrow more on an open hemiBTC / VUSD position", async function ({
     fetchPosition(TEST_ADDRESS, hemiBtcVusdMarketId, publicClient),
   ]);
 
-  const { timestamp: chainNow } = await getBlock(publicClient);
-  await page.clock.install({ time: Number(chainNow) * 1000 });
+  const { readHealthFactorAndLtv, row } = getPositionRow(page);
 
-  await page.goto("/borrow");
-
-  await expect(
-    page.getByRole("button", { name: /^0x[a-f0-9]{4}/i }),
-  ).toBeVisible({ timeout: 30_000 });
-
-  const positions = page.locator("#borrow-positions");
-  const positionCells = positions
-    .locator("tr")
-    .filter({ has: page.locator(`#manage-${hemiBtcVusdMarketId}`) })
-    .locator("td");
-  const healthFactorCell = positionCells.nth(2);
-  const ltvCell = positionCells.nth(4).locator("span").first();
-
-  await expect(positions.getByText(loanCellText(BORROW_DISPLAY))).toBeVisible({
+  await expect(row.getByText(loanCellText(BORROW_DISPLAY))).toBeVisible({
     timeout: 30_000,
   });
-  await expect(healthFactorCell).toHaveText(/^\d+\.\d{2}$/);
-  await expect(ltvCell).toHaveText(/%$/);
-  const healthFactorBefore = parseFloat(await healthFactorCell.innerText());
-  const ltvBefore = parseFloat(await ltvCell.innerText());
+  const before = await readHealthFactorAndLtv();
 
-  await page.locator(`#manage-${hemiBtcVusdMarketId}`).click();
-  await page.getByRole("menuitem", { name: "Borrow more" }).click();
-
-  const drawer = page
-    .getByRole("heading", { name: "Borrow more" })
-    .locator("..");
+  const drawer = await openManageAction({ action: "Borrow more", page });
   await drawer
     .locator('input[type="text"]:not([disabled])')
     .fill(BORROW_MORE_DISPLAY);
@@ -188,12 +224,11 @@ test("borrow more on an open hemiBTC / VUSD position", async function ({
     BORROW_AMOUNT + BORROW_MORE_AMOUNT,
     vusd.decimals,
   );
-  await expect(
-    positions.getByText(loanCellText(totalBorrowDisplay)),
-  ).toBeVisible({ timeout: 30_000 });
+  await expect(row.getByText(loanCellText(totalBorrowDisplay))).toBeVisible({
+    timeout: 30_000,
+  });
 
-  expect(parseFloat(await healthFactorCell.innerText())).toBeLessThan(
-    healthFactorBefore,
-  );
-  expect(parseFloat(await ltvCell.innerText())).toBeGreaterThan(ltvBefore);
+  const after = await readHealthFactorAndLtv();
+  expect(after.healthFactor).toBeLessThan(before.healthFactor);
+  expect(after.ltv).toBeGreaterThan(before.ltv);
 });
