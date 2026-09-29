@@ -1,13 +1,12 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Button } from "components/base/button";
 import { Modal } from "components/base/modal";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useCancelWithdraw } from "hooks/useCancelWithdraw";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TokenWithGateway } from "types";
 import { formatAmount } from "utils/token";
-import { useAccount } from "wagmi";
 
 import type { ExitTicket } from "../../types";
 
@@ -25,8 +24,6 @@ export function DeleteTicketModal({
   ticket,
 }: Props) {
   const { t } = useTranslation();
-  const { isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
 
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -100,7 +97,7 @@ export function DeleteTicketModal({
             >
               {t("pages.earn.exit-tickets.delete-btn-cancel")}
             </Button>
-            {isConnected ? (
+            <RequireWalletConnected size="xSmall">
               <Button
                 disabled={isDeleting}
                 onClick={handleDelete}
@@ -111,15 +108,7 @@ export function DeleteTicketModal({
                   ? t("pages.earn.exit-tickets.delete-btn-deleting")
                   : t("pages.earn.exit-tickets.delete-btn")}
               </Button>
-            ) : (
-              <Button
-                onClick={openConnectModal}
-                size="xSmall"
-                variant="primary"
-              >
-                {t("common.connect-wallet")}
-              </Button>
-            )}
+            </RequireWalletConnected>
           </div>
         </div>
       )}

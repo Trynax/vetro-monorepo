@@ -1,4 +1,3 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { stakingVaultAddresses } from "@vetro-protocol/earn";
 import { Badge } from "components/base/badge";
 import { Button } from "components/base/button";
@@ -8,13 +7,13 @@ import { StatusBadge } from "components/base/statusBadge";
 import { Table, type TableColumnDef } from "components/base/table";
 import { Header } from "components/base/table/header";
 import { Toast } from "components/base/toast";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { Tooltip } from "components/tooltip";
 import { TableCellsIcon } from "pages/earn/icons/tableCellsIcon";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isGeoRestricted } from "utils/geoRestriction";
 import type { Address } from "viem";
-import { useAccount } from "wagmi";
 
 import { useExitTickets } from "../../hooks/useExitTickets";
 import type { ExitTicket } from "../../types";
@@ -119,18 +118,8 @@ function WithdrawAllButton({
   isWithdrawing,
   onWithdrawAll,
 }: WithdrawAllButtonProps) {
-  const { isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
   const { t } = useTranslation();
   const geoRestricted = isGeoRestricted();
-
-  if (!isConnected) {
-    return (
-      <Button onClick={openConnectModal} size="xSmall" variant="primary">
-        {t("common.connect-wallet")}
-      </Button>
-    );
-  }
 
   const button = (
     <Button
@@ -148,10 +137,14 @@ function WithdrawAllButton({
     </Button>
   );
 
-  return geoRestricted ? (
-    <Tooltip content={t("common.geo-restriction-title")}>{button}</Tooltip>
-  ) : (
-    button
+  return (
+    <RequireWalletConnected size="xSmall">
+      {geoRestricted ? (
+        <Tooltip content={t("common.geo-restriction-title")}>{button}</Tooltip>
+      ) : (
+        button
+      )}
+    </RequireWalletConnected>
   );
 }
 

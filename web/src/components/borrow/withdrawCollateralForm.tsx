@@ -15,6 +15,7 @@ import { CollapsibleSection } from "components/collapsibleSection";
 import { DrawerFeesContainer } from "components/feesContainer";
 import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIcon";
 import { NetworkFees } from "components/networkFees";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { TokenInput } from "components/tokenInput";
 import { Balance } from "components/tokenInput/balance";
 import type { InputError } from "components/tokenInput/utils";
@@ -35,7 +36,6 @@ import { formatNumber } from "utils/format";
 import { isGeoRestricted } from "utils/geoRestriction";
 import { parseTokenUnits } from "utils/token";
 import { formatUnits } from "viem";
-import { useAccount } from "wagmi";
 
 import { PositionReview } from "./positionReview";
 
@@ -60,14 +60,12 @@ const getWithdrawStepStatus = function (
 };
 
 type SubmitButtonProps = {
-  address: string | undefined;
   balancesLoaded: boolean;
   inputError: InputError | undefined;
   sufficientGas: boolean;
 };
 
 function SubmitButton({
-  address,
   balancesLoaded,
   inputError,
   sufficientGas,
@@ -83,36 +81,37 @@ function SubmitButton({
     );
   }
 
-  if (!address) {
+  function renderButton() {
+    if (balancesLoaded && !sufficientGas) {
+      return (
+        <Button disabled size="small" type="button" variant="primary">
+          {t("common.insufficient-gas")}
+        </Button>
+      );
+    }
+    if (balancesLoaded && inputError) {
+      return (
+        <Button disabled size="small" type="button" variant="primary">
+          {t(`common.${inputError}`)}
+        </Button>
+      );
+    }
     return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t("common.connect-wallet")}
+      <Button
+        disabled={!balancesLoaded}
+        size="small"
+        type="submit"
+        variant="primary"
+      >
+        {t("pages.borrow.withdraw-collateral-progress.submit")}
       </Button>
     );
   }
-  if (balancesLoaded && !sufficientGas) {
-    return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t("common.insufficient-gas")}
-      </Button>
-    );
-  }
-  if (balancesLoaded && inputError) {
-    return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t(`common.${inputError}`)}
-      </Button>
-    );
-  }
+
   return (
-    <Button
-      disabled={!balancesLoaded}
-      size="small"
-      type="submit"
-      variant="primary"
-    >
-      {t("pages.borrow.withdraw-collateral-progress.submit")}
-    </Button>
+    <RequireWalletConnected size="small">
+      {renderButton()}
+    </RequireWalletConnected>
   );
 }
 
@@ -201,7 +200,6 @@ type Props = {
 export function WithdrawCollateralForm({ market, onClose }: Props) {
   const { t } = useTranslation();
   const ethereumChain = useMainnet();
-  const { address } = useAccount();
 
   const [collateralInput, onCollateralChange] = useAmount();
   const [flowStatus, setFlowStatus] =
@@ -351,7 +349,6 @@ export function WithdrawCollateralForm({ market, onClose }: Props) {
         </div>
         <div className="border-y border-gray-200 bg-gray-50 px-6 py-3 *:w-full">
           <SubmitButton
-            address={address}
             balancesLoaded={nativeBalance !== undefined}
             inputError={inputError}
             sufficientGas={sufficientGas}

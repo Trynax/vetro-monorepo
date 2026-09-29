@@ -1,33 +1,28 @@
 import { Button } from "components/base/button";
 import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIcon";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { useTranslation } from "react-i18next";
 import { isGeoRestricted } from "utils/geoRestriction";
 
 type Props = {
   actionText: string;
   balancesLoaded: boolean;
-  connectWalletText?: string;
   enterAmountText?: string;
   inputError: string | undefined;
   insufficientBalanceText?: string;
   insufficientGasText?: string;
-  isConnected: boolean;
   isPending: boolean;
-  onConnectWallet?: VoidFunction;
   pendingText: string;
 };
 
 export function StakeSubmitButton({
   actionText,
   balancesLoaded,
-  connectWalletText,
   enterAmountText,
   inputError,
   insufficientBalanceText,
   insufficientGasText,
-  isConnected,
   isPending,
-  onConnectWallet,
   pendingText,
 }: Props) {
   const { t } = useTranslation();
@@ -37,19 +32,6 @@ export function StakeSubmitButton({
       <Button disabled size="small" type="submit" variant="primary">
         <ExclamationTriangleIcon />
         {t("common.geo-restriction-title")}
-      </Button>
-    );
-  }
-
-  if (!isConnected) {
-    return (
-      <Button
-        onClick={onConnectWallet}
-        size="small"
-        type="button"
-        variant="primary"
-      >
-        {connectWalletText ?? t("common.connect-wallet")}
       </Button>
     );
   }
@@ -76,8 +58,15 @@ export function StakeSubmitButton({
   const isDisabled = !balancesLoaded || !!inputError || isPending;
 
   return (
-    <Button disabled={isDisabled} size="small" type="submit" variant="primary">
-      {getButtonText()}
-    </Button>
+    <RequireWalletConnected size="small">
+      <Button
+        disabled={isDisabled}
+        size="small"
+        type="submit"
+        variant="primary"
+      >
+        {getButtonText()}
+      </Button>
+    </RequireWalletConnected>
   );
 }

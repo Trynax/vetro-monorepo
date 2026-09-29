@@ -3,7 +3,6 @@ import { useNativeBalance } from "@hemilabs/react-hooks/useNativeBalance";
 import { useNeedsApproval } from "@hemilabs/react-hooks/useNeedsApproval";
 import { useTokenBalance } from "@hemilabs/react-hooks/useTokenBalance";
 import { getChainAddresses } from "@morpho-org/blue-sdk";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Button } from "components/base/button";
 import { RenderCryptoValue } from "components/base/cryptoValue";
 import { RenderFiatValue } from "components/base/fiatValue";
@@ -13,6 +12,7 @@ import { OracleLabel } from "components/borrow/oracleLabel";
 import { FormSection, FormSectionItem } from "components/feesContainer";
 import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIcon";
 import { NetworkFees } from "components/networkFees";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { SetMaxErc20Balance } from "components/setMaxErc20Balance";
 import { TokenInput } from "components/tokenInput";
 import { Balance } from "components/tokenInput/balance";
@@ -34,25 +34,17 @@ import { useTranslation } from "react-i18next";
 import { getMaxBorrowable } from "utils/borrowLimit";
 import { formatNumber } from "utils/format";
 import { isGeoRestricted } from "utils/geoRestriction";
-import { type Address, formatUnits, parseUnits } from "viem";
-import { useAccount } from "wagmi";
+import { formatUnits, parseUnits } from "viem";
 
 import { BorrowDrawer, type BorrowFlowStatus } from "./borrowDrawer";
 import { BorrowingReview } from "./borrowingReview";
 
 type SubmitButtonProps = {
-  address: Address | undefined;
   balancesLoaded: boolean;
   inputError: InputError | undefined;
-  openConnectModal: (() => void) | undefined;
 };
 
-function SubmitButton({
-  address,
-  balancesLoaded,
-  inputError,
-  openConnectModal,
-}: SubmitButtonProps) {
+function SubmitButton({ balancesLoaded, inputError }: SubmitButtonProps) {
   const { t } = useTranslation();
 
   if (isGeoRestricted()) {
@@ -64,29 +56,18 @@ function SubmitButton({
     );
   }
 
-  if (!address) {
-    return (
-      <Button
-        onClick={() => openConnectModal?.()}
-        size="small"
-        type="button"
-        variant="primary"
-      >
-        {t("common.connect-wallet")}
-      </Button>
-    );
-  }
-  if (balancesLoaded && inputError) {
-    return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t(`common.${inputError}`)}
-      </Button>
-    );
-  }
   return (
-    <Button size="small" type="submit" variant="primary">
-      {t("pages.borrow.supply-collateral-and-borrow")}
-    </Button>
+    <RequireWalletConnected size="small">
+      {balancesLoaded && inputError ? (
+        <Button disabled size="small" type="button" variant="primary">
+          {t(`common.${inputError}`)}
+        </Button>
+      ) : (
+        <Button size="small" type="submit" variant="primary">
+          {t("pages.borrow.supply-collateral-and-borrow")}
+        </Button>
+      )}
+    </RequireWalletConnected>
   );
 }
 
@@ -144,8 +125,6 @@ export function BorrowForm({
 }: Props) {
   const { t } = useTranslation();
   const ethereumChain = useMainnet();
-  const { address } = useAccount();
-  const { openConnectModal } = useConnectModal();
   const [flowStatus, setFlowStatus] = useState<BorrowFlowStatus>("idle");
   const [showToast, setShowToast] = useState(false);
   const [startedWithApproval, setStartedWithApproval] = useState(false);
@@ -389,10 +368,8 @@ export function BorrowForm({
         </div>
         <div className="flex items-center justify-center border-y border-gray-200 p-3 *:w-full">
           <SubmitButton
-            address={address}
             balancesLoaded={balancesLoaded}
             inputError={inputError}
-            openConnectModal={openConnectModal}
           />
         </div>
         <FormSection
