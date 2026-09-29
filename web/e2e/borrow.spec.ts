@@ -25,8 +25,6 @@ const BORROW_MORE_DISPLAY = "500";
 const BORROW_MORE_AMOUNT = parseUnits(BORROW_MORE_DISPLAY, vusd.decimals);
 const SUPPLY_MORE_DISPLAY = "0.02";
 const SUPPLY_MORE_AMOUNT = parseUnits(SUPPLY_MORE_DISPLAY, hemiBtc.decimals);
-// Partial on purpose: the form has no max button, and a full repay by assets
-// would race the interest accrued per block.
 const REPAY_DISPLAY = "400";
 const REPAY_AMOUNT = parseUnits(REPAY_DISPLAY, vusd.decimals);
 const WITHDRAW_DISPLAY = "0.02";
