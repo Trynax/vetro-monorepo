@@ -29,6 +29,8 @@ const SUPPLY_MORE_AMOUNT = parseUnits(SUPPLY_MORE_DISPLAY, hemiBtc.decimals);
 // would race the interest accrued per block.
 const REPAY_DISPLAY = "400";
 const REPAY_AMOUNT = parseUnits(REPAY_DISPLAY, vusd.decimals);
+const WITHDRAW_DISPLAY = "0.02";
+const WITHDRAW_AMOUNT = parseUnits(WITHDRAW_DISPLAY, hemiBtc.decimals);
 
 const escapeRegExp = (text: string) =>
   text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -367,4 +369,71 @@ test("repay part of the loan on an open hemiBTC / VUSD position", async function
   const after = await readHealthFactorAndLtv();
   expect(after.healthFactor).toBeGreaterThan(before.healthFactor);
   expect(after.ltv).toBeLessThan(before.ltv);
+});
+
+test("withdraw collateral from an open hemiBTC / VUSD position", async function ({
+  page,
+}) {
+  const publicClient = createEthereumClient();
+
+  await openPositionsPage({ client: publicClient, page });
+
+  const [hemiBtcBefore, positionBefore] = await Promise.all([
+    balanceOf(publicClient, {
+      account: TEST_ADDRESS,
+      address: hemiBtc.address,
+    }),
+    fetchPosition(TEST_ADDRESS, hemiBtcVusdMarketId, publicClient),
+  ]);
+
+  const { readHealthFactorAndLtv, row } = getPositionRow(page);
+
+  await expect(
+    row.getByText(collateralCellText(COLLATERAL_DISPLAY)),
+  ).toBeVisible({ timeout: 30_000 });
+  const before = await readHealthFactorAndLtv();
+
+  const drawer = await openManageAction({
+    action: "Withdraw collateral",
+    page,
+  });
+  await drawer
+    .locator('input[type="text"]:not([disabled])')
+    .fill(WITHDRAW_DISPLAY);
+
+  const submitButton = drawer.getByRole("button", {
+    exact: true,
+    name: "Withdraw",
+  });
+  await expect(submitButton).toBeEnabled({ timeout: 20_000 });
+  await submitButton.click();
+
+  await expect(page.getByText("Collateral withdrawn")).toBeVisible({
+    timeout: 60_000,
+  });
+
+  await waitForBalance({ client: publicClient, token: hemiBtc.address }).toBe(
+    hemiBtcBefore + WITHDRAW_AMOUNT,
+  );
+
+  const positionAfter = await fetchPosition(
+    TEST_ADDRESS,
+    hemiBtcVusdMarketId,
+    publicClient,
+  );
+  expect(positionAfter.collateral).toBe(COLLATERAL_AMOUNT - WITHDRAW_AMOUNT);
+  expect(positionAfter.borrowShares).toBe(positionBefore.borrowShares);
+
+  const remainingCollateralDisplay = formatUnits(
+    COLLATERAL_AMOUNT - WITHDRAW_AMOUNT,
+    hemiBtc.decimals,
+  );
+  await expect(
+    row.getByText(collateralCellText(remainingCollateralDisplay)),
+  ).toBeVisible({ timeout: 30_000 });
+  await expect(row.getByText(loanCellText(BORROW_DISPLAY))).toBeVisible();
+
+  const after = await readHealthFactorAndLtv();
+  expect(after.healthFactor).toBeLessThan(before.healthFactor);
+  expect(after.ltv).toBeGreaterThan(before.ltv);
 });
