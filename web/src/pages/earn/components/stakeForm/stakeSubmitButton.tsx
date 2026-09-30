@@ -7,10 +7,7 @@ import { isGeoRestricted } from "utils/geoRestriction";
 type Props = {
   actionText: string;
   balancesLoaded: boolean;
-  enterAmountText?: string;
   inputError: string | undefined;
-  insufficientBalanceText?: string;
-  insufficientGasText?: string;
   isPending: boolean;
   pendingText: string;
 };
@@ -18,10 +15,7 @@ type Props = {
 export function StakeSubmitButton({
   actionText,
   balancesLoaded,
-  enterAmountText,
   inputError,
-  insufficientBalanceText,
-  insufficientGasText,
   isPending,
   pendingText,
 }: Props) {
@@ -44,13 +38,13 @@ export function StakeSubmitButton({
       return actionText;
     }
     if (inputError === "enter-amount") {
-      return enterAmountText ?? t("common.enter-amount");
+      return t("common.enter-amount");
     }
     if (inputError === "insufficient-balance") {
-      return insufficientBalanceText ?? t("common.insufficient-balance");
+      return t("common.insufficient-balance");
     }
     if (inputError === "insufficient-gas") {
-      return insufficientGasText ?? t("common.insufficient-gas");
+      return t("common.insufficient-gas");
     }
     return actionText;
   }

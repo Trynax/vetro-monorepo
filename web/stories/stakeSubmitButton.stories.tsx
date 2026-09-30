@@ -9,11 +9,6 @@ const mockAccount = (account: Partial<ReturnType<typeof useAccount>>) =>
   mocked(useAccount).mockReturnValue(account as ReturnType<typeof useAccount>);
 
 const meta: Meta<typeof StakeSubmitButton> = {
-  args: {
-    enterAmountText: "Enter amount",
-    insufficientBalanceText: "Insufficient balance",
-    insufficientGasText: "Insufficient gas",
-  },
   beforeEach() {
     mockAccount({ address: zeroAddress });
     return () => mocked(useAccount).mockReset();
