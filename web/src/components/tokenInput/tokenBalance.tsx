@@ -1,29 +1,30 @@
 import { useTokenBalance } from "@hemilabs/react-hooks/useTokenBalance";
 import type { Token } from "@vetro-protocol/core";
-import { Balance } from "components/tokenInput/balance";
 import { useTranslation } from "react-i18next";
 import { formatAmount } from "utils/token";
 
+import { Balance } from "./balance";
+
 type Props = {
+  label?: string;
   token: Token;
 };
 
-export const ToTokenBalance = function ({ token }: Props) {
+export const TokenBalance = function ({ label, token }: Props) {
   const { t } = useTranslation();
 
-  const { data: toTokenBalance, isError: isToTokenBalanceError } =
-    useTokenBalance({
-      address: token.address,
-      chainId: token.chainId,
-    });
+  const { data: balance, isError } = useTokenBalance({
+    address: token.address,
+    chainId: token.chainId,
+  });
 
   return (
     <Balance
-      label={t("pages.swap.form.balance")}
+      label={label ?? t("common.balance")}
       value={formatAmount({
-        amount: toTokenBalance,
+        amount: balance,
         decimals: token.decimals,
-        isError: isToTokenBalanceError,
+        isError,
       })}
     />
   );

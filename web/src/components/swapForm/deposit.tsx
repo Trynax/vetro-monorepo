@@ -10,6 +10,7 @@ import { FormSection, FormSectionItem } from "components/feesContainer";
 import { SetMaxErc20Balance } from "components/setMaxErc20Balance";
 import { TokenDropdown } from "components/tokenDropdown";
 import { TokenInput } from "components/tokenInput";
+import { TokenBalance } from "components/tokenInput/tokenBalance";
 import { TokenSelectorReadOnly } from "components/tokenSelectorReadOnly";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useDeposit } from "hooks/useDeposit";
@@ -37,7 +38,6 @@ import { SlippageSettings } from "./slippageSettings";
 import { SubmitButton } from "./submitButton";
 import { type DepositFlowStatus, SwapDepositDrawer } from "./swapDepositDrawer";
 import { SwapFees } from "./swapFees";
-import { ToTokenBalance } from "./toTokenBalance";
 import { TreasuryReserves } from "./treasuryReserves";
 
 type Props = {
@@ -318,7 +318,7 @@ export function Deposit({
         }
         toSection={
           <TokenInput
-            balance={<ToTokenBalance token={toToken} />}
+            balance={<TokenBalance token={toToken} />}
             disabled
             fiatValue={
               <RenderFiatValue token={toToken} value={depositPreview} />

@@ -4,6 +4,7 @@
     "amount-too-small-to-bridge": "Cantidad demasiado pequeña para transferir",
     "approve-10x": "Aprobar 10x",
     "approve-10x-tooltip": "Apruebe hasta 10× el monto de su transacción, reduciendo futuros pasos de aprobación. Puede revocarlo en cualquier momento.",
+    "balance": "Saldo",
     "charts": {
       "apy-label": "TEA",
       "period-1-month": "1 mes",

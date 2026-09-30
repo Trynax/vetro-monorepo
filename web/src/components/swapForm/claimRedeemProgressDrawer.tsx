@@ -9,6 +9,7 @@ import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIco
 import { TokenDropdown } from "components/tokenDropdown";
 import { TokenInput } from "components/tokenInput";
 import { Balance } from "components/tokenInput/balance";
+import { TokenBalance } from "components/tokenInput/tokenBalance";
 import type { InputError } from "components/tokenInput/utils";
 import { TokenSelectorReadOnly } from "components/tokenSelectorReadOnly";
 import { useTokenConfig } from "hooks/useTokenConfig";
@@ -21,7 +22,6 @@ import type { Address } from "viem";
 
 import { OutputLabel, type UnitPreview } from "./outputLabel";
 import { SwapFees } from "./swapFees";
-import { ToTokenBalance } from "./toTokenBalance";
 import type { ClaimRedeemFlowStatus } from "./types";
 
 type Props = {
@@ -178,7 +178,7 @@ export function ClaimRedeemProgressDrawer({
           value={fromAmount}
         />
         <TokenInput
-          balance={<ToTokenBalance token={toToken} />}
+          balance={<TokenBalance token={toToken} />}
           disabled
           fiatValue={<RenderFiatValue token={toToken} value={outputBigInt} />}
           label={t("pages.swap.form.you-will-receive-estimated")}

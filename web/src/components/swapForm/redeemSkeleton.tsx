@@ -24,9 +24,7 @@ export function RedeemSkeleton({ fromToken }: Props) {
         <div className="xs:border-x flex w-full max-w-md flex-col gap-0.5 border-gray-200 bg-white pt-2">
           <div className="px-2">
             <TokenInput
-              balance={
-                <Balance label={t("pages.swap.form.balance")} value="-" />
-              }
+              balance={<Balance label={t("common.balance")} value="-" />}
               disabled
               fiatValue={
                 <Skeleton className="h-full" containerClassName="w-8" />
@@ -43,9 +41,7 @@ export function RedeemSkeleton({ fromToken }: Props) {
 
           <div className="px-2">
             <TokenInput
-              balance={
-                <Balance label={t("pages.swap.form.balance")} value="-" />
-              }
+              balance={<Balance label={t("common.balance")} value="-" />}
               disabled
               fiatValue={
                 <Skeleton className="h-full" containerClassName="w-8" />
