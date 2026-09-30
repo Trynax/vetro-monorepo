@@ -1,12 +1,11 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Button } from "components/base/button";
 import { Spinner } from "components/base/spinner";
 import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIcon";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import type { InputError } from "components/tokenInput/utils";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { isGeoRestricted } from "utils/geoRestriction";
-import { useAccount } from "wagmi";
 
 const Container = ({ children }: { children: ReactNode }) => (
   <div className="mt-2 flex w-full flex-col border-t border-gray-200 px-2 py-3">
@@ -33,9 +32,6 @@ export function SubmitButton({
   isLoading,
   isPreviewError,
 }: Props) {
-  const { address } = useAccount();
-  const { openConnectModal } = useConnectModal();
-
   const { t } = useTranslation();
 
   const buttonProps = {
@@ -55,78 +51,58 @@ export function SubmitButton({
     );
   }
 
-  if (!address) {
-    return (
-      <Container>
-        <Button
-          onClick={() => openConnectModal?.()}
-          size="xLarge"
-          type="button"
-        >
-          {t("common.connect-wallet")}
-        </Button>
-      </Container>
-    );
-  }
-
-  if (isActive === false) {
-    return (
-      <Container>
+  function renderButton() {
+    if (isActive === false) {
+      return (
         <Button {...buttonProps}>{t("pages.swap.form.swaps-paused")}</Button>
-      </Container>
-    );
-  }
+      );
+    }
 
-  if (inputError) {
-    return (
-      <Container>
-        <Button {...buttonProps}>{t(`common.${inputError}`)}</Button>
-      </Container>
-    );
-  }
+    if (inputError) {
+      return <Button {...buttonProps}>{t(`common.${inputError}`)}</Button>;
+    }
 
-  if (isActiveError) {
-    return (
-      <Container>
+    if (isActiveError) {
+      return (
         <Button {...buttonProps}>
           {t("pages.swap.form.token-status-error")}
         </Button>
-      </Container>
-    );
-  }
+      );
+    }
 
-  // show error if it failed to load allowance
-  if (isAllowanceError) {
-    return (
-      <Container>
+    // show error if it failed to load allowance
+    if (isAllowanceError) {
+      return (
         <Button {...buttonProps}>{t("pages.swap.form.allowance-error")}</Button>
-      </Container>
-    );
-  }
+      );
+    }
 
-  if (isPreviewError) {
-    return (
-      <Container>
+    if (isPreviewError) {
+      return (
         <Button {...buttonProps}>{t("pages.swap.form.preview-error")}</Button>
-      </Container>
-    );
-  }
+      );
+    }
 
-  if (isLoading) {
-    return (
-      <Container>
+    if (isLoading) {
+      return (
         <Button {...buttonProps}>
           <Spinner />
         </Button>
-      </Container>
+      );
+    }
+
+    return (
+      <Button {...buttonProps} disabled={false}>
+        {actionText}
+      </Button>
     );
   }
 
   return (
     <Container>
-      <Button {...buttonProps} disabled={false}>
-        {actionText}
-      </Button>
+      <RequireWalletConnected size="xLarge">
+        {renderButton()}
+      </RequireWalletConnected>
     </Container>
   );
 }

@@ -1,13 +1,12 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Button } from "components/base/button";
 import { Modal } from "components/base/modal";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useCancelRedeemRequest } from "hooks/useCancelRedeemRequest";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TokenWithGateway } from "types";
 import { formatUnits } from "viem";
-import { useAccount } from "wagmi";
 
 type Props = {
   onClose: VoidFunction;
@@ -22,8 +21,6 @@ export function CancelRedeemModal({
   peggedToken,
   redeemableAmount,
 }: Props) {
-  const { isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
   const [isCancelling, setIsCancelling] = useState(false);
   const { t } = useTranslation();
 
@@ -100,7 +97,7 @@ export function CancelRedeemModal({
             >
               {t("pages.swap.redeem-queue.keep-redeem")}
             </Button>
-            {isConnected ? (
+            <RequireWalletConnected size="xSmall">
               <Button
                 disabled={isCancelling}
                 onClick={() => mutate()}
@@ -111,15 +108,7 @@ export function CancelRedeemModal({
                   ? t("pages.swap.redeem-queue.cancel-redeem-btn-cancelling")
                   : t("pages.swap.redeem-queue.cancel-redeem-btn-cancel")}
               </Button>
-            ) : (
-              <Button
-                onClick={openConnectModal}
-                size="xSmall"
-                variant="primary"
-              >
-                {t("common.connect-wallet")}
-              </Button>
-            )}
+            </RequireWalletConnected>
           </div>
         </div>
       )}

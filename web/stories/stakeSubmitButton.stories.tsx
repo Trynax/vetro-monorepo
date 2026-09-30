@@ -1,13 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { mocked } from "storybook/test";
+import { zeroAddress } from "viem";
+import { useAccount } from "wagmi";
 
 import { StakeSubmitButton } from "../src/pages/earn/components/stakeForm/stakeSubmitButton";
 
+const mockAccount = (account: Partial<ReturnType<typeof useAccount>>) =>
+  mocked(useAccount).mockReturnValue(account as ReturnType<typeof useAccount>);
+
 const meta: Meta<typeof StakeSubmitButton> = {
-  args: {
-    connectWalletText: "Connect Wallet",
-    enterAmountText: "Enter amount",
-    insufficientBalanceText: "Insufficient balance",
-    insufficientGasText: "Insufficient gas",
+  beforeEach() {
+    mockAccount({ address: zeroAddress });
+    return () => mocked(useAccount).mockReset();
   },
   component: StakeSubmitButton,
   title: "Components/StakeSubmitButton",
@@ -21,7 +25,6 @@ export const Default: Story = {
     actionText: "Deposit",
     balancesLoaded: true,
     inputError: undefined,
-    isConnected: true,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -32,9 +35,11 @@ export const ConnectWallet: Story = {
     actionText: "Deposit",
     balancesLoaded: true,
     inputError: undefined,
-    isConnected: false,
     isPending: false,
     pendingText: "Depositing...",
+  },
+  beforeEach() {
+    mockAccount({ address: undefined });
   },
 };
 
@@ -43,7 +48,6 @@ export const EnterAmount: Story = {
     actionText: "Deposit",
     balancesLoaded: true,
     inputError: "enter-amount",
-    isConnected: true,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -54,7 +58,6 @@ export const InsufficientBalance: Story = {
     actionText: "Deposit",
     balancesLoaded: true,
     inputError: "insufficient-balance",
-    isConnected: true,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -65,7 +68,6 @@ export const InsufficientGas: Story = {
     actionText: "Deposit",
     balancesLoaded: true,
     inputError: "insufficient-gas",
-    isConnected: true,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -76,7 +78,6 @@ export const Pending: Story = {
     actionText: "Deposit",
     balancesLoaded: true,
     inputError: undefined,
-    isConnected: true,
     isPending: true,
     pendingText: "Depositing...",
   },
@@ -87,7 +88,6 @@ export const BalancesLoading: Story = {
     actionText: "Deposit",
     balancesLoaded: false,
     inputError: undefined,
-    isConnected: true,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -98,7 +98,6 @@ export const WithdrawAction: Story = {
     actionText: "Withdraw",
     balancesLoaded: true,
     inputError: undefined,
-    isConnected: true,
     isPending: false,
     pendingText: "Withdrawing...",
   },

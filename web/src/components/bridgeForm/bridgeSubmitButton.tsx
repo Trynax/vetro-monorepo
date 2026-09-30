@@ -1,12 +1,11 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Button } from "components/base/button";
 import { Spinner } from "components/base/spinner";
 import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIcon";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import type { InputError } from "components/tokenInput/utils";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { isGeoRestricted } from "utils/geoRestriction";
-import { useAccount } from "wagmi";
 
 const Container = ({ children }: { children: ReactNode }) => (
   <div className="mt-2 flex w-full flex-col border-t border-gray-200 px-2 py-3">
@@ -27,8 +26,6 @@ export function BridgeSubmitButton({
   isPending,
   isPreviewError,
 }: Props) {
-  const { address } = useAccount();
-  const { openConnectModal } = useConnectModal();
   const { t } = useTranslation();
 
   if (isGeoRestricted()) {
@@ -42,55 +39,43 @@ export function BridgeSubmitButton({
     );
   }
 
-  if (!address) {
-    return (
-      <Container>
-        <Button
-          onClick={() => openConnectModal?.()}
-          size="xLarge"
-          type="button"
-        >
-          {t("common.connect-wallet")}
-        </Button>
-      </Container>
-    );
-  }
-
-  if (inputError) {
-    return (
-      <Container>
+  function renderButton() {
+    if (inputError) {
+      return (
         <Button disabled size="xLarge" type="button">
           {t(`common.${inputError}`)}
         </Button>
-      </Container>
-    );
-  }
+      );
+    }
 
-  if (isPreviewError) {
-    return (
-      <Container>
+    if (isPreviewError) {
+      return (
         <Button disabled size="xLarge" type="button">
           {t("pages.bridge.form.preview-error")}
         </Button>
-      </Container>
-    );
-  }
+      );
+    }
 
-  if (isLoadingData || isPending) {
-    return (
-      <Container>
+    if (isLoadingData || isPending) {
+      return (
         <Button disabled size="xLarge" type="button">
           <Spinner />
         </Button>
-      </Container>
+      );
+    }
+
+    return (
+      <Button size="xLarge" type="submit">
+        {t("pages.bridge.form.action")}
+      </Button>
     );
   }
 
   return (
     <Container>
-      <Button size="xLarge" type="submit">
-        {t("pages.bridge.form.action")}
-      </Button>
+      <RequireWalletConnected size="xLarge">
+        {renderButton()}
+      </RequireWalletConnected>
     </Container>
   );
 }

@@ -2,7 +2,6 @@ import { useAddTokenToWallet } from "@hemilabs/react-hooks/useAddTokenToWallet";
 import { useAllowance } from "@hemilabs/react-hooks/useAllowance";
 import { useNativeBalance } from "@hemilabs/react-hooks/useNativeBalance";
 import { useTokenBalance } from "@hemilabs/react-hooks/useTokenBalance";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import type { Token } from "@vetro-protocol/core";
 import { ApproveSection } from "components/approveSection";
 import { Drawer } from "components/base/drawer";
@@ -107,9 +106,8 @@ export function StakeDepositForm({
   shareToken,
   stakingVaultAddress,
 }: Props) {
-  const { address: account, isConnected } = useAccount();
+  const { address: account } = useAccount();
   const chain = useMainnet();
-  const { openConnectModal } = useConnectModal();
   const { t } = useTranslation();
   const [requestCloseDrawer, setRequestCloseDrawer] = useState(false);
   const [submitted, setSubmitted] = useState<{
@@ -277,9 +275,7 @@ export function StakeDepositForm({
             actionText={actionText}
             balancesLoaded={balancesLoaded}
             inputError={inputError}
-            isConnected={isConnected}
             isPending={depositMutation.isPending}
-            onConnectWallet={openConnectModal}
             pendingText={pendingText}
           />
         </div>

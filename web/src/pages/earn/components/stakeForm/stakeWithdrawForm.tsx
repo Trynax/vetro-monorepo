@@ -1,5 +1,4 @@
 import { useNativeBalance } from "@hemilabs/react-hooks/useNativeBalance";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import type { Token } from "@vetro-protocol/core";
 import { RenderCryptoValue } from "components/base/cryptoValue";
 import { Drawer } from "components/base/drawer";
@@ -24,7 +23,6 @@ import { type FormEvent, Suspense, lazy, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TokenWithGateway } from "types";
 import { type Address, parseUnits } from "viem";
-import { useAccount } from "wagmi";
 
 import type { WithdrawStep } from "./stakeFormReducer";
 import { StakeSubmitButton } from "./stakeSubmitButton";
@@ -98,13 +96,11 @@ export function StakeWithdrawForm({
   stakingVaultAddress,
   withdrawStep,
 }: Props) {
-  const { isConnected } = useAccount();
   const { data: canInstantWithdraw } = useCanInstantWithdraw({
     stakingVaultAddress,
   });
   const chain = useMainnet();
   const { data: cooldownDays } = useCooldownDuration(stakingVaultAddress);
-  const { openConnectModal } = useConnectModal();
   const { t } = useTranslation();
   const [requestCloseDrawer, setRequestCloseDrawer] = useState(false);
   const [submitted, setSubmitted] = useState<{
@@ -277,9 +273,7 @@ export function StakeWithdrawForm({
             actionText={actionText}
             balancesLoaded={balancesLoaded && !isWithdrawPathLoading}
             inputError={inputError}
-            isConnected={isConnected}
             isPending={withdrawMutation.isPending}
-            onConnectWallet={openConnectModal}
             pendingText={pendingText}
           />
         </div>
