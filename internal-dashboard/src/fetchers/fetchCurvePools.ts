@@ -37,7 +37,7 @@ export const fetchCurvePools = async function (
         balance: BigInt(coin.poolBalance),
         decimals: Number(coin.decimals),
         symbol: coin.symbol,
-        usdPrice: coin.usdPrice,
+        usdPrice: coin.usdPrice ?? undefined,
       }));
 
       const baseApy = volume?.latestDailyApyPcent ?? 0;
