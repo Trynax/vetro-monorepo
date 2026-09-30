@@ -26,7 +26,7 @@
     "@sentry/cli": "3.6.2",
     "@types/node": "24.10.13",
     "typescript": "5.9.3",
-    "vitest": "4.1.9",
+    "vitest": "5.0.1",
     "wrangler": "4.65.0"
   },
   "private": true,
