@@ -81,14 +81,24 @@ export const useRepayAssets = function ({
         marketId,
       });
 
-      const { emitter, promise } = repayAssets(walletClient!, {
-        address: morphoAddress,
-        amount: repayAmount,
-        approveAmount,
-        marketId,
-        onBehalf: account,
-        shares: repayShares,
-      });
+      const repayParams =
+        repayShares === undefined
+          ? {
+              address: morphoAddress,
+              amount: repayAmount,
+              approveAmount,
+              marketId,
+              onBehalf: account,
+            }
+          : {
+              address: morphoAddress,
+              approveAmount,
+              marketId,
+              onBehalf: account,
+              shares: repayShares,
+            };
+
+      const { emitter, promise } = repayAssets(walletClient!, repayParams);
 
       onEmitter?.(emitter);
 

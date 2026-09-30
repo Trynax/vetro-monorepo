@@ -138,11 +138,30 @@ describe("fetchRepayGasUnits", function () {
       }),
     );
     expect(vi.mocked(encodeRepayAssets)).toHaveBeenCalledWith(
-      expect.objectContaining({
-        amount: 0n,
-        shares: 500n,
-      }),
+      expect.objectContaining({ shares: 500n }),
     );
+    const lastEncodeCall = vi.mocked(encodeRepayAssets).mock.calls.at(-1)?.[0];
+
+    expect(lastEncodeCall).not.toHaveProperty("amount");
+  });
+
+  it("throws when a share-based repayment has no approval amount", async function () {
+    const queryClient = createPrepopulatedQueryClient();
+
+    await expect(
+      fetchRepayGasUnits({
+        amount: 990n,
+        approveAmount: undefined,
+        client: mockClient,
+        marketId: zeroHash,
+        owner: mockOwner,
+        queryClient,
+        shares: 500n,
+        token: mockToken,
+      }),
+    ).rejects.toThrow("Approval amount is required for share-based repayment");
+
+    expect(estimateGas).not.toHaveBeenCalled();
   });
 
   it("throws when amount exceeds current debt", async function () {

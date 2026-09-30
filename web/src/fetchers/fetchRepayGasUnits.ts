@@ -63,12 +63,20 @@ export const fetchRepayGasUnits = async function ({
     throw new Error("Amount exceeds current debt");
   }
 
-  const amountForApproval =
-    shares === undefined ? amount : (approveAmount ?? amount);
+  if (shares !== undefined && approveAmount === undefined) {
+    throw new Error("Approval amount is required for share-based repayment");
+  }
+
+  const amountForApproval = shares === undefined ? amount : approveAmount!;
 
   if (amountForApproval > loanBalance) {
     throw new Error("Insufficient loan token balance");
   }
+
+  const repayParams =
+    shares === undefined
+      ? { amount, marketParams: morphoMarket.params, onBehalf: owner }
+      : { marketParams: morphoMarket.params, onBehalf: owner, shares };
 
   const [approvalGas, repayGas] = await Promise.all([
     estimateApprovalGasUnits({
@@ -82,12 +90,7 @@ export const fetchRepayGasUnits = async function ({
     }),
     estimateGas(client, {
       account: owner,
-      data: encodeRepayAssets({
-        amount: shares === undefined ? amount : 0n,
-        marketParams: morphoMarket.params,
-        onBehalf: owner,
-        shares,
-      }),
+      data: encodeRepayAssets(repayParams),
       stateOverride: createErc20AllowanceStateOverride({
         owner,
         spender: morphoAddress,
