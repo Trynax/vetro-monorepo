@@ -1,8 +1,7 @@
 import { previewDeposit } from "@vetro-protocol/gateway/actions";
 import { type Command } from "commander";
-import { parseUnits } from "viem";
 
-import { parseAmount } from "../../../lib/args.ts";
+import { parseAmount, parseTokenAmount } from "../../../lib/args.ts";
 import { type GlobalOptions, createVetroClient } from "../../../lib/client.ts";
 import { printResult } from "../../../lib/output.ts";
 import { resolveWhitelistedToken } from "../../../lib/tokens.ts";
@@ -30,12 +29,11 @@ export function register(swap: Command) {
         value: options.from,
       });
 
-      const amountIn = parseUnits(options.amount, tokenIn.decimals);
-      if (amountIn === 0n) {
-        throw new Error(
-          `Amount is below one unit of "${options.from}": it rounds down to 0`,
-        );
-      }
+      const amountIn = parseTokenAmount({
+        amount: options.amount,
+        decimals: tokenIn.decimals,
+        token: options.from,
+      });
 
       const peggedTokenOut = await previewDeposit(client, {
         address: tokenIn.gatewayAddress,

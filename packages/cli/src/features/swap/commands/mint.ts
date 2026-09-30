@@ -4,9 +4,14 @@ import {
   previewDeposit,
 } from "@vetro-protocol/gateway/actions";
 import { type Command } from "commander";
-import { type Address, formatUnits, parseUnits } from "viem";
+import { type Address, formatUnits } from "viem";
 
-import { parseAddress, parseAmount, parseSlippage } from "../../../lib/args.ts";
+import {
+  parseAddress,
+  parseAmount,
+  parseSlippage,
+  parseTokenAmount,
+} from "../../../lib/args.ts";
 import { type GlobalOptions, createVetroClient } from "../../../lib/client.ts";
 import { printTransactionRequest } from "../../../lib/output.ts";
 import { DEFAULT_SLIPPAGE, applySlippage } from "../../../lib/slippage.ts";
@@ -58,6 +63,11 @@ export function register(swap: Command) {
         client,
         value: options.from,
       });
+      const amountIn = parseTokenAmount({
+        amount: options.amount,
+        decimals: tokenIn.decimals,
+        token: options.from,
+      });
 
       if (options.to !== undefined) {
         const peggedToken = await getGatewayPeggedToken({
@@ -70,8 +80,6 @@ export function register(swap: Command) {
           );
         }
       }
-
-      const amountIn = parseUnits(options.amount, tokenIn.decimals);
 
       const [peggedTokenOut, maxMint, { depositActive }] = await Promise.all([
         previewDeposit(client, {

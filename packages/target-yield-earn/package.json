@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "to-promise-event": "1.0.0",
-    "viem-erc20": "2.2.0",
+    "viem-erc20": "2.2.1",
     "viem-erc4626": "1.0.0",
     "viem-erc7540": "1.0.0"
   },
