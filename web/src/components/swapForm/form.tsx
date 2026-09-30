@@ -1,11 +1,9 @@
-import { useTokenBalance } from "@hemilabs/react-hooks/useTokenBalance";
 import type { Token } from "@vetro-protocol/core";
 import { RenderFiatValue } from "components/base/fiatValue";
 import { TokenInput } from "components/tokenInput";
-import { Balance } from "components/tokenInput/balance";
+import { TokenBalance } from "components/tokenInput/tokenBalance";
 import type { FormEvent, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { formatAmount } from "utils/token";
 
 import { SwapToggleButton } from "./swapToggleButton";
 
@@ -40,12 +38,6 @@ export function Form({
 }: Props) {
   const { t } = useTranslation();
 
-  const { data: fromTokenBalance, isError: isFromTokenBalanceError } =
-    useTokenBalance({
-      address: fromToken.address,
-      chainId: fromToken.chainId,
-    });
-
   return (
     <div className="flex w-full justify-center border-y border-gray-200 bg-gray-100">
       <form
@@ -54,16 +46,7 @@ export function Form({
       >
         <div className="px-2">
           <TokenInput
-            balance={
-              <Balance
-                label={t("pages.swap.form.balance")}
-                value={formatAmount({
-                  amount: fromTokenBalance,
-                  decimals: fromToken.decimals,
-                  isError: isFromTokenBalanceError,
-                })}
-              />
-            }
+            balance={<TokenBalance token={fromToken} />}
             errorKey={errorKey}
             fiatValue={
               <RenderFiatValue token={fromToken} value={amountBigInt} />

@@ -11,7 +11,7 @@ import { CollapsibleSection } from "components/collapsibleSection";
 import { NetworkFees } from "components/networkFees";
 import { SetMaxErc20Balance } from "components/setMaxErc20Balance";
 import { TokenInput } from "components/tokenInput";
-import { Balance } from "components/tokenInput/balance";
+import { TokenBalance } from "components/tokenInput/tokenBalance";
 import { TokenSelectorReadOnly } from "components/tokenSelectorReadOnly";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
@@ -21,7 +21,6 @@ import { useTotalDepositFees } from "pages/earn/hooks/useTotalDepositFees";
 import { type FormEvent, Suspense, lazy, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TokenWithGateway } from "types";
-import { formatAmount } from "utils/token";
 import { type Address, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 
@@ -123,11 +122,10 @@ export function StakeDepositForm({
     },
   });
 
-  const { data: peggedTokenBalance, isError: isPeggedTokenBalanceError } =
-    useTokenBalance({
-      address: peggedToken.address,
-      chainId: chain.id,
-    });
+  const { data: peggedTokenBalance } = useTokenBalance({
+    address: peggedToken.address,
+    chainId: chain.id,
+  });
 
   const { data: nativeBalanceData } = useNativeBalance(chain.id);
   const nativeBalance = nativeBalanceData?.value;
@@ -202,12 +200,6 @@ export function StakeDepositForm({
     tokenBalance: peggedTokenBalance,
   });
 
-  const formattedBalance = formatAmount({
-    amount: peggedTokenBalance,
-    decimals: peggedToken.decimals,
-    isError: isPeggedTokenBalanceError,
-  });
-
   const balancesLoaded =
     nativeBalance !== undefined && peggedTokenBalance !== undefined;
 
@@ -249,9 +241,9 @@ export function StakeDepositForm({
         <div className="p-2">
           <TokenInput
             balance={
-              <Balance
+              <TokenBalance
                 label={t("pages.earn.stake.available-to-deposit")}
-                value={formattedBalance}
+                token={peggedToken}
               />
             }
             errorKey={balancesLoaded ? inputError : undefined}

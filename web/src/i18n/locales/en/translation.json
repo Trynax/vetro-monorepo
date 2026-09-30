@@ -4,6 +4,7 @@
     "amount-too-small-to-bridge": "Amount too small to bridge",
     "approve-10x": "Approve 10x",
     "approve-10x-tooltip": "Approves up to 10× your transaction amount, reducing future approval steps. You can revoke it anytime.",
+    "balance": "Balance",
     "charts": {
       "apy-label": "APY",
       "period-1-month": "1 month",
