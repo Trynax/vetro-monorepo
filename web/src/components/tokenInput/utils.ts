@@ -3,6 +3,7 @@ const inputErrors = [
   "enter-amount",
   "exceeds-debt",
   "exceeds-max-mint",
+  "exceeds-max-request",
   "insufficient-balance",
   "insufficient-collateral",
   "insufficient-gas",
