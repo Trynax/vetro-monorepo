@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { fetchTotalWithdrawFees } from "fetchers/fetchTotalWithdrawFees";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type Address, type Chain, type Client } from "viem";
 import { useAccount } from "wagmi";
 
@@ -54,13 +54,12 @@ export const useTotalWithdrawFees = function ({
 }) {
   const { address: owner } = useAccount();
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
 
   return useQuery(
     totalWithdrawFeesOptions({
       amount,
-      chain: ethereumChain,
+      chain: mainnet,
       client,
       owner,
       queryClient,

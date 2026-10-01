@@ -1,10 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTotalRequestRedeemFees } from "fetchers/fetchTotalRequestRedeemFees";
+import { mainnet } from "networks/mainnet";
 import type { TokenWithGateway } from "types";
 import { useAccount } from "wagmi";
 
 import { useEthereumClient } from "./useEthereumClient";
-import { useMainnet } from "./useMainnet";
 
 export const useTotalRequestRedeemFees = function ({
   amount,
@@ -17,7 +17,6 @@ export const useTotalRequestRedeemFees = function ({
 }) {
   const { address: owner } = useAccount();
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
 
   return useQuery({
@@ -26,7 +25,7 @@ export const useTotalRequestRedeemFees = function ({
       fetchTotalRequestRedeemFees({
         amount,
         approveAmount,
-        chain: ethereumChain,
+        chain: mainnet,
         client: client!,
         fromToken,
         owner: owner!,
@@ -34,7 +33,7 @@ export const useTotalRequestRedeemFees = function ({
       }),
     queryKey: [
       "total-request-redeem-fees",
-      ethereumChain.id,
+      mainnet.id,
       fromToken.address,
       fromToken.gatewayAddress,
       owner,

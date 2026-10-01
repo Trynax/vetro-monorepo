@@ -5,10 +5,10 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { getTokenConfig } from "@vetro-protocol/treasury/actions";
+import { mainnet } from "networks/mainnet";
 import type { Address, Chain, Client } from "viem";
 
 import { useEthereumClient } from "./useEthereumClient";
-import { useMainnet } from "./useMainnet";
 import { treasuryAddressOptions } from "./useTreasuryAddress";
 
 export const tokenConfigOptions = ({
@@ -58,12 +58,11 @@ export const useTokenConfig = function ({
   token: Address;
 }) {
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
 
   return useQuery(
     tokenConfigOptions({
-      chainId: ethereumChain.id,
+      chainId: mainnet.id,
       client,
       gatewayAddress,
       queryClient,

@@ -14,13 +14,13 @@ import { TokenBalance } from "components/tokenInput/tokenBalance";
 import { TokenSelectorReadOnly } from "components/tokenSelectorReadOnly";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useDeposit } from "hooks/useDeposit";
-import { useMainnet } from "hooks/useMainnet";
 import { useMaxMint } from "hooks/useMaxMint";
 import { useMintFee } from "hooks/useMintFee";
 import { usePreviewDeposit } from "hooks/usePreviewDeposit";
 import { useSwapMintFees } from "hooks/useSwapMintFees";
 import { useTokenConfig } from "hooks/useTokenConfig";
 import { useTotalMintFees } from "hooks/useTotalMintFees";
+import { mainnet } from "networks/mainnet";
 import { type FormEvent, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TokenWithGateway } from "types";
@@ -75,7 +75,6 @@ export function Deposit({
   toToken,
   whitelistedTokens,
 }: Props) {
-  const ethereumChain = useMainnet();
   const { mutate: watchToken } = useAddTokenToWallet({
     token: {
       address: toToken.address,
@@ -109,10 +108,10 @@ export function Deposit({
 
   const { data: fromTokenBalance } = useTokenBalance({
     address: fromToken.address,
-    chainId: ethereumChain.id,
+    chainId: mainnet.id,
   });
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
 
   const { data: needsApproval, isError: isNeedsApprovalError } =
     useNeedsApproval({

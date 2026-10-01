@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import fetch from "fetch-plus-plus";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import type { Address } from "viem";
 
 const apiUrl = import.meta.env.VITE_VETRO_API_URL;
@@ -10,10 +10,10 @@ type ExitQueueResponse = {
   openTickets: number;
 };
 
-export function useVariableStakeExitQueue(gatewayAddress: Address | undefined) {
-  const chain = useMainnet();
-
-  return useQuery({
+export const useVariableStakeExitQueue = (
+  gatewayAddress: Address | undefined,
+) =>
+  useQuery({
     enabled:
       apiUrl !== undefined &&
       URL.canParse(apiUrl) &&
@@ -27,9 +27,8 @@ export function useVariableStakeExitQueue(gatewayAddress: Address | undefined) {
         openTickets,
       };
     },
-    queryKey: ["variable-stake-exit-queue", chain.id, gatewayAddress],
+    queryKey: ["variable-stake-exit-queue", mainnet.id, gatewayAddress],
     refetchInterval: 5 * 60 * 1000, // 5 minutes
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
-}

@@ -8,7 +8,7 @@ import type { Token } from "@vetro-protocol/core";
 import { fetchSupplyAndBorrowGasUnits } from "fetchers/fetchSupplyAndBorrowGasUnits";
 import { fetchTotalSupplyAndBorrowFees } from "fetchers/fetchTotalSupplyAndBorrowFees";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type Address, type Chain, type Client, type Hash } from "viem";
 import { useAccount } from "wagmi";
 
@@ -174,14 +174,13 @@ export const useTotalSupplyAndBorrowFees = function ({
 }) {
   const { address: owner } = useAccount();
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
 
   return useQuery(
     totalSupplyAndBorrowFeesOptions({
       approveAmount,
       borrowAmount,
-      chain: ethereumChain,
+      chain: mainnet,
       client,
       collateralAmount,
       collateralToken,

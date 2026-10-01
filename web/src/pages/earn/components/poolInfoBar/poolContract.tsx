@@ -1,5 +1,5 @@
 import { ExternalLink } from "components/base/externalLink";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { useTranslation } from "react-i18next";
 import { formatEvmAddress } from "utils/format";
 import type { Address } from "viem";
@@ -11,10 +11,9 @@ type Props = {
 };
 
 export function PoolContract({ address }: Props) {
-  const chain = useMainnet();
   const { t } = useTranslation();
 
-  const explorerBaseUrl = chain.blockExplorers!.default.url;
+  const explorerBaseUrl = mainnet.blockExplorers!.default.url;
 
   return (
     <div className="contents md:*:w-32">

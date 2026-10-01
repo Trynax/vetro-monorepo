@@ -7,11 +7,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { RepayAssetsEvents } from "@vetro-protocol/morpho-blue-market";
 import { repayAssets } from "@vetro-protocol/morpho-blue-market/actions";
 import type { EventEmitter } from "events";
+import { mainnet } from "networks/mainnet";
 import type { Hash } from "viem";
 import { useAccount } from "wagmi";
 
 import { useEthereumWalletClient } from "../useEthereumWalletClient";
-import { useMainnet } from "../useMainnet";
 
 import { atRiskPositionsQueryKey } from "./useAtRiskPositions";
 import { type MarketData, marketDataQueryKey } from "./useMarketData";
@@ -30,10 +30,9 @@ export const useRepayAssets = function ({
   const { address: account } = useAccount();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    ethereumChain.id,
+    mainnet.id,
   );
 
   return useMutation({
@@ -42,20 +41,20 @@ export const useRepayAssets = function ({
         throw new Error("No account connected");
       }
 
-      await ensureConnectedTo(ethereumChain.id);
+      await ensureConnectedTo(mainnet.id);
 
       const market = await queryClient.ensureQueryData(
         morphoMarketOptions({
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           client: walletClient!,
           marketId,
         }),
       );
 
-      const morphoAddress = getChainAddresses(ethereumChain.id).blue;
+      const morphoAddress = getChainAddresses(mainnet.id).blue;
 
       const loanBalanceKey = tokenBalanceQueryKey(
-        { address: market.params.loanToken, chainId: ethereumChain.id },
+        { address: market.params.loanToken, chainId: mainnet.id },
         account,
       );
 
@@ -64,13 +63,13 @@ export const useRepayAssets = function ({
         spender: morphoAddress,
         token: {
           address: market.params.loanToken,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
         },
       });
 
       const positionInfoKey = positionInfoQueryKey({
         account,
-        chainId: ethereumChain.id,
+        chainId: mainnet.id,
         marketId,
       });
 
@@ -108,7 +107,7 @@ export const useRepayAssets = function ({
         // Update market's liquidity and total borrow
         queryClient.setQueryData(
           marketDataQueryKey({
-            chainId: ethereumChain.id,
+            chainId: mainnet.id,
             marketId,
           }),
           (old: MarketData | undefined) =>
@@ -126,17 +125,17 @@ export const useRepayAssets = function ({
     },
     async onSettled() {
       const marketOptions = morphoMarketOptions({
-        chainId: ethereumChain.id,
+        chainId: mainnet.id,
         client: walletClient,
         marketId,
       });
       const market = queryClient.getQueryData(marketOptions.queryKey);
-      const morphoAddress = getChainAddresses(ethereumChain.id).blue;
+      const morphoAddress = getChainAddresses(mainnet.id).blue;
 
       // First invalidate the market data itself. Wait for invalidation, as useMarketData depends on it
       await queryClient.invalidateQueries({
         queryKey: morphoMarketQueryKey({
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           marketId,
         }),
       });
@@ -144,7 +143,7 @@ export const useRepayAssets = function ({
       if (market) {
         queryClient.invalidateQueries({
           queryKey: tokenBalanceQueryKey(
-            { address: market.params.loanToken, chainId: ethereumChain.id },
+            { address: market.params.loanToken, chainId: mainnet.id },
             account,
           ),
         });
@@ -155,7 +154,7 @@ export const useRepayAssets = function ({
             spender: morphoAddress,
             token: {
               address: market.params.loanToken,
-              chainId: ethereumChain.id,
+              chainId: mainnet.id,
             },
           }),
         });
@@ -164,13 +163,13 @@ export const useRepayAssets = function ({
       queryClient.invalidateQueries({
         queryKey: positionInfoQueryKey({
           account,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           marketId,
         }),
       });
       queryClient.invalidateQueries({
         queryKey: marketDataQueryKey({
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           marketId,
         }),
       });
@@ -178,7 +177,7 @@ export const useRepayAssets = function ({
       queryClient.invalidateQueries({
         queryKey: atRiskPositionsQueryKey({
           account,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
         }),
       });
     },

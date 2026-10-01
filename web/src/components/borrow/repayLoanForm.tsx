@@ -32,7 +32,7 @@ import { useActivityTracking } from "hooks/useActivityTracking";
 import { useAmount } from "hooks/useAmount";
 import { useAnimatedVisibility } from "hooks/useAnimatedVisibility";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatLtvAsPercentage } from "utils/borrowReview";
@@ -225,7 +225,6 @@ type Props = {
 
 export function RepayLoanForm({ market, onClose }: Props) {
   const { t } = useTranslation();
-  const ethereumChain = useMainnet();
 
   const [repayInput, onRepayChange] = useAmount();
   const [flowStatus, setFlowStatus] = useState<RepayFlowStatus>("idle");
@@ -253,11 +252,11 @@ export function RepayLoanForm({ market, onClose }: Props) {
     },
   );
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
 
   const { data: needsApproval } = useNeedsApproval({
     amount: repayAmountBigInt,
-    spender: getChainAddresses(ethereumChain.id).blue,
+    spender: getChainAddresses(mainnet.id).blue,
     token: loanToken,
   });
 

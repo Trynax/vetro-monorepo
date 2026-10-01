@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { convertToAssetsQueryOptions } from "hooks/useConvertToAssets";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import type { Address, Client } from "viem";
 import { useAccount } from "wagmi";
 
@@ -61,14 +61,13 @@ export const stakedBalanceQueryOptions = ({
 
 export function useStakedBalance(stakingVaultAddress: Address) {
   const { address: account } = useAccount();
-  const chain = useMainnet();
   const client = useEthereumClient();
   const queryClient = useQueryClient();
 
   return useQuery(
     stakedBalanceQueryOptions({
       account,
-      chainId: chain.id,
+      chainId: mainnet.id,
       client,
       queryClient,
       stakingVaultAddress,

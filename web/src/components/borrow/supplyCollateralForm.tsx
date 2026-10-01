@@ -32,7 +32,7 @@ import { useActivityTracking } from "hooks/useActivityTracking";
 import { useAmount } from "hooks/useAmount";
 import { useAnimatedVisibility } from "hooks/useAnimatedVisibility";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatLtvAsPercentage } from "utils/borrowReview";
@@ -220,7 +220,6 @@ type Props = {
 
 export function SupplyCollateralForm({ market, onClose }: Props) {
   const { t } = useTranslation();
-  const ethereumChain = useMainnet();
 
   const [collateralInput, onCollateralChange] = useAmount();
   const [flowStatus, setFlowStatus] =
@@ -250,11 +249,11 @@ export function SupplyCollateralForm({ market, onClose }: Props) {
     chainId: collateralToken.chainId,
   });
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
 
   const { data: needsApproval } = useNeedsApproval({
     amount: collateralAmountBigInt,
-    spender: getChainAddresses(ethereumChain.id).blue,
+    spender: getChainAddresses(mainnet.id).blue,
     token: collateralToken,
   });
 

@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { DepositEvents } from "@vetro-protocol/gateway";
 import { deposit } from "@vetro-protocol/gateway/actions";
 import type { EventEmitter } from "events";
+import { mainnet } from "networks/mainnet";
 import type { TokenWithGateway, TreasuryToken } from "types";
 import { getReceivedAmount } from "utils/receipt";
 import { applySlippage } from "utils/slippage";
@@ -14,7 +15,6 @@ import { useAccount } from "wagmi";
 
 import { analyticsTreasuryQueryKey } from "./useAnalyticsTreasury";
 import { useEthereumWalletClient } from "./useEthereumWalletClient";
-import { useMainnet } from "./useMainnet";
 import { maxMintQueryKey } from "./useMaxMint";
 import {
   previewDepositQueryKey,
@@ -42,28 +42,27 @@ export const useDeposit = function ({
   const { address: account } = useAccount();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    ethereumChain.id,
+    mainnet.id,
   );
 
   const allowanceKey = allowanceQueryKey({
     owner: account,
     spender: gatewayAddress,
-    token: { address: tokenIn, chainId: ethereumChain.id },
+    token: { address: tokenIn, chainId: mainnet.id },
   });
 
   const tokenInBalanceQueryKey = tokenBalanceQueryKey(
     {
       address: tokenIn,
-      chainId: ethereumChain.id,
+      chainId: mainnet.id,
     },
     account,
   );
 
   const treasuryReservesKey = treasuryReservesQueryKey({
-    chainId: ethereumChain.id,
+    chainId: mainnet.id,
     gatewayAddress,
   });
 
@@ -79,12 +78,12 @@ export const useDeposit = function ({
         throw new Error("No account connected");
       }
 
-      await ensureConnectedTo(ethereumChain.id);
+      await ensureConnectedTo(mainnet.id);
 
       const preview = await queryClient.ensureQueryData(
         previewDepositTokenOptions({
           amountIn,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           client: walletClient!,
           gatewayAddress,
           tokenIn,
@@ -187,7 +186,7 @@ export const useDeposit = function ({
 
       queryClient.invalidateQueries({
         queryKey: maxMintQueryKey({
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           gatewayAddress,
         }),
       });
@@ -197,7 +196,7 @@ export const useDeposit = function ({
       queryClient.removeQueries({
         queryKey: previewDepositQueryKey({
           amountIn,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           gatewayAddress,
           tokenIn,
         }),

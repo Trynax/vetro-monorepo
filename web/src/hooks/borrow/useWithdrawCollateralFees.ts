@@ -7,7 +7,7 @@ import {
 import { fetchTotalWithdrawCollateralFees } from "fetchers/fetchTotalWithdrawCollateralFees";
 import { fetchWithdrawCollateralGasUnits } from "fetchers/fetchWithdrawCollateralGasUnits";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type Address, type Chain, type Client, type Hash } from "viem";
 import { useAccount } from "wagmi";
 
@@ -123,13 +123,12 @@ export const useTotalWithdrawCollateralFees = function ({
 }) {
   const { address: owner } = useAccount();
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
 
   return useQuery(
     totalWithdrawCollateralFeesOptions({
       amount,
-      chain: ethereumChain,
+      chain: mainnet,
       client,
       marketId,
       owner,

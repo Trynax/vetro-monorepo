@@ -1,6 +1,4 @@
+import { mainnet } from "networks/mainnet";
 import { usePublicClient } from "wagmi";
 
-import { useMainnet } from "./useMainnet";
-
-export const useEthereumClient = () =>
-  usePublicClient({ chainId: useMainnet().id });
+export const useEthereumClient = () => usePublicClient({ chainId: mainnet.id });

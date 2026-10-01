@@ -5,11 +5,11 @@ import { ClockRevertedIcon } from "components/icons/clockRevertedIcon";
 import { useAnalyticsTvl } from "hooks/useAnalyticsTvl";
 import { useElementWidth } from "hooks/useElementWidth";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
 import { usePrices } from "hooks/usePrices";
 import { tokenInfoOptions } from "hooks/useTokenInfo";
 import { useTvlHistory } from "hooks/useTvlHistory";
 import { useWhitelistedTokensByGateway } from "hooks/useWhitelistedTokensByGateway";
+import { mainnet } from "networks/mainnet";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
@@ -218,7 +218,6 @@ export function TvlHistoryCard({
   const [period, setPeriod] = useState<ChartPeriod>("3m");
   const [chartContainerRef, chartWidth] = useElementWidth();
   const client = useEthereumClient();
-  const mainnet = useMainnet();
   const {
     data: whitelistedTokens,
     isError: isWhitelistedTokensError,

@@ -1,8 +1,8 @@
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
 import { stakedBalanceQueryOptions } from "hooks/useStakedBalance";
 import { vaultPeggedTokenQueryOptions } from "hooks/useVaultPeggedToken";
+import { mainnet } from "networks/mainnet";
 import type { Address } from "viem";
 import { useAccount } from "wagmi";
 
@@ -12,7 +12,6 @@ import { useAccount } from "wagmi";
 // happened to refetch.
 export function usePoolStakedAmount(stakingVaultAddress: Address) {
   const { address: account } = useAccount();
-  const chain = useMainnet();
   const client = useEthereumClient();
   const queryClient = useQueryClient();
 
@@ -25,7 +24,7 @@ export function usePoolStakedAmount(stakingVaultAddress: Address) {
       }),
       stakedBalanceQueryOptions({
         account,
-        chainId: chain.id,
+        chainId: mainnet.id,
         client,
         queryClient,
         stakingVaultAddress,

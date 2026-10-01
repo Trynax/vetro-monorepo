@@ -1,11 +1,11 @@
 import { type MarketId } from "@morpho-org/blue-sdk";
 import { fetchAccrualPosition } from "@morpho-org/blue-sdk-viem";
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { mainnet } from "networks/mainnet";
 import type { Address, Chain, Client, Hash } from "viem";
 import { useAccount } from "wagmi";
 
 import { useEthereumClient } from "../useEthereumClient";
-import { useMainnet } from "../useMainnet";
 
 export const positionInfoQueryKey = ({
   account,
@@ -37,13 +37,12 @@ export const positionInfoOptions = ({
 
 export const usePositionInfo = function (marketId: Hash) {
   const { address: account } = useAccount();
-  const ethereumChain = useMainnet();
   const client = useEthereumClient();
 
   return useQuery(
     positionInfoOptions({
       account,
-      chainId: ethereumChain.id,
+      chainId: mainnet.id,
       client: client!,
       marketId,
     }),

@@ -7,13 +7,13 @@ import {
   type RedeemRequest,
   useGetRedeemRequests,
 } from "hooks/useGetRedeemRequests";
-import { useMainnet } from "hooks/useMainnet";
 import { useMaxWithdraw } from "hooks/useMaxWithdraw";
 import { usePreviewRedeem } from "hooks/usePreviewRedeem";
 import { useRedeem } from "hooks/useRedeem";
 import { useRedeemFee } from "hooks/useRedeemFee";
 import { useSwapRedeemFees } from "hooks/useSwapRedeemFees";
 import { useTotalRedeemFees } from "hooks/useTotalRedeemFees";
+import { mainnet } from "networks/mainnet";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TokenWithGateway } from "types";
@@ -60,9 +60,8 @@ function ActiveRedeemDrawer({
   whitelistedTokens,
 }: ActiveRedeemDrawerProps) {
   const { t } = useTranslation();
-  const ethereumChain = useMainnet();
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
   const nativeBalance = nativeBalanceData?.value;
 
   const drawerWhitelistedTokens = whitelistedTokens.filter((wl) =>
