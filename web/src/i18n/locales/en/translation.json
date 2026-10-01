@@ -355,7 +355,7 @@
         "request-deposit": "Request deposit",
         "rollover-status": "Rollover status",
         "rolls-into-next-term": "Rolls into next term",
-        "target-fixed-apy": "Target fixed APY",
+        "target-fixed-apr": "Target fixed APR",
         "term-end-date": "Term end date",
         "term-length": "Term length",
         "term-length-days": "{{count}} day",

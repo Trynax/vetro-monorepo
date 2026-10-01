@@ -358,7 +358,7 @@
         "request-deposit": "Solicitar depósito",
         "rollover-status": "Estado de renovación",
         "rolls-into-next-term": "Se renueva en el próximo plazo",
-        "target-fixed-apy": "TEA fija objetivo",
+        "target-fixed-apr": "TNA fija objetivo",
         "term-end-date": "Fecha de fin del plazo",
         "term-length": "Duración del plazo",
         "term-length-days": "{{count}} día",

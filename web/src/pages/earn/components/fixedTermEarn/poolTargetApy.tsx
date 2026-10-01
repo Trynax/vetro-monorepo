@@ -21,7 +21,7 @@ export function PoolTargetApy({ stakingVaultAddress }: Props) {
       data={targetApr !== undefined ? `${targetApr.toFixed(2)}%` : undefined}
       isError={isError}
       isPending={isPending}
-      label={t("pages.earn.fixed-term.target-fixed-apy")}
+      label={t("pages.earn.fixed-term.target-fixed-apr")}
     />
   );
 }

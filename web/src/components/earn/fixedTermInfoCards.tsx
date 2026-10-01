@@ -39,7 +39,7 @@ const TargetFixedApyCard = function ({ stakingVaultAddress }: Props) {
       data={targetApr.data}
       icon={<SparklesIcon className="text-blue-500" />}
       isLoading={targetApr.isLoading}
-      label={t("pages.earn.fixed-term.target-fixed-apy")}
+      label={t("pages.earn.fixed-term.target-fixed-apr")}
       render={formatPercentage}
       subtitle={renderFixedUntil()}
     />
