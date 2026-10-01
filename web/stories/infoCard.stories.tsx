@@ -59,7 +59,7 @@ export const Default: Story = {
   args: {
     data: "12.5%",
     icon: <SparkleIcon />,
-    label: "Target fixed APY",
+    label: "Target fixed APR",
     render: (data) => data,
   },
 };
@@ -68,7 +68,7 @@ export const WithTextSubtitle: Story = {
   args: {
     data: "12.5%",
     icon: <SparkleIcon />,
-    label: "Target fixed APY",
+    label: "Target fixed APR",
     render: (data) => data,
     subtitle: "Fixed until Feb 13, 2026",
   },
