@@ -3,6 +3,7 @@ import { fetchMaxRequestDeposit } from "fetchers/earn/targetYieldPool/fetchMaxRe
 import type { Address } from "viem";
 import { useAccount } from "wagmi";
 
+import { combineWithEpochId } from "./combineWithEpochId";
 import { useEpochId } from "./useEpochId";
 
 const maxRequestDepositOptions = ({
@@ -27,8 +28,14 @@ const maxRequestDepositOptions = ({
 
 export function useMaxRequestDeposit(stakingVaultAddress: Address) {
   const { address: controller } = useAccount();
-  const { data: epochId } = useEpochId(stakingVaultAddress);
-  return useQuery(
-    maxRequestDepositOptions({ controller, epochId, stakingVaultAddress }),
+  const epochId = useEpochId(stakingVaultAddress);
+  const query = useQuery(
+    maxRequestDepositOptions({
+      controller,
+      epochId: epochId.data,
+      stakingVaultAddress,
+    }),
   );
+
+  return combineWithEpochId({ epochId, query });
 }
