@@ -20,7 +20,7 @@ type Props = {
   stakingVaultAddress: Address;
 };
 
-const TargetFixedApyCard = function ({ stakingVaultAddress }: Props) {
+const TargetFixedAprCard = function ({ stakingVaultAddress }: Props) {
   const { t } = useTranslation();
   const targetApr = useTargetApr(stakingVaultAddress);
   const epochEndDate = useEpochEndDate(stakingVaultAddress);
@@ -129,7 +129,7 @@ const TermEndDateCard = function ({ stakingVaultAddress }: Props) {
 export const FixedTermInfoCards = ({ stakingVaultAddress }: Props) => (
   <div className="border-b border-gray-200">
     <CardRow
-      left={<TargetFixedApyCard stakingVaultAddress={stakingVaultAddress} />}
+      left={<TargetFixedAprCard stakingVaultAddress={stakingVaultAddress} />}
       right={<PoolCapacityCard stakingVaultAddress={stakingVaultAddress} />}
     />
     <CardRow

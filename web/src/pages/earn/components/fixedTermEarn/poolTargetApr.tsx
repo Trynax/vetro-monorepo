@@ -8,7 +8,7 @@ type Props = {
   stakingVaultAddress: Address;
 };
 
-export function PoolTargetApy({ stakingVaultAddress }: Props) {
+export function PoolTargetApr({ stakingVaultAddress }: Props) {
   const { t } = useTranslation();
   const {
     data: targetApr,
