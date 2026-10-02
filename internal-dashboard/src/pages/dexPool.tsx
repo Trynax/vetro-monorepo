@@ -14,7 +14,7 @@ import { VenueBadge } from "../components/dex/venueBadge";
 import { type Dex, dexLabels } from "../config/dexes";
 import { useCurvePoolStats } from "../hooks/useCurvePoolStats";
 import { useGaugeEmissions } from "../hooks/useGaugeEmissions";
-import { useStakeDaoStrategyKey } from "../hooks/useStakeDaoStrategyKey";
+import { useStakeDaoStrategy } from "../hooks/useStakeDaoStrategy";
 import { useTrackedPools } from "../hooks/useTrackedPools";
 import {
   formatOptionalPercent,
@@ -201,11 +201,14 @@ const AddressRow = ({
 const GaugeRow = function ({
   chainId,
   gauge,
+  poolId,
 }: {
   chainId: number;
   gauge: Address;
+  poolId: string;
 }) {
-  const { data: strategyKey } = useStakeDaoStrategyKey({ chainId, gauge });
+  const { data: strategy } = useStakeDaoStrategy({ poolId });
+  const strategyKey = strategy?.key;
 
   return (
     <div className="flex items-center justify-between gap-x-4 py-2 text-sm">
@@ -244,7 +247,11 @@ const AddressesSection = ({ pool }: { pool: TrackedPool }) => (
         </span>
       </div>
       {pool.gaugeAddress ? (
-        <GaugeRow chainId={pool.chainId} gauge={pool.gaugeAddress} />
+        <GaugeRow
+          chainId={pool.chainId}
+          gauge={pool.gaugeAddress}
+          poolId={pool.id}
+        />
       ) : null}
       {pool.lpTokenAddress &&
       !isAddressEqual(pool.lpTokenAddress, pool.address) ? (

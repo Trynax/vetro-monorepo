@@ -20,8 +20,12 @@ export type StakeDaoCampaign = {
 };
 
 export type StakeDaoStrategy = {
-  gaugeAddress: Address | null;
+  // Missing on some upstream entries.
+  apr?: { current: { total: number } }; // % incl. trading fees
+  gaugeAddress: Address;
   key: string;
+  rewards: { token: { symbol: string } }[];
+  tradingApy: number; // %
 };
 
 const stakeDaoProxyApiUrl = "/api/stakedao";
@@ -33,16 +37,21 @@ export const fetchCurveCampaigns = (
     queryString: { gauges: gauges.join(",") },
   });
 
-export const fetchStakeDaoStrategyKey = ({
+export const fetchStakeDaoStrategiesByGauge = ({
   chainId,
-  gauge,
+  gauges,
 }: {
   chainId: number;
-  gauge: Address;
-}): Promise<string | null> =>
-  fetch(`${stakeDaoProxyApiUrl}/strategy`, {
-    queryString: { chainId, gauge },
+  gauges: Address[];
+}): Promise<StakeDaoStrategy[]> =>
+  fetch(`${stakeDaoProxyApiUrl}/strategies`, {
+    queryString: { chainId, gauges: gauges.join(",") },
   });
+
+// Trading fees are already part of the pool's own APY, so they are left out
+// here, as the StakeDAO app does.
+export const stakeDaoRewardsAprPercent = (strategy: StakeDaoStrategy) =>
+  strategy.apr ? strategy.apr.current.total - strategy.tradingApy : 0;
 
 export const strategyUrl = (key: string) =>
   `https://app.stakedao.org/strategy?protocol=curve&vault=${encodeURIComponent(key)}`;
