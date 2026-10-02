@@ -33,7 +33,7 @@ export const fetchSupplyCollateralGasUnits = async function ({
   token: Token;
 }) {
   const chainId = client.chain!.id;
-  const morphoAddress = getChainAddresses(chainId).morpho;
+  const morphoAddress = getChainAddresses(chainId).blue;
 
   // Fire morphoMarket fetch early but don't block on it yet
   const morphoMarketPromise = queryClient.ensureQueryData(

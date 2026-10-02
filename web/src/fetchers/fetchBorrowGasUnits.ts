@@ -29,7 +29,7 @@ export const fetchBorrowGasUnits = async function ({
   stateOverride?: Parameters<typeof estimateGas>[1]["stateOverride"];
 }) {
   const chainId = client.chain!.id;
-  const morphoAddress = getChainAddresses(chainId).morpho;
+  const morphoAddress = getChainAddresses(chainId).blue;
 
   const [morphoMarket, position] = await Promise.all([
     queryClient.ensureQueryData(

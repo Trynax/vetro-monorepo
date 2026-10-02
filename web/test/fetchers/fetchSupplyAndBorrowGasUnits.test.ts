@@ -16,7 +16,7 @@ vi.mock("../../src/fetchers/fetchBorrowGasUnits", () => ({
 }));
 
 vi.mock("@morpho-org/blue-sdk", () => ({
-  getChainAddresses: vi.fn().mockReturnValue({ morpho: zeroAddress }),
+  getChainAddresses: vi.fn().mockReturnValue({ blue: zeroAddress }),
 }));
 
 vi.mock("utils/morphoStateOverride", () => ({

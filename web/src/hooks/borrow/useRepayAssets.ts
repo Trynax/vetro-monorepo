@@ -52,7 +52,7 @@ export const useRepayAssets = function ({
         }),
       );
 
-      const morphoAddress = getChainAddresses(ethereumChain.id).morpho;
+      const morphoAddress = getChainAddresses(ethereumChain.id).blue;
 
       const loanBalanceKey = tokenBalanceQueryKey(
         { address: market.params.loanToken, chainId: ethereumChain.id },
@@ -131,7 +131,7 @@ export const useRepayAssets = function ({
         marketId,
       });
       const market = queryClient.getQueryData(marketOptions.queryKey);
-      const morphoAddress = getChainAddresses(ethereumChain.id).morpho;
+      const morphoAddress = getChainAddresses(ethereumChain.id).blue;
 
       // First invalidate the market data itself. Wait for invalidation, as useMarketData depends on it
       await queryClient.invalidateQueries({

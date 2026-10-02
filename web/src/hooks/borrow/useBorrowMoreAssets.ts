@@ -54,7 +54,7 @@ export const useBorrowMoreAssets = function ({
         }),
       );
 
-      const morphoAddress = getChainAddresses(ethereumChain.id).morpho;
+      const morphoAddress = getChainAddresses(ethereumChain.id).blue;
 
       const loanBalanceKey = tokenBalanceQueryKey(
         { address: market.params.loanToken, chainId: ethereumChain.id },
