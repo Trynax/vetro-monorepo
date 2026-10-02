@@ -20,18 +20,22 @@ type Props = {
 
 const poolPath = (pool: TrackedPool) => `/dex/${pool.id}`;
 
-// Base trading-fee APY, with the CRV reward APY in parentheses. The reward is a
-// boost range (min → max) like Curve shows, collapsing to a single value when
-// there's no boost spread; pools with no rewards show the base APY alone.
-const formatApy = function ({ baseApy, rewardApy, rewardApyMax }: TrackedPool) {
-  if (rewardApy === 0) {
+// Base trading-fee APY, with the CRV emission APY in parentheses. The emission
+// is a boost range (min → max) like Curve shows, collapsing to a single value
+// when there's no boost spread; pools with no emissions show the base APY alone.
+const formatApy = function ({
+  baseApy,
+  emissionApy,
+  emissionApyMax,
+}: TrackedPool) {
+  if (emissionApy === 0) {
     return formatOptionalPercent(baseApy);
   }
-  const rewards =
-    rewardApyMax > rewardApy
-      ? `${formatPercent(rewardApy)} → ${formatPercent(rewardApyMax)}`
-      : formatPercent(rewardApy);
-  return `${formatOptionalPercent(baseApy)} (${rewards} CRV)`;
+  const emissions =
+    emissionApyMax > emissionApy
+      ? `${formatPercent(emissionApy)} → ${formatPercent(emissionApyMax)}`
+      : formatPercent(emissionApy);
+  return `${formatOptionalPercent(baseApy)} (${emissions} CRV)`;
 };
 
 export const PoolsTable = function ({ pools }: Props) {

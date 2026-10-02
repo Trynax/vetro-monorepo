@@ -169,9 +169,9 @@ const GaugeSection = function ({ pool }: { pool: TrackedPool }) {
       <StatCard
         label="CRV APY"
         value={
-          pool.rewardApyMax > pool.rewardApy
-            ? `${formatPercent(pool.rewardApy)} – ${formatPercent(pool.rewardApyMax)}`
-            : formatPercent(pool.rewardApy)
+          pool.emissionApyMax > pool.emissionApy
+            ? `${formatPercent(pool.emissionApy)} – ${formatPercent(pool.emissionApyMax)}`
+            : formatPercent(pool.emissionApy)
         }
       />
       {!hasEmissions && emission ? (
@@ -339,12 +339,12 @@ export const DexPoolPage = function () {
         <StatCard label="24h Volume" value={formatUsd(pool.volumeUsd24h)} />
         <FeesCard pool={pool} />
         <StatCard
-          hint={`${formatOptionalPercent(pool.baseApy)} base + ${formatPercent(pool.rewardApy)} rewards`}
+          hint={`${formatOptionalPercent(pool.baseApy)} base + ${formatPercent(pool.emissionApy)} rewards`}
           label="APY"
           value={formatOptionalPercent(
             pool.baseApy === undefined
               ? undefined
-              : pool.baseApy + pool.rewardApy,
+              : pool.baseApy + pool.emissionApy,
           )}
         />
         <StatCard

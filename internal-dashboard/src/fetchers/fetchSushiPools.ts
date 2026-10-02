@@ -81,7 +81,7 @@ const fetchSushiPool = async function ({
     volumeShare?: number;
   }): TrackedPool {
     const feesUsd24h = data.feesUsd24h * volumeShare;
-    const rewardApy = tvlUsd
+    const emissionApy = tvlUsd
       ? data.rewardApy * (data.liquidityUsd / tvlUsd) * timeShare
       : 0;
     return {
@@ -95,6 +95,8 @@ const fetchSushiPool = async function ({
       chainId: mainnet.id,
       coins,
       dex: "sushi",
+      emissionApy,
+      emissionApyMax: emissionApy,
       feesUsd24h,
       gaugeAddress: undefined,
       id,
@@ -103,8 +105,6 @@ const fetchSushiPool = async function ({
       name: data.name,
       poolType: isRangeView ? `${baseType} · ${rangeLabel}` : baseType,
       rangeLabel,
-      rewardApy,
-      rewardApyMax: rewardApy,
       tvlUsd,
       url,
       virtualPrice: 0,
