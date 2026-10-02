@@ -187,7 +187,7 @@ export function DepositForm({
           pendingText={t("pages.earn.fixed-term.request-deposit")}
         />
       </div>
-      <CollapsibleSection show={amount !== 0n}>
+      <CollapsibleSection show={debouncedAmount !== 0n}>
         <div className="w-full border-b border-gray-200 px-2">
           <ApproveSection
             active={approve10x}
