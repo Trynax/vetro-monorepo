@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDuration } from "./format";
+import { formatDuration, formatPoolApy } from "./format";
 
 describe("formatDuration", function () {
   it("floors sub-minute durations to <1m", function () {
@@ -40,5 +40,31 @@ describe("formatDuration", function () {
   it("treats negative durations as sub-minute", function () {
     expect(formatDuration(-30)).toBe("<1m");
     expect(formatDuration(-3600)).toBe("<1m");
+  });
+});
+
+describe("formatPoolApy", function () {
+  it("shows the base APY alone when there are no emissions", function () {
+    expect(
+      formatPoolApy({ baseApy: 1.234, emissionApy: 0, emissionApyMax: 0 }),
+    ).toBe("1.23%");
+  });
+
+  it("shows a dash when the base APY is unknown and there are no emissions", function () {
+    expect(
+      formatPoolApy({ baseApy: undefined, emissionApy: 0, emissionApyMax: 0 }),
+    ).toBe("—");
+  });
+
+  it("adds a single CRV emission APY when there is no boost spread", function () {
+    expect(
+      formatPoolApy({ baseApy: 1, emissionApy: 2, emissionApyMax: 2 }),
+    ).toBe("1.00% + 2.00% CRV");
+  });
+
+  it("adds the CRV emission boost range", function () {
+    expect(
+      formatPoolApy({ baseApy: 1, emissionApy: 2, emissionApyMax: 5 }),
+    ).toBe("1.00% + 2.00% → 5.00% CRV");
   });
 });

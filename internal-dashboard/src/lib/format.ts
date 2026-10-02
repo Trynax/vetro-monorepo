@@ -17,6 +17,29 @@ export const formatOptionalUsd = (value: number | undefined) =>
 export const formatOptionalPercent = (value: number | undefined) =>
   value === undefined ? "—" : formatPercent(value);
 
+// Base trading-fee APY plus the venue's emission APY. Only Curve gauges set
+// emissions today, hence the "CRV" label. The emission is a boost range
+// (min → max) like Curve shows, collapsing to a single value when there's no
+// boost spread; pools with no emissions show the base APY alone.
+export const formatPoolApy = function ({
+  baseApy,
+  emissionApy,
+  emissionApyMax,
+}: {
+  baseApy: number | undefined;
+  emissionApy: number;
+  emissionApyMax: number;
+}) {
+  if (emissionApy === 0) {
+    return formatOptionalPercent(baseApy);
+  }
+  const emissions =
+    emissionApyMax > emissionApy
+      ? `${formatPercent(emissionApy)} → ${formatPercent(emissionApyMax)}`
+      : formatPercent(emissionApy);
+  return `${formatOptionalPercent(baseApy)} + ${emissions} CRV`;
+};
+
 export const formatTokenAmount = (value: number) =>
   value.toLocaleString("en-US", {
     maximumFractionDigits: value !== 0 && Math.abs(value) < 1 ? 6 : 2,
