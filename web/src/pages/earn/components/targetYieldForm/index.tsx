@@ -1,9 +1,9 @@
 import type { Token } from "@vetro-protocol/core";
 import { SegmentedControl } from "components/base/segmentedControl";
+import { useAmount } from "hooks/useAmount";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TokenWithGateway } from "types";
-import { sanitizeAmount } from "utils/sanitizeAmount";
 import type { Address } from "viem";
 
 import { DepositForm } from "./depositForm";
@@ -21,18 +21,11 @@ export function TargetYieldForm({
   stakingVaultAddress,
 }: Props) {
   const { t } = useTranslation();
-  const [inputValue, setInputValue] = useState("0");
+  const [inputValue, handleInputChange] = useAmount();
   const [mode, setMode] = useState<TargetYieldMode>("deposit");
 
-  function handleInputChange(value: string) {
-    const result = sanitizeAmount(value);
-    if (!("error" in result)) {
-      setInputValue(result.value);
-    }
-  }
-
   function handleModeChange(newMode: TargetYieldMode) {
-    setInputValue("0");
+    handleInputChange("0");
     setMode(newMode);
   }
 
