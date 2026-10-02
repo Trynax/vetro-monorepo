@@ -115,6 +115,16 @@ export function DepositForm({
     epochEndDate.data ??
     (epochEndDate.isError ? "-" : <Skeleton inline width={80} />);
 
+  function renderLockNote() {
+    if (epochEndDate.data === undefined && !epochEndDate.isError) {
+      return <Skeleton count={2} width={200} />;
+    }
+    return t("pages.earn.fixed-term.locked-note", {
+      date: epochEndDate.data ?? "-",
+      symbol: peggedToken.symbol,
+    });
+  }
+
   function renderTargetApr() {
     if (targetApr.data !== undefined) {
       return formatPercentage(targetApr.data);
@@ -195,18 +205,7 @@ export function DepositForm({
           />
         </div>
       </CollapsibleSection>
-      {!epochEndDate.isError && (
-        <LockNote>
-          {epochEndDate.data ? (
-            t("pages.earn.fixed-term.locked-note", {
-              date: epochEndDate.data,
-              symbol: peggedToken.symbol,
-            })
-          ) : (
-            <Skeleton count={2} width={200} />
-          )}
-        </LockNote>
-      )}
+      <LockNote>{renderLockNote()}</LockNote>
       <Review title={t("pages.earn.fixed-term.deposit-review")}>
         <ReviewRow
           info={t("pages.earn.fixed-term.you-will-receive-info")}
