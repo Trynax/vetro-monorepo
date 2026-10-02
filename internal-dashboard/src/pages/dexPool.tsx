@@ -339,7 +339,11 @@ export const DexPoolPage = function () {
         <StatCard label="24h Volume" value={formatUsd(pool.volumeUsd24h)} />
         <FeesCard pool={pool} />
         <StatCard
-          hint={`${formatOptionalPercent(pool.baseApy)} base + ${formatPercent(pool.emissionApy)} rewards`}
+          hint={
+            pool.emissionApy > 0
+              ? `${formatOptionalPercent(pool.baseApy)} base + ${formatPercent(pool.emissionApy)} CRV`
+              : undefined
+          }
           label="APY"
           value={formatOptionalPercent(
             pool.baseApy === undefined

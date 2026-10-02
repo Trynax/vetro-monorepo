@@ -20,7 +20,6 @@ const query = `
     v3Pool(address: $address, chainId: $chainId) {
       feeApr1d
       feeUSD1d
-      incentiveApr
       liquidityUSD
       name
       reserve0
@@ -48,7 +47,6 @@ export type SushiToken = { address: Address; decimals: number; symbol: string };
 type RawV3Pool = {
   feeApr1d: number;
   feeUSD1d: number;
-  incentiveApr: number;
   liquidityUSD: number;
   name: string;
   reserve0: string;
@@ -68,7 +66,6 @@ type SushiPoolData = {
   name: string;
   reserve0: bigint; // raw balance of token0 held by the pool
   reserve1: bigint;
-  rewardApy: number; // % from incentives
   swapFee: number; // fee tier as a fraction (0.0005 = 0.05%)
   token0: SushiToken;
   token0Price: number; // token0 per token1
@@ -110,7 +107,6 @@ export const fetchSushiPoolData = async function (
     name: pool.name,
     reserve0: BigInt(pool.reserve0),
     reserve1: BigInt(pool.reserve1),
-    rewardApy: pool.incentiveApr * 100,
     swapFee: pool.swapFee,
     token0: { ...pool.token0, address: getAddress(pool.token0.address) },
     token0Price: pool.token0Price,
