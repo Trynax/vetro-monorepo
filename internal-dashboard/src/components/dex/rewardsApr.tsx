@@ -75,6 +75,8 @@ export const RewardsApr = function ({ align, pool }: RewardsAprProps) {
   const rows = rewardAprRows({
     campaigns: campaignsQuery.data ?? [],
     emission: pool,
+    // When the feed was read, so expired rewards match the data shown.
+    nowSeconds: strategyQuery.dataUpdatedAt / 1000,
     stakeDaoStrategy: strategyQuery.data ?? null,
   });
 

@@ -200,7 +200,7 @@ type UpstreamStakeDaoStrategy = Omit<
 > & {
   gaugeAddress: StakeDaoStrategy["gaugeAddress"] | null;
   // Some reward tokens come with only an address.
-  rewards: { token: { symbol?: string } }[];
+  rewards: { apr: number; end: number; token: { symbol?: string } }[];
 };
 
 type GaugedUpstreamStakeDaoStrategy = UpstreamStakeDaoStrategy & {
@@ -215,8 +215,8 @@ const servedStrategy = (
     : {}),
   gaugeAddress: getAddress(strategy.gaugeAddress),
   key: strategy.key,
-  rewards: strategy.rewards.flatMap(({ token: { symbol } }) =>
-    symbol ? [{ token: { symbol } }] : [],
+  rewards: strategy.rewards.flatMap(({ apr, end, token: { symbol } }) =>
+    symbol ? [{ apr, end, token: { symbol } }] : [],
   ),
   tradingApy: strategy.tradingApy,
 });

@@ -15,7 +15,7 @@ const strategy: StakeDaoStrategy = {
   apr: { current: { total: 19.25 } },
   gaugeAddress: "0x737e7700e03A8c451C9B72103554a40760F1B57A",
   key: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
-  rewards: [{ token: { symbol: "CRV" } }],
+  rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
   tradingApy: 0.25,
 };
 

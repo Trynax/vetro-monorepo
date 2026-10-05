@@ -69,7 +69,7 @@ const stakeDaoStrategy = {
   apr: { current: { total: 19.25 } },
   gaugeAddress: "0x737e7700e03A8c451C9B72103554a40760F1B57A",
   key: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
-  rewards: [{ token: { symbol: "CRV" } }],
+  rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
   tradingApy: 0.25,
 } satisfies StakeDaoStrategy;
 
@@ -98,7 +98,12 @@ const crvRow = {
 describe("rewardAprRows", function () {
   it("shows the gauge CRV range alone when there are no other rewards", function () {
     expect(
-      rewardAprRows({ campaigns: [], emission, stakeDaoStrategy: null }),
+      rewardAprRows({
+        campaigns: [],
+        emission,
+        nowSeconds,
+        stakeDaoStrategy: null,
+      }),
     ).toStrictEqual([
       {
         aprPercent: 6.75,
@@ -124,6 +129,7 @@ describe("rewardAprRows", function () {
           stakeDaoCampaign,
         ],
         emission,
+        nowSeconds,
         stakeDaoStrategy,
       }),
     ).toStrictEqual([
@@ -154,6 +160,7 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [stakeDaoCampaign],
         emission: { emissionApy: 0, emissionApyMax: 0, id: msUsdPoolId },
+        nowSeconds,
         stakeDaoStrategy,
       }),
     ).toStrictEqual([
@@ -171,6 +178,7 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [stakeDaoCampaign],
         emission,
+        nowSeconds,
         stakeDaoStrategy: {
           ...stakeDaoStrategy,
           apr: { current: { total: 0.25 } },
@@ -191,11 +199,12 @@ describe("rewardAprRows", function () {
           emissionApyMax: 16.99,
           id: msUsdPoolId,
         },
+        nowSeconds,
         stakeDaoStrategy: {
           apr: { current: { total: 7.871434679506586 } },
           gaugeAddress: "0x28a72343bFf5e10b36E72d86b1041ED2447Dc0Cc",
           key: "1-0x757360820728819953937b752f6b83aeb11090c7",
-          rewards: [{ token: { symbol: "CRV" } }],
+          rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
           tradingApy: 0.01,
         },
       }),
@@ -223,11 +232,12 @@ describe("rewardAprRows", function () {
           emissionApyMax: 38.12,
           id: crvUsdPoolId,
         },
+        nowSeconds,
         stakeDaoStrategy: {
           apr: { current: { total } },
           gaugeAddress: "0x737e7700e03A8c451C9B72103554a40760F1B57A",
           key: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
-          rewards: [{ token: { symbol: "CRV" } }],
+          rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
           tradingApy,
         },
       }),
@@ -253,6 +263,7 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [merklCampaign],
         emission,
+        nowSeconds,
         stakeDaoStrategy,
       }),
     ).toStrictEqual([
@@ -271,6 +282,7 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [stakeDaoCampaign],
         emission,
+        nowSeconds,
         stakeDaoStrategy: null,
       }),
     ).toStrictEqual([crvRow]);
@@ -278,6 +290,7 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [stakeDaoCampaign],
         emission: noEmission,
+        nowSeconds,
         stakeDaoStrategy: null,
       }),
     ).toStrictEqual([]);
@@ -288,6 +301,7 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [merklCampaign, stakeDaoCampaign],
         emission: noEmission,
+        nowSeconds,
         stakeDaoStrategy: null,
       }),
     ).toEqual([
@@ -314,6 +328,7 @@ describe("rewardAprRows", function () {
           },
         ],
         emission: noEmission,
+        nowSeconds,
         stakeDaoStrategy,
       }),
     ).toEqual([
@@ -343,6 +358,7 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [merklCampaign, stakeDaoCampaign],
         emission: noEmission,
+        nowSeconds,
         stakeDaoStrategy: {
           ...stakeDaoStrategy,
           apr: { current: { total: 4.5 } },
@@ -366,6 +382,7 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [stakeDaoCampaign],
         emission: noEmission,
+        nowSeconds,
         stakeDaoStrategy: withoutApr,
       }),
     ).toEqual([]);
@@ -376,12 +393,14 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [stakeDaoCampaign],
         emission: noEmission,
+        nowSeconds,
         stakeDaoStrategy: {
           ...stakeDaoStrategy,
           rewards: [
-            { token: { symbol: "CRV" } },
-            { token: { symbol: "CRV" } },
-            { token: { symbol: "PYUSD" } },
+            { apr: 0, end: 0, token: { symbol: "CRV" } },
+            { apr: 2, end: nowSeconds + day, token: { symbol: "PYUSD" } },
+            { apr: 0, end: 0, token: { symbol: "CRV" } },
+            { apr: 1, end: nowSeconds + day, token: { symbol: "PYUSD" } },
           ],
         },
       }),
@@ -395,11 +414,112 @@ describe("rewardAprRows", function () {
     ]);
   });
 
+  it("labels StakeDAO with CRV and the active rewards only", function () {
+    // BOLD/USDC-like feed entry: the vault's own CRV at 0/0, a BOLD reward
+    // still paying out and an LUSD reward whose period has ended.
+    expect(
+      rewardAprRows({
+        campaigns: [stakeDaoCampaign],
+        emission: noEmission,
+        nowSeconds,
+        stakeDaoStrategy: {
+          ...stakeDaoStrategy,
+          rewards: [
+            { apr: 0, end: 0, token: { symbol: "CRV" } },
+            { apr: 3.94, end: nowSeconds + day, token: { symbol: "BOLD" } },
+            { apr: 0, end: nowSeconds - day, token: { symbol: "LUSD" } },
+          ],
+        },
+      }),
+    ).toStrictEqual([
+      {
+        aprPercent: 19,
+        id: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
+        source: "stakeDao",
+        tokenSymbols: "CRV/BOLD",
+      },
+    ]);
+  });
+
+  it("drops a reward with a 0 APR and no end, like frxUSD/crvUSD's YB", function () {
+    expect(
+      rewardAprRows({
+        campaigns: [stakeDaoCampaign],
+        emission: noEmission,
+        nowSeconds,
+        stakeDaoStrategy: {
+          ...stakeDaoStrategy,
+          rewards: [
+            { apr: 0, end: 0, token: { symbol: "CRV" } },
+            { apr: 0, end: 0, token: { symbol: "YB" } },
+          ],
+        },
+      }),
+    ).toStrictEqual([
+      {
+        aprPercent: 19,
+        id: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
+        source: "stakeDao",
+        tokenSymbols: "CRV",
+      },
+    ]);
+  });
+
+  it("drops a reward with a positive APR whose end is now", function () {
+    expect(
+      rewardAprRows({
+        campaigns: [stakeDaoCampaign],
+        emission: noEmission,
+        nowSeconds,
+        stakeDaoStrategy: {
+          ...stakeDaoStrategy,
+          rewards: [
+            { apr: 0, end: 0, token: { symbol: "CRV" } },
+            { apr: 5, end: nowSeconds, token: { symbol: "BOLD" } },
+            { apr: 5, end: nowSeconds + 1, token: { symbol: "PYUSD" } },
+          ],
+        },
+      }),
+    ).toStrictEqual([
+      {
+        aprPercent: 19,
+        id: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
+        source: "stakeDao",
+        tokenSymbols: "CRV/PYUSD",
+      },
+    ]);
+  });
+
+  it("drops a reward with a future end but a 0 APR", function () {
+    expect(
+      rewardAprRows({
+        campaigns: [stakeDaoCampaign],
+        emission: noEmission,
+        nowSeconds,
+        stakeDaoStrategy: {
+          ...stakeDaoStrategy,
+          rewards: [
+            { apr: 0, end: 0, token: { symbol: "CRV" } },
+            { apr: 0, end: nowSeconds + day, token: { symbol: "BOLD" } },
+          ],
+        },
+      }),
+    ).toStrictEqual([
+      {
+        aprPercent: 19,
+        id: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
+        source: "stakeDao",
+        tokenSymbols: "CRV",
+      },
+    ]);
+  });
+
   it("returns no rows without campaigns or a strategy", function () {
     expect(
       rewardAprRows({
         campaigns: [],
         emission: noEmission,
+        nowSeconds,
         stakeDaoStrategy: null,
       }),
     ).toEqual([]);

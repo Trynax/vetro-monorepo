@@ -40,7 +40,7 @@ const msUsdServed = {
   apr: { current: { total: 7.871434679506586 } },
   gaugeAddress: msUsdGauge,
   key: "1-0x757360820728819953937b752f6b83aeb11090c7",
-  rewards: [{ token: { symbol: "CRV" } }],
+  rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
   tradingApy: 0.01,
 };
 
@@ -48,7 +48,7 @@ const crvUsdServed = {
   apr: { current: { total: 18.423951191461402 } },
   gaugeAddress: crvUsdGauge,
   key: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
-  rewards: [{ token: { symbol: "CRV" } }],
+  rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
   tradingApy: 0.08,
 };
 
@@ -100,10 +100,28 @@ describe("GET /api/stakedao/strategies", function () {
         apr: { current: { total: 0.02 } },
         gaugeAddress: "0x6d3328F0333f6FB0B2FaC87cF5a0FFa7e77beB60",
         key: "1-0x3b6991e34dd92d574c39f085015b22e5c23e87bf",
-        rewards: [{ token: { symbol: "CRV" } }],
+        rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
         tradingApy: 0.02,
       },
     ]);
+  });
+
+  it("serves each reward's apr and end", async function () {
+    // The live VUSD entries only carry CRV at 0/0, so use the BOLD/USDC
+    // rewards seen in the feed: an active BOLD and an expired LUSD.
+    const rewards = [
+      { apr: 0, end: 0, token: { symbol: "CRV" } },
+      { apr: 3.94, end: 1791468467, token: { symbol: "BOLD" } },
+      { apr: 0, end: 1747873307, token: { symbol: "LUSD" } },
+    ];
+    upstreamFetch.mockImplementation(
+      async () =>
+        new Response(JSON.stringify([{ ...liveStrategies[1], rewards }])),
+    );
+
+    const response = await requestStrategies(`chainId=1&gauges=${crvUsdGauge}`);
+
+    expect(await response.json()).toStrictEqual([{ ...crvUsdServed, rewards }]);
   });
 
   it("rejects the whole batch with 400 when a gauge is not an address", async function () {

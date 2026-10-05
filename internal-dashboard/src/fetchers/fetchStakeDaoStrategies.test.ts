@@ -54,7 +54,7 @@ const crvUsdStrategy: StakeDaoStrategy = {
   // Lowercase on purpose: matching must not depend on letter case.
   gaugeAddress: crvUsdGauge.toLowerCase() as Address,
   key: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
-  rewards: [{ token: { symbol: "CRV" } }],
+  rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
   tradingApy: 0.25,
 };
 
@@ -62,7 +62,7 @@ const otherStrategy: StakeDaoStrategy = {
   apr: { current: { total: 7 } },
   gaugeAddress: "0x6666666666666666666666666666666666666666",
   key: "1-0x6666666666666666666666666666666666666666",
-  rewards: [{ token: { symbol: "CRV" } }],
+  rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
   tradingApy: 1,
 };
 
@@ -154,7 +154,7 @@ describe("fetchStakeDaoStrategies", function () {
       apr: { current: { total: 7.871434679506586 } },
       gaugeAddress: msUsdGauge,
       key: "1-0x757360820728819953937b752f6b83aeb11090c7",
-      rewards: [{ token: { symbol: "CRV" } }],
+      rewards: [{ apr: 0, end: 0, token: { symbol: "CRV" } }],
       tradingApy: 0.01,
     };
     vi.mocked(fetchStakeDaoStrategiesByGauge).mockResolvedValue([

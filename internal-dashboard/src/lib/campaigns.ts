@@ -52,6 +52,27 @@ export type RewardAprRow = {
 const hasActiveStakeDaoCampaign = (campaigns: PoolCampaign[]) =>
   campaigns.some((campaign) => campaign.source === "stakeDao");
 
+// The boosted CRV the strategy APR is built on, plus extra rewards still
+// paying out. The feed keeps dead entries (APR 0 or an end in the past).
+const activeRewardSymbols = ({
+  nowSeconds,
+  rewards,
+}: {
+  nowSeconds: number;
+  rewards: StakeDaoStrategy["rewards"];
+}) =>
+  [
+    ...new Set(
+      rewards
+        .filter(
+          (reward) =>
+            reward.token.symbol === "CRV" ||
+            (reward.apr > 0 && reward.end > nowSeconds),
+        )
+        .map((reward) => reward.token.symbol),
+    ),
+  ].join("/");
+
 // Rows in a fixed order: the venue's gauge emissions (what an LP gets by
 // staking in the Curve gauge directly), then the StakeDAO LP strategy, which
 // is an alternative to that gauge line, not an addition, so it sits right
@@ -62,10 +83,12 @@ const hasActiveStakeDaoCampaign = (campaigns: PoolCampaign[]) =>
 export const rewardAprRows = function ({
   campaigns,
   emission,
+  nowSeconds,
   stakeDaoStrategy,
 }: {
   campaigns: PoolCampaign[];
   emission: { emissionApy: number; emissionApyMax: number; id: string };
+  nowSeconds: number;
   stakeDaoStrategy: StakeDaoStrategy | null;
 }) {
   const rows: RewardAprRow[] = [];
@@ -86,11 +109,10 @@ export const rewardAprRows = function ({
         aprPercent,
         id: stakeDaoStrategy.key,
         source: "stakeDao",
-        tokenSymbols: [
-          ...new Set(
-            stakeDaoStrategy.rewards.map((reward) => reward.token.symbol),
-          ),
-        ].join("/"),
+        tokenSymbols: activeRewardSymbols({
+          nowSeconds,
+          rewards: stakeDaoStrategy.rewards,
+        }),
       });
     }
   }

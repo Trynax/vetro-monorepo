@@ -24,7 +24,12 @@ export type StakeDaoStrategy = {
   apr?: { current: { total: number } }; // % incl. trading fees
   gaugeAddress: Address;
   key: string;
-  rewards: { token: { symbol: string } }[];
+  rewards: {
+    // Both 0 on the vault's own CRV entry.
+    apr: number; // %
+    end: number; // seconds
+    token: { symbol: string };
+  }[];
   tradingApy: number; // %
 };
 
