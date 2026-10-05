@@ -8,20 +8,20 @@ export const convertToAssetsQueryOptions = ({
   shares,
   stakingVaultAddress,
 }: {
-  client: Client | undefined;
+  client: Client;
   shares: bigint | undefined;
   stakingVaultAddress: Address;
 }) =>
   queryOptions({
-    enabled: !!client && shares !== undefined,
+    enabled: shares !== undefined,
     queryFn: () =>
-      convertToAssets(client!, {
+      convertToAssets(client, {
         address: stakingVaultAddress,
         shares: shares!,
       }),
     queryKey: [
       "convert-to-assets",
-      client?.chain?.id,
+      client.chain?.id,
       stakingVaultAddress,
       shares?.toString(),
     ],
@@ -37,7 +37,11 @@ export function useConvertToAssets({
   const client = useEthereumClient();
 
   return useQuery({
-    ...convertToAssetsQueryOptions({ client, shares, stakingVaultAddress }),
+    ...convertToAssetsQueryOptions({
+      client: client!,
+      shares,
+      stakingVaultAddress,
+    }),
     enabled: !!client && shares > 0n,
   });
 }
