@@ -86,6 +86,12 @@ To discover the symbols a gateway takes, run `swap whitelisted-tokens --gateway 
 
 This is the list of commands available
 
+### `gateways` — the enabled gateways
+
+| Command              | Reads | Returns                                                                                                                                                                                                                                                                   |
+| -------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vetro-cli gateways` | —     | Every enabled gateway. Each entry carries `address`, `peggedToken` (the pegged token the gateway mints) and `stakingVault` (the vault that stakes that pegged token, or `null` when the gateway has none). `address` is the `--gateway` of the gateway-level `swap` reads |
+
 ### `swap` — whitelisted ↔ pegged token
 
 #### Write operations

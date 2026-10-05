@@ -3,11 +3,12 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { register as gateways } from "./features/gateways/index.ts";
 import { register as swap } from "./features/swap/index.ts";
 import { parseRpcUrl } from "./lib/args.ts";
 import { redactOptionValues } from "./lib/output.ts";
 
-const features = [swap];
+const features = [gateways, swap];
 
 /**
  * The option, paired with the redactor for the usage errors it can raise.
