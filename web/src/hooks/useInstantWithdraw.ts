@@ -3,6 +3,7 @@ import { useNativeBalance } from "@hemilabs/react-hooks/useNativeBalance";
 import { tokenBalanceQueryKey } from "@hemilabs/react-hooks/useTokenBalance";
 import { useUpdateNativeBalanceAfterReceipt } from "@hemilabs/react-hooks/useUpdateNativeBalanceAfterReceipt";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { mainnet } from "networks/mainnet";
 import type { TokenWithGateway } from "types";
 import { type CostBases, reduceCostBasisProportionally } from "utils/costBasis";
 import type { Address } from "viem";
@@ -13,7 +14,6 @@ import { useAccount } from "wagmi";
 import { costBasisQueryKey } from "./useCostBasis";
 import { earnedAmountUsdQueryKey } from "./useEarnedAmountUsd";
 import { useEthereumWalletClient } from "./useEthereumWalletClient";
-import { useMainnet } from "./useMainnet";
 import { poolDepositsQueryKey } from "./usePoolDeposits";
 import { stakedBalanceQueryKey } from "./useStakedBalance";
 import { stakedUsdQueryKey } from "./useStakedUsd";
@@ -38,31 +38,30 @@ export const useInstantWithdraw = function ({
   stakingVaultAddress,
 }: Params) {
   const { address: account } = useAccount();
-  const chain = useMainnet();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
   const queryClient = useQueryClient();
 
-  const { queryKey: nativeBalanceKey } = useNativeBalance(chain.id);
+  const { queryKey: nativeBalanceKey } = useNativeBalance(mainnet.id);
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    chain.id,
+    mainnet.id,
   );
 
   const peggedTokenBalanceKey = tokenBalanceQueryKey(peggedToken, account);
 
   const sharesBalanceKey = tokenBalanceQueryKey(
-    { address: stakingVaultAddress, chainId: chain.id },
+    { address: stakingVaultAddress, chainId: mainnet.id },
     account,
   );
 
   const stakedKey = stakedBalanceQueryKey({
     account: account!,
-    chainId: chain.id,
+    chainId: mainnet.id,
     stakingVaultAddress,
   });
 
   const poolDepositsKey = poolDepositsQueryKey({
-    chainId: chain.id,
+    chainId: mainnet.id,
     stakingVaultAddress,
   });
 
@@ -72,7 +71,7 @@ export const useInstantWithdraw = function ({
         throw new Error("No account connected");
       }
 
-      await ensureConnectedTo(chain.id);
+      await ensureConnectedTo(mainnet.id);
 
       const hash = await withdraw(walletClient!, {
         address: stakingVaultAddress,
@@ -146,7 +145,7 @@ export const useInstantWithdraw = function ({
       queryClient.invalidateQueries({
         queryKey: stakedUsdQueryKey({
           account,
-          chainId: chain.id,
+          chainId: mainnet.id,
           stakingVaultAddress,
         }),
       });
@@ -154,7 +153,7 @@ export const useInstantWithdraw = function ({
       queryClient.invalidateQueries({
         queryKey: earnedAmountUsdQueryKey({
           account,
-          chainId: chain.id,
+          chainId: mainnet.id,
           stakingVaultAddress,
         }),
       });

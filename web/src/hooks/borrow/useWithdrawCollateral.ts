@@ -6,11 +6,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { WithdrawCollateralEvents } from "@vetro-protocol/morpho-blue-market";
 import { withdrawCollateral } from "@vetro-protocol/morpho-blue-market/actions";
 import type { EventEmitter } from "events";
+import { mainnet } from "networks/mainnet";
 import type { Hash } from "viem";
 import { useAccount } from "wagmi";
 
 import { useEthereumWalletClient } from "../useEthereumWalletClient";
-import { useMainnet } from "../useMainnet";
 
 import { atRiskPositionsQueryKey } from "./useAtRiskPositions";
 import { marketCollateralQueryKey } from "./useMarketCollateral";
@@ -29,10 +29,9 @@ export const useWithdrawCollateral = function ({
   const { address: account } = useAccount();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    ethereumChain.id,
+    mainnet.id,
   );
 
   return useMutation({
@@ -41,26 +40,26 @@ export const useWithdrawCollateral = function ({
         throw new Error("No account connected");
       }
 
-      await ensureConnectedTo(ethereumChain.id);
+      await ensureConnectedTo(mainnet.id);
 
       const market = await queryClient.ensureQueryData(
         morphoMarketOptions({
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           client: walletClient!,
           marketId,
         }),
       );
 
-      const morphoAddress = getChainAddresses(ethereumChain.id).blue;
+      const morphoAddress = getChainAddresses(mainnet.id).blue;
 
       const collateralBalanceKey = tokenBalanceQueryKey(
-        { address: market.params.collateralToken, chainId: ethereumChain.id },
+        { address: market.params.collateralToken, chainId: mainnet.id },
         account,
       );
 
       const positionInfoKey = positionInfoQueryKey({
         account,
-        chainId: ethereumChain.id,
+        chainId: mainnet.id,
         marketId,
       });
 
@@ -107,7 +106,7 @@ export const useWithdrawCollateral = function ({
     },
     async onSettled() {
       const marketOptions = morphoMarketOptions({
-        chainId: ethereumChain.id,
+        chainId: mainnet.id,
         client: walletClient,
         marketId,
       });
@@ -116,7 +115,7 @@ export const useWithdrawCollateral = function ({
       // First invalidate the market data itself. Wait for invalidation, as useMarketData depends on it
       await queryClient.invalidateQueries({
         queryKey: morphoMarketQueryKey({
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           marketId,
         }),
       });
@@ -126,7 +125,7 @@ export const useWithdrawCollateral = function ({
           queryKey: tokenBalanceQueryKey(
             {
               address: market.params.collateralToken,
-              chainId: ethereumChain.id,
+              chainId: mainnet.id,
             },
             account,
           ),
@@ -136,7 +135,7 @@ export const useWithdrawCollateral = function ({
       queryClient.invalidateQueries({
         queryKey: positionInfoQueryKey({
           account,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           marketId,
         }),
       });
@@ -148,7 +147,7 @@ export const useWithdrawCollateral = function ({
       queryClient.invalidateQueries({
         queryKey: atRiskPositionsQueryKey({
           account,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
         }),
       });
     },

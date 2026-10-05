@@ -4,8 +4,8 @@ import { DisplayAmount } from "components/base/displayAmount";
 import { InfoCard } from "components/base/infoCard";
 import { BoltIcon } from "components/icons/boltIcon";
 import { TokenLogo } from "components/tokenLogo";
-import { useMainnet } from "hooks/useMainnet";
 import { useStakedUsd } from "hooks/useStakedUsd";
+import { mainnet } from "networks/mainnet";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { formatUsd } from "utils/currency";
@@ -16,10 +16,9 @@ const SymbolContainer = ({ children }: { children?: ReactNode }) => (
 );
 
 const ShareBalance = function ({ shareToken }: { shareToken: Token }) {
-  const chain = useMainnet();
   const { data: shareBalance } = useTokenBalance({
     address: shareToken.address,
-    chainId: chain.id,
+    chainId: mainnet.id,
   });
 
   if (shareBalance === undefined) {

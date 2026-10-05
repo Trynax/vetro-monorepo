@@ -15,8 +15,8 @@ import { TokenBalance } from "components/tokenInput/tokenBalance";
 import { TokenSelectorReadOnly } from "components/tokenSelectorReadOnly";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
-import { useMainnet } from "hooks/useMainnet";
 import { useStakeDeposit } from "hooks/useStakeDeposit";
+import { mainnet } from "networks/mainnet";
 import { useTotalDepositFees } from "pages/earn/hooks/useTotalDepositFees";
 import { type FormEvent, Suspense, lazy, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -106,7 +106,6 @@ export function StakeDepositForm({
   stakingVaultAddress,
 }: Props) {
   const { address: account } = useAccount();
-  const chain = useMainnet();
   const { t } = useTranslation();
   const [requestCloseDrawer, setRequestCloseDrawer] = useState(false);
   const [submitted, setSubmitted] = useState<{
@@ -117,17 +116,17 @@ export function StakeDepositForm({
   const { mutate: watchToken } = useAddTokenToWallet({
     token: {
       address: shareToken.address,
-      chainId: chain.id,
+      chainId: mainnet.id,
       extensions: { logoURI: shareToken.logoURI },
     },
   });
 
   const { data: peggedTokenBalance } = useTokenBalance({
     address: peggedToken.address,
-    chainId: chain.id,
+    chainId: mainnet.id,
   });
 
-  const { data: nativeBalanceData } = useNativeBalance(chain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
   const nativeBalance = nativeBalanceData?.value;
 
   const { data: currentAllowance } = useAllowance({

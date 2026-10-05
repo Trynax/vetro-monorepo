@@ -7,11 +7,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { SupplyCollateralEvents } from "@vetro-protocol/morpho-blue-market";
 import { supplyCollateral } from "@vetro-protocol/morpho-blue-market/actions";
 import type { EventEmitter } from "events";
+import { mainnet } from "networks/mainnet";
 import type { Hash } from "viem";
 import { useAccount } from "wagmi";
 
 import { useEthereumWalletClient } from "../useEthereumWalletClient";
-import { useMainnet } from "../useMainnet";
 
 import { atRiskPositionsQueryKey } from "./useAtRiskPositions";
 import { marketCollateralQueryKey } from "./useMarketCollateral";
@@ -32,10 +32,9 @@ export const useSupplyCollateral = function ({
   const { address: account } = useAccount();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    ethereumChain.id,
+    mainnet.id,
   );
 
   return useMutation({
@@ -44,26 +43,26 @@ export const useSupplyCollateral = function ({
         throw new Error("No account connected");
       }
 
-      await ensureConnectedTo(ethereumChain.id);
+      await ensureConnectedTo(mainnet.id);
 
       const market = await queryClient.ensureQueryData(
         morphoMarketOptions({
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           client: walletClient!,
           marketId,
         }),
       );
 
-      const morphoAddress = getChainAddresses(ethereumChain.id).blue;
+      const morphoAddress = getChainAddresses(mainnet.id).blue;
 
       const collateralBalanceKey = tokenBalanceQueryKey(
-        { address: market.params.collateralToken, chainId: ethereumChain.id },
+        { address: market.params.collateralToken, chainId: mainnet.id },
         account,
       );
 
       const positionInfoKey = positionInfoQueryKey({
         account,
-        chainId: ethereumChain.id,
+        chainId: mainnet.id,
         marketId,
       });
 
@@ -86,7 +85,7 @@ export const useSupplyCollateral = function ({
           spender: morphoAddress,
           token: {
             address: market.params.collateralToken,
-            chainId: ethereumChain.id,
+            chainId: mainnet.id,
           },
         });
 
@@ -119,7 +118,7 @@ export const useSupplyCollateral = function ({
     },
     onSettled() {
       const marketOptions = morphoMarketOptions({
-        chainId: ethereumChain.id,
+        chainId: mainnet.id,
         client: walletClient,
         marketId,
       });
@@ -127,7 +126,7 @@ export const useSupplyCollateral = function ({
       const market = queryClient.getQueryData(marketOptions.queryKey);
 
       if (market) {
-        const morphoAddress = getChainAddresses(ethereumChain.id).blue;
+        const morphoAddress = getChainAddresses(mainnet.id).blue;
 
         queryClient.invalidateQueries({
           queryKey: allowanceQueryKey({
@@ -135,7 +134,7 @@ export const useSupplyCollateral = function ({
             spender: morphoAddress,
             token: {
               address: market.params.collateralToken,
-              chainId: ethereumChain.id,
+              chainId: mainnet.id,
             },
           }),
         });
@@ -144,7 +143,7 @@ export const useSupplyCollateral = function ({
           queryKey: tokenBalanceQueryKey(
             {
               address: market.params.collateralToken,
-              chainId: ethereumChain.id,
+              chainId: mainnet.id,
             },
             account,
           ),
@@ -154,7 +153,7 @@ export const useSupplyCollateral = function ({
       queryClient.invalidateQueries({
         queryKey: positionInfoQueryKey({
           account,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           marketId,
         }),
       });
@@ -166,7 +165,7 @@ export const useSupplyCollateral = function ({
       queryClient.invalidateQueries({
         queryKey: atRiskPositionsQueryKey({
           account,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
         }),
       });
     },

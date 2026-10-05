@@ -4,6 +4,7 @@ import { tokenBalanceQueryKey } from "@hemilabs/react-hooks/useTokenBalance";
 import { useUpdateNativeBalanceAfterReceipt } from "@hemilabs/react-hooks/useUpdateNativeBalanceAfterReceipt";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { claimWithdrawBatch } from "@vetro-protocol/earn/actions";
+import { mainnet } from "networks/mainnet";
 import { exitTicketsQueryKey } from "pages/earn/hooks/useExitTickets";
 import type { ExitTicket } from "pages/earn/types";
 import type { TokenWithGateway } from "types";
@@ -11,7 +12,6 @@ import { type Address, isAddressEqual } from "viem";
 import { useAccount } from "wagmi";
 
 import { useEthereumWalletClient } from "./useEthereumWalletClient";
-import { useMainnet } from "./useMainnet";
 import { stakedBalanceQueryKey } from "./useStakedBalance";
 import { vaultPeggedTokenQueryOptions } from "./useVaultPeggedToken";
 
@@ -43,14 +43,13 @@ export const useClaimWithdrawBatch = function ({
   onTransactionHash,
 }: Params) {
   const { address: account } = useAccount();
-  const chain = useMainnet();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
   const queryClient = useQueryClient();
 
-  const { queryKey: nativeBalanceKey } = useNativeBalance(chain.id);
+  const { queryKey: nativeBalanceKey } = useNativeBalance(mainnet.id);
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    chain.id,
+    mainnet.id,
   );
 
   return useMutation({
@@ -62,7 +61,7 @@ export const useClaimWithdrawBatch = function ({
         throw new Error("No wallet client");
       }
 
-      await ensureConnectedTo(chain.id);
+      await ensureConnectedTo(mainnet.id);
 
       // One transaction per staking vault, run sequentially so the drawer can
       // reflect progress step by step and so each transaction lands as its own
@@ -171,7 +170,7 @@ export const useClaimWithdrawBatch = function ({
         withdrawals.map(({ stakingVaultAddress }) =>
           queryClient.refetchQueries({
             queryKey: tokenBalanceQueryKey(
-              { address: stakingVaultAddress, chainId: chain.id },
+              { address: stakingVaultAddress, chainId: mainnet.id },
               account,
             ),
           }),
@@ -182,7 +181,7 @@ export const useClaimWithdrawBatch = function ({
         queryClient.invalidateQueries({
           queryKey: stakedBalanceQueryKey({
             account: account!,
-            chainId: chain.id,
+            chainId: mainnet.id,
             stakingVaultAddress,
           }),
         }),

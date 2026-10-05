@@ -1,11 +1,11 @@
 import { useQueries } from "@tanstack/react-query";
+import { mainnet } from "networks/mainnet";
 import { useMemo } from "react";
 import type { Hash } from "viem";
 import { useAccount } from "wagmi";
 
 import { hasActivePosition } from "../../utils/borrowPosition";
 import { useEthereumClient } from "../useEthereumClient";
-import { useMainnet } from "../useMainnet";
 
 import { positionInfoOptions } from "./usePositionInfo";
 
@@ -20,14 +20,13 @@ export type PositionData = {
 
 export const usePositionsData = function (marketIds: Hash[]) {
   const { address: account } = useAccount();
-  const ethereumChain = useMainnet();
   const client = useEthereumClient();
 
   const positionQueries = useQueries({
     queries: marketIds.map((marketId) =>
       positionInfoOptions({
         account,
-        chainId: ethereumChain.id,
+        chainId: mainnet.id,
         client: client!,
         marketId,
       }),

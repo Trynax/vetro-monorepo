@@ -30,7 +30,7 @@ import { useActivityTracking } from "hooks/useActivityTracking";
 import { useAmount } from "hooks/useAmount";
 import { useAnimatedVisibility } from "hooks/useAnimatedVisibility";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { maxBigInt, minBigInt } from "utils/bigint";
@@ -207,7 +207,6 @@ type Props = {
 
 export function BorrowMoreForm({ market, onClose }: Props) {
   const { t } = useTranslation();
-  const ethereumChain = useMainnet();
 
   const [borrowInput, onBorrowChange] = useAmount();
   const [flowStatus, setFlowStatus] = useState<BorrowMoreFlowStatus>("idle");
@@ -226,7 +225,7 @@ export function BorrowMoreForm({ market, onClose }: Props) {
 
   const borrowAmountBigInt = parseTokenUnits(borrowInput, loanToken);
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
 
   const { data: positionInfo } = usePositionInfo(marketId);
 

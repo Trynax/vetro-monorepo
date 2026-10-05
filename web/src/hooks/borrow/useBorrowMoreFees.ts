@@ -7,7 +7,7 @@ import {
 import { fetchBorrowGasUnits } from "fetchers/fetchBorrowGasUnits";
 import { fetchTotalBorrowFees } from "fetchers/fetchTotalBorrowFees";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type Address, type Chain, type Client, type Hash } from "viem";
 import { useAccount } from "wagmi";
 
@@ -106,13 +106,12 @@ export const useTotalBorrowMoreFees = function ({
 }) {
   const { address: owner } = useAccount();
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
 
   return useQuery(
     totalBorrowFeesOptions({
       amount,
-      chain: ethereumChain,
+      chain: mainnet,
       client,
       marketId,
       owner,

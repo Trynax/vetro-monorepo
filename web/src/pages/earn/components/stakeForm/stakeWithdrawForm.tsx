@@ -13,9 +13,9 @@ import { TokenSelectorReadOnly } from "components/tokenSelectorReadOnly";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
 import { useInstantWithdraw } from "hooks/useInstantWithdraw";
-import { useMainnet } from "hooks/useMainnet";
 import { useStakedBalance } from "hooks/useStakedBalance";
 import { useStakeWithdraw } from "hooks/useStakeWithdraw";
+import { mainnet } from "networks/mainnet";
 import { useCanInstantWithdraw } from "pages/earn/hooks/useCanInstantWithdraw";
 import { useCooldownDuration } from "pages/earn/hooks/useCooldownDuration";
 import { useTotalWithdrawFees } from "pages/earn/hooks/useTotalWithdrawFees";
@@ -99,7 +99,6 @@ export function StakeWithdrawForm({
   const { data: canInstantWithdraw } = useCanInstantWithdraw({
     stakingVaultAddress,
   });
-  const chain = useMainnet();
   const { data: cooldownDays } = useCooldownDuration(stakingVaultAddress);
   const { t } = useTranslation();
   const [requestCloseDrawer, setRequestCloseDrawer] = useState(false);
@@ -131,7 +130,7 @@ export function StakeWithdrawForm({
   const { data: stakedBalance, status: stakedBalanceStatus } =
     useStakedBalance(stakingVaultAddress);
 
-  const { data: nativeBalanceData } = useNativeBalance(chain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
   const nativeBalance = nativeBalanceData?.value;
 
   const amountBigInt = parseUnits(inputValue, peggedToken.decimals);

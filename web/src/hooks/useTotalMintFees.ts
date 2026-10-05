@@ -1,10 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTotalMintFees } from "fetchers/fetchTotalMintFees";
+import { mainnet } from "networks/mainnet";
 import type { TokenWithGateway } from "types";
 import { useAccount } from "wagmi";
 
 import { useEthereumClient } from "./useEthereumClient";
-import { useMainnet } from "./useMainnet";
 
 export const useTotalMintFees = function ({
   amount,
@@ -19,7 +19,6 @@ export const useTotalMintFees = function ({
 }) {
   const { address: owner } = useAccount();
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
 
   return useQuery({
@@ -33,7 +32,7 @@ export const useTotalMintFees = function ({
       fetchTotalMintFees({
         amount,
         approveAmount,
-        chain: ethereumChain,
+        chain: mainnet,
         client: client!,
         fromToken,
         minPeggedTokenOut: minPeggedTokenOut!,
@@ -42,7 +41,7 @@ export const useTotalMintFees = function ({
       }),
     queryKey: [
       "total-mint-fees",
-      ethereumChain.id,
+      mainnet.id,
       fromToken.gatewayAddress,
       fromToken.address,
       owner,

@@ -4,7 +4,7 @@ import { DollarSign } from "components/base/dollarSign";
 import { RenderFiatValue } from "components/base/fiatValue";
 import { FeeDetails } from "components/feeDetails";
 import { FeesContainer } from "components/feesContainer";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { formatFiatNumber } from "utils/format";
@@ -44,7 +44,6 @@ export const SwapFees = function ({
   totalFees,
 }: Props) {
   const { t } = useTranslation();
-  const mainnet = useMainnet();
 
   const ethToken = getNativeToken(mainnet);
 

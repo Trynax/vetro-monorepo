@@ -6,12 +6,12 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { fetchRedeemGasUnits } from "fetchers/fetchRedeemGasUnits";
+import { mainnet } from "networks/mainnet";
 import type { TokenWithGateway } from "types";
 import type { Address, Chain, Client } from "viem";
 import { useAccount } from "wagmi";
 
 import { useEthereumClient } from "./useEthereumClient";
-import { useMainnet } from "./useMainnet";
 
 export const redeemGasUnitsOptions = ({
   amount,
@@ -79,14 +79,13 @@ export const useSwapRedeemFees = function ({
 }) {
   const { address: owner } = useAccount();
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
 
   const { data: gasUnits, isError: isGasUnitsError } = useQuery(
     redeemGasUnitsOptions({
       amount,
       approveAmount,
-      chainId: ethereumChain.id,
+      chainId: mainnet.id,
       client,
       fromToken,
       minAmountOut,
@@ -97,7 +96,7 @@ export const useSwapRedeemFees = function ({
   );
 
   return useEstimateFees({
-    chainId: ethereumChain.id,
+    chainId: mainnet.id,
     gasUnits,
     isGasUnitsError,
   });

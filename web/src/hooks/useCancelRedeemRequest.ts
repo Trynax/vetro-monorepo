@@ -6,13 +6,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CancelRedeemRequestEvents } from "@vetro-protocol/gateway";
 import { cancelRedeemRequest } from "@vetro-protocol/gateway/actions";
 import type { EventEmitter } from "events";
+import { mainnet } from "networks/mainnet";
 import type { TokenWithGateway } from "types";
 import { useAccount } from "wagmi";
 
 import { useEthereumWalletClient } from "./useEthereumWalletClient";
 import { redeemRequestQueryKey } from "./useGetRedeemRequest";
 import { redeemRequestsQueryKey } from "./useGetRedeemRequests";
-import { useMainnet } from "./useMainnet";
 
 export const useCancelRedeemRequest = function ({
   onEmitter,
@@ -26,11 +26,10 @@ export const useCancelRedeemRequest = function ({
   const { address } = useAccount();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
-  const ethereumChain = useMainnet();
-  const { queryKey: nativeBalanceKey } = useNativeBalance(ethereumChain.id);
+  const { queryKey: nativeBalanceKey } = useNativeBalance(mainnet.id);
   const queryClient = useQueryClient();
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    ethereumChain.id,
+    mainnet.id,
   );
 
   const peggedTokenBalanceQueryKey = tokenBalanceQueryKey(peggedToken, address);
@@ -41,7 +40,7 @@ export const useCancelRedeemRequest = function ({
         throw new Error("No account connected");
       }
 
-      await ensureConnectedTo(ethereumChain.id);
+      await ensureConnectedTo(mainnet.id);
 
       const { emitter, promise } = cancelRedeemRequest(walletClient!, {
         gatewayAddress: peggedToken.gatewayAddress,
@@ -64,7 +63,7 @@ export const useCancelRedeemRequest = function ({
           queryClient.setQueryData(
             redeemRequestQueryKey({
               address,
-              chainId: ethereumChain.id,
+              chainId: mainnet.id,
               gatewayAddress: peggedToken.gatewayAddress,
             }),
             [0n, 0n] as [bigint, bigint],
@@ -83,14 +82,14 @@ export const useCancelRedeemRequest = function ({
       queryClient.invalidateQueries({
         queryKey: redeemRequestQueryKey({
           address,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           gatewayAddress: peggedToken.gatewayAddress,
         }),
       });
       queryClient.invalidateQueries({
         queryKey: redeemRequestsQueryKey({
           address,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
         }),
       });
       queryClient.invalidateQueries({

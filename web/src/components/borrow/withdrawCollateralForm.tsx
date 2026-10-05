@@ -28,7 +28,7 @@ import { useWithdrawCollateralReview } from "hooks/borrow/useWithdrawCollateralR
 import { useAmount } from "hooks/useAmount";
 import { useAnimatedVisibility } from "hooks/useAnimatedVisibility";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatLtvAsPercentage } from "utils/borrowReview";
@@ -199,7 +199,6 @@ type Props = {
 
 export function WithdrawCollateralForm({ market, onClose }: Props) {
   const { t } = useTranslation();
-  const ethereumChain = useMainnet();
 
   const [collateralInput, onCollateralChange] = useAmount();
   const [flowStatus, setFlowStatus] =
@@ -222,7 +221,7 @@ export function WithdrawCollateralForm({ market, onClose }: Props) {
     collateralToken,
   );
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
 
   const { data: positionInfo, status: positionInfoStatus } =
     usePositionInfo(marketId);

@@ -23,7 +23,7 @@ import { useMorphoMarket } from "hooks/borrow/useMorphoMarket";
 import { useSupplyAndBorrow } from "hooks/borrow/useSupplyAndBorrow";
 import { useTotalSupplyAndBorrowFees } from "hooks/borrow/useSupplyAndBorrowFees";
 import { useActivityTracking } from "hooks/useActivityTracking";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import {
   type FormEvent,
   type SetStateAction,
@@ -124,7 +124,6 @@ export function BorrowForm({
   onDrawerOpenChange,
 }: Props) {
   const { t } = useTranslation();
-  const ethereumChain = useMainnet();
   const [flowStatus, setFlowStatus] = useState<BorrowFlowStatus>("idle");
   const [showToast, setShowToast] = useState(false);
   const [startedWithApproval, setStartedWithApproval] = useState(false);
@@ -153,11 +152,11 @@ export function BorrowForm({
     chainId: collateralToken.chainId,
   });
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
 
   const { data: needsApproval } = useNeedsApproval({
     amount: collateralAmountBigInt,
-    spender: getChainAddresses(ethereumChain.id).blue,
+    spender: getChainAddresses(mainnet.id).blue,
     token: collateralToken,
   });
 

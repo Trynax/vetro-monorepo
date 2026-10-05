@@ -8,7 +8,7 @@ import type { Token } from "@vetro-protocol/core";
 import { fetchRepayGasUnits } from "fetchers/fetchRepayGasUnits";
 import { fetchTotalRepayFees } from "fetchers/fetchTotalRepayFees";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type Address, type Chain, type Client, type Hash } from "viem";
 import { useAccount } from "wagmi";
 
@@ -148,14 +148,13 @@ export const useTotalRepayFees = function ({
 }) {
   const { address: owner } = useAccount();
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
   const queryClient = useQueryClient();
 
   return useQuery(
     totalRepayFeesOptions({
       amount,
       approveAmount,
-      chain: ethereumChain,
+      chain: mainnet,
       client,
       marketId,
       owner,
