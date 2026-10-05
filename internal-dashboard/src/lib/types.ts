@@ -26,8 +26,8 @@ export type TrackedPool = {
   // APR % from the venue's own emissions to LPs (Curve gauge CRV), unboosted /
   // max boost. 0 for venues without emissions. Shown as a Rewards APR line, not
   // as part of Pool APY.
-  emissionApy: number;
-  emissionApyMax: number;
+  emissionApr: number;
+  emissionAprMax: number;
   // Rolling-24h trading fees in USD, when the venue's API hands them to us
   // directly (Sushi). Undefined for venues whose fees are fetched on demand
   // instead (Curve), so the details page knows to fetch per-pool.

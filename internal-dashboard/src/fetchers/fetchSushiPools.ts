@@ -35,7 +35,7 @@ const buildCoins = ({
 // part of the 24h volume and fees comes from the price path of the pool's swaps
 // (lib/sushiSubgraph, lib/bandActivity). USD prices anchor the reference leg (the
 // non-tracked stable) at $1 and take the tracked leg's price from the pool rate.
-// Gauge emissions aren't a Sushi concept, so emissionApy stays 0. Sushi's
+// Gauge emissions aren't a Sushi concept, so emissionApr stays 0. Sushi's
 // incentives run as Merkl campaigns, which the rewards sources (lib/merklApi)
 // already report, so Sushi's incentiveApr is left out to avoid counting them twice.
 const fetchSushiPool = async function ({
@@ -91,8 +91,8 @@ const fetchSushiPool = async function ({
       chainId: mainnet.id,
       coins,
       dex: "sushi",
-      emissionApy: 0,
-      emissionApyMax: 0,
+      emissionApr: 0,
+      emissionAprMax: 0,
       feesUsd24h,
       gaugeAddress: undefined,
       id,

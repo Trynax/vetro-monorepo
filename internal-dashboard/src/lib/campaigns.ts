@@ -87,15 +87,15 @@ export const rewardAprRows = function ({
   stakeDaoStrategy,
 }: {
   campaigns: PoolCampaign[];
-  emission: { emissionApy: number; emissionApyMax: number; id: string };
+  emission: { emissionApr: number; emissionAprMax: number; id: string };
   nowSeconds: number;
   stakeDaoStrategy: StakeDaoStrategy | null;
 }) {
   const rows: RewardAprRow[] = [];
-  if (emission.emissionApy > 0) {
+  if (emission.emissionApr > 0) {
     rows.push({
-      aprPercent: emission.emissionApy,
-      aprPercentMax: emission.emissionApyMax,
+      aprPercent: emission.emissionApr,
+      aprPercentMax: emission.emissionAprMax,
       id: `curve-gauge-${emission.id}`,
       source: "curveGauge",
       // Only Curve gauges set emissions today.

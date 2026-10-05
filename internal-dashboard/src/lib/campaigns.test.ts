@@ -74,16 +74,16 @@ const stakeDaoStrategy = {
 } satisfies StakeDaoStrategy;
 
 const noEmission = {
-  emissionApy: 0,
-  emissionApyMax: 0,
+  emissionApr: 0,
+  emissionAprMax: 0,
   id: "pool-without-emissions",
 };
 
 const msUsdPoolId = "0x8bEA2a46D56c321A216F97Ab6b61C34098B819d2";
 
 const emission = {
-  emissionApy: 6.75,
-  emissionApyMax: 16.875,
+  emissionApr: 6.75,
+  emissionAprMax: 16.875,
   id: msUsdPoolId,
 };
 
@@ -159,7 +159,7 @@ describe("rewardAprRows", function () {
     expect(
       rewardAprRows({
         campaigns: [stakeDaoCampaign],
-        emission: { emissionApy: 0, emissionApyMax: 0, id: msUsdPoolId },
+        emission: { emissionApr: 0, emissionAprMax: 0, id: msUsdPoolId },
         nowSeconds,
         stakeDaoStrategy,
       }),
@@ -195,8 +195,8 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [],
         emission: {
-          emissionApy: 6.79,
-          emissionApyMax: 16.99,
+          emissionApr: 6.79,
+          emissionAprMax: 16.99,
           id: msUsdPoolId,
         },
         nowSeconds,
@@ -228,8 +228,8 @@ describe("rewardAprRows", function () {
       rewardAprRows({
         campaigns: [stakeDaoCampaign],
         emission: {
-          emissionApy: 15.25,
-          emissionApyMax: 38.12,
+          emissionApr: 15.25,
+          emissionAprMax: 38.12,
           id: crvUsdPoolId,
         },
         nowSeconds,

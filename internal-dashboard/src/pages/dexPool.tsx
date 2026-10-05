@@ -171,8 +171,8 @@ const GaugeSection = function ({ pool }: { pool: TrackedPool }) {
         hint="Unboosted → max boost"
         label="CRV APR"
         value={formatAprRange({
-          max: pool.emissionApyMax,
-          min: pool.emissionApy,
+          max: pool.emissionAprMax,
+          min: pool.emissionApr,
         })}
       />
       {!hasEmissions && emission ? (
