@@ -1,5 +1,5 @@
 import { type Command } from "commander";
-import { type Address, formatUnits } from "viem";
+import { type Address } from "viem";
 import { allowance } from "viem-erc20/actions";
 
 import { parseAddress } from "../../../lib/args.ts";
@@ -32,6 +32,6 @@ export function register(swap: Command) {
         owner: options.account,
         spender: token.gatewayAddress,
       });
-      printResult(formatUnits(approved, token.decimals));
+      printResult(approved);
     });
 }
