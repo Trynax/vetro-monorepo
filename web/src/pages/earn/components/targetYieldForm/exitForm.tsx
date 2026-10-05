@@ -117,7 +117,7 @@ export function ExitForm({
     (epochEndDate.isError ? "-" : <Skeleton inline width={80} />);
 
   function renderFiatValue() {
-    if (debouncedShares === 0n) {
+    if (shares === 0n) {
       return <RenderFiatValue token={peggedToken} value={0n} />;
     }
     return (
