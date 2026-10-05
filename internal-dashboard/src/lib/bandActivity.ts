@@ -65,7 +65,6 @@ export const bandActivity = function ({
   const windowSeconds = nowSeconds - opening.timestamp;
   const timeShare = windowSeconds > 0 ? bandSeconds / windowSeconds : 0;
   return {
-    timeShare,
     volumeShare: totalVolume > 0 ? bandVolume / totalVolume : timeShare,
   };
 };
