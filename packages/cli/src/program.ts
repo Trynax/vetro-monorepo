@@ -1,4 +1,4 @@
-import { Command, Option } from "commander";
+import { Command, Help, Option } from "commander";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -49,7 +49,13 @@ export function createProgram() {
   const { option: rpcUrlOption, redactUsageError } = createRpcUrlOption();
 
   program
-    .configureHelp({ showGlobalOptions: true })
+    .configureHelp({
+      optionDescription(option) {
+        const description = Help.prototype.optionDescription.call(this, option);
+        return option.mandatory ? `${description} (required)` : description;
+      },
+      showGlobalOptions: true,
+    })
     .configureOutput({
       outputError: (message, write) => write(redactUsageError(message)),
     })
