@@ -28,7 +28,7 @@ const tooltips: Partial<Record<RewardAprRow["source"], string>> = {
   curveGauge:
     "Curve gauge CRV emissions for LPs staked in the gauge: unboosted → max veCRV boost (2.5x).",
   stakeDao:
-    "StakeDAO strategy APR: CRV boosted by StakeDAO's veCRV, plus extra gauge rewards, excl. trading fees. An alternative to staking in the Curve gauge directly, not added to it.",
+    "StakeDAO strategy: boosted CRV plus extra rewards, excl. fees. An alternative to the Curve gauge, not added to it.",
 };
 
 const RewardSourceIcon = ({ source }: { source: RewardAprRow["source"] }) =>
@@ -99,7 +99,7 @@ export const RewardsApr = function ({ align, pool }: Props) {
         const key = `${row.source}-${row.id}`;
         const tooltip = tooltips[row.source];
         return tooltip ? (
-          <Tooltip key={key} label={tooltip}>
+          <Tooltip key={key} label={tooltip} multiline>
             <RewardLine align={align} row={row} />
           </Tooltip>
         ) : (
