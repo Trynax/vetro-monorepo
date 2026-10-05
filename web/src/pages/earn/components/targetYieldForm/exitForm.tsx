@@ -144,6 +144,8 @@ export function ExitForm({
   }
 
   function handleSubmit(e: FormEvent) {
+    // TODO implement form submission
+    // https://github.com/vetro-protocol/vetro-monorepo/issues/646
     e.preventDefault();
   }
 
