@@ -25,6 +25,9 @@ export function TargetYieldForm({
   const [mode, setMode] = useState<TargetYieldMode>("deposit");
 
   function handleModeChange(newMode: TargetYieldMode) {
+    if (newMode === mode) {
+      return;
+    }
     handleInputChange("0");
     setMode(newMode);
   }
