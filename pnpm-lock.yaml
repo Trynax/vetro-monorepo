@@ -158,7 +158,7 @@ importers:
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: 1.23.1
-        version: 1.23.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)(vite@8.0.13(@types/node@24.1.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.4))(workerd@1.20260205.0)(wrangler@4.63.0(@cloudflare/workers-types@4.20260504.1)(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        version: 1.23.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)(vite@8.0.13(@types/node@24.1.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.4))(workerd@1.20260329.1)(wrangler@4.63.0(@cloudflare/workers-types@4.20260504.1)(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@cloudflare/workers-types':
         specifier: 4.20260504.1
         version: 4.20260504.1
@@ -491,11 +491,14 @@ importers:
         specifier: 1.5.3
         version: 1.5.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@morpho-org/blue-sdk':
-        specifier: 6.0.1
-        version: 6.0.1(@morpho-org/morpho-ts@2.5.3)
+        specifier: 7.0.0
+        version: 7.0.0(@morpho-org/morpho-ts@3.0.0)
       '@morpho-org/blue-sdk-viem':
-        specifier: 5.0.1
-        version: 5.0.1(@morpho-org/blue-sdk@6.0.1(@morpho-org/morpho-ts@2.5.3))(@morpho-org/morpho-ts@2.5.3)(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))
+        specifier: 6.0.0
+        version: 6.0.0(@morpho-org/blue-sdk@7.0.0(@morpho-org/morpho-ts@3.0.0))(@morpho-org/morpho-ts@3.0.0)(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))
+      '@morpho-org/morpho-ts':
+        specifier: 3.0.0
+        version: 3.0.0
       '@rainbow-me/rainbowkit':
         specifier: 2.2.10
         version: 2.2.10(@tanstack/react-query@5.90.19(react@19.2.8))(@types/react@19.2.9)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@5.9.3)(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))(wagmi@2.19.5(@tanstack/query-core@5.90.19)(@tanstack/react-query@5.90.19(react@19.2.8))(@types/react@19.2.9)(bufferutil@4.1.0)(encoding@0.1.13)(react@19.2.8)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))(zod@4.3.5))
@@ -577,7 +580,7 @@ importers:
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: 1.23.1
-        version: 1.23.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)(vite@8.0.13(@types/node@24.1.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.4))(workerd@1.20260329.1)(wrangler@4.63.0(@cloudflare/workers-types@4.20260504.1)(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        version: 1.23.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)(vite@8.0.13(@types/node@24.1.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.4))(workerd@1.20260205.0)(wrangler@4.63.0(@cloudflare/workers-types@4.20260504.1)(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@cloudflare/workers-types':
         specifier: 4.20260504.1
         version: 4.20260504.1
@@ -1854,20 +1857,20 @@ packages:
     resolution: {integrity: sha512-w8CVbdkDrVXFJbfBSlDfafDR6BAkpDmv1bC1UJVCoVny5tW2RKAdn9i68Xf7asYT4TnUhl/hN4zfUiKQq9II4g==, tarball: https://registry.npmjs.org/@metamask/utils/-/utils-9.3.0.tgz}
     engines: {node: '>=16.0.0'}
 
-  '@morpho-org/blue-sdk-viem@5.0.1':
-    resolution: {integrity: sha512-HrbYWNfwLKH2YFQo8DPbi0JZjuHYZPzM62j+wRvsNe9RCpu8Egcgb/JPS3KM+uHwn5pj24JGxjyWLV/WK/dfeQ==, tarball: https://registry.npmjs.org/@morpho-org/blue-sdk-viem/-/blue-sdk-viem-5.0.1.tgz}
+  '@morpho-org/blue-sdk-viem@6.0.0':
+    resolution: {integrity: sha512-qDmp76IobfjJqNb+CwZ8buKzALbMODjAeu9O3YNOrHW5buLG0X/0uw80DnZeQ4jwwT4wjGF6CXfBhTZ4XJ+bWw==, tarball: https://registry.npmjs.org/@morpho-org/blue-sdk-viem/-/blue-sdk-viem-6.0.0.tgz}
     peerDependencies:
-      '@morpho-org/blue-sdk': ^6.0.0
-      '@morpho-org/morpho-ts': ^2.5.1
+      '@morpho-org/blue-sdk': ^7.0.0
+      '@morpho-org/morpho-ts': ^3.0.0
       viem: ^2.0.0
 
-  '@morpho-org/blue-sdk@6.0.1':
-    resolution: {integrity: sha512-oHZDVLlpVYzSs5faMYe3S+qD2zg2UiCEQtiJnUrOjz4vAd3Clr3lYohprNLKK5aL1ewUGDUqbm7Ko43u+DqREg==, tarball: https://registry.npmjs.org/@morpho-org/blue-sdk/-/blue-sdk-6.0.1.tgz}
+  '@morpho-org/blue-sdk@7.0.0':
+    resolution: {integrity: sha512-MKYRBxkPzVWBN3fytyMspRMm6NQj9q3ruMSBOWW8900rX5LCH+MknIJxDh+xiai3SDg7F2g9bclA6IxmtlQbrw==, tarball: https://registry.npmjs.org/@morpho-org/blue-sdk/-/blue-sdk-7.0.0.tgz}
     peerDependencies:
-      '@morpho-org/morpho-ts': ^2.5.1
+      '@morpho-org/morpho-ts': ^3.0.0
 
-  '@morpho-org/morpho-ts@2.5.3':
-    resolution: {integrity: sha512-DA6D8fx2ZdUogI7+lE0QY9PpnGPfc9bNbO02fovhuMHtSnNgjjBd4eNLgm9TmuShXJQ1wWxNxP2I7AoZ9ItTFg==, tarball: https://registry.npmjs.org/@morpho-org/morpho-ts/-/morpho-ts-2.5.3.tgz}
+  '@morpho-org/morpho-ts@3.0.0':
+    resolution: {integrity: sha512-Vn8s/ow2AqF04wTfoIvF/xqXE9vVQuchZoEFuah9p3gDahb0xOa7kq3ewwye1ehypXsPuAbggmiP+1ljSaeZew==, tarball: https://registry.npmjs.org/@morpho-org/morpho-ts/-/morpho-ts-3.0.0.tgz}
 
   '@multiformats/dns@1.0.13':
     resolution: {integrity: sha512-yr4bxtA3MbvJ+2461kYIYMsiiZj/FIqKI64hE4SdvWJUdWF9EtZLar38juf20Sf5tguXKFUruluswAO6JsjS2w==, tarball: https://registry.npmjs.org/@multiformats/dns/-/dns-1.0.13.tgz}
@@ -3606,12 +3609,6 @@ packages:
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==, tarball: https://registry.npmjs.org/@types/json5/-/json5-0.0.29.tgz}
-
-  '@types/lodash.isplainobject@4.0.9':
-    resolution: {integrity: sha512-QC8nKcap5hRrbtIaPRjUMlcXXnLeayqQZPSaWJDx3xeuN17+2PW5wkmEJ4+lZgNnQRlSPzxjTYKCfV1uTnPaEg==, tarball: https://registry.npmjs.org/@types/lodash.isplainobject/-/lodash.isplainobject-4.0.9.tgz}
-
-  '@types/lodash.mergewith@4.6.9':
-    resolution: {integrity: sha512-fgkoCAOF47K7sxrQ7Mlud2TH023itugZs2bUg8h/KzT+BnZNrR2jAOmaokbLunHNnobXVWOezAeNn/lZqwxkcw==, tarball: https://registry.npmjs.org/@types/lodash.mergewith/-/lodash.mergewith-4.6.9.tgz}
 
   '@types/lodash@4.17.23':
     resolution: {integrity: sha512-RDvF6wTulMPjrNdCoYRC8gNR880JNGT8uB+REUpC2Ns4pRqQJhGz90wh7rgdXDPpCczF3VGktDuFGVnz8zP7HA==, tarball: https://registry.npmjs.org/@types/lodash/-/lodash-4.17.23.tgz}
@@ -6464,14 +6461,8 @@ packages:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==, tarball: https://registry.npmjs.org/locate-path/-/locate-path-6.0.0.tgz}
     engines: {node: '>=10'}
 
-  lodash.isplainobject@4.0.6:
-    resolution: {integrity: sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA==, tarball: https://registry.npmjs.org/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz}
-
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==, tarball: https://registry.npmjs.org/lodash.merge/-/lodash.merge-4.6.2.tgz}
-
-  lodash.mergewith@4.6.2:
-    resolution: {integrity: sha512-GK3g5RPZWTRSeLSpgP8Xhra+pnjBC56q9FZYe1d5RN3TJ35dbkGy3YqBSMbyCrlbi+CM9Z3Jk5yTL7RCsqboyQ==, tarball: https://registry.npmjs.org/lodash.mergewith/-/lodash.mergewith-4.6.2.tgz}
 
   lodash@4.17.23:
     resolution: {integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==, tarball: https://registry.npmjs.org/lodash/-/lodash-4.17.23.tgz}
@@ -10313,22 +10304,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@morpho-org/blue-sdk-viem@5.0.1(@morpho-org/blue-sdk@6.0.1(@morpho-org/morpho-ts@2.5.3))(@morpho-org/morpho-ts@2.5.3)(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))':
+  '@morpho-org/blue-sdk-viem@6.0.0(@morpho-org/blue-sdk@7.0.0(@morpho-org/morpho-ts@3.0.0))(@morpho-org/morpho-ts@3.0.0)(viem@2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))':
     dependencies:
-      '@morpho-org/blue-sdk': 6.0.1(@morpho-org/morpho-ts@2.5.3)
-      '@morpho-org/morpho-ts': 2.5.3
+      '@morpho-org/blue-sdk': 7.0.0(@morpho-org/morpho-ts@3.0.0)
+      '@morpho-org/morpho-ts': 3.0.0
       viem: 2.44.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5)
 
-  '@morpho-org/blue-sdk@6.0.1(@morpho-org/morpho-ts@2.5.3)':
+  '@morpho-org/blue-sdk@7.0.0(@morpho-org/morpho-ts@3.0.0)':
     dependencies:
-      '@morpho-org/morpho-ts': 2.5.3
+      '@morpho-org/morpho-ts': 3.0.0
       '@noble/hashes': 2.2.0
-      '@types/lodash.isplainobject': 4.0.9
-      '@types/lodash.mergewith': 4.6.9
-      lodash.isplainobject: 4.0.6
-      lodash.mergewith: 4.6.2
 
-  '@morpho-org/morpho-ts@2.5.3': {}
+  '@morpho-org/morpho-ts@3.0.0': {}
 
   '@multiformats/dns@1.0.13':
     dependencies:
@@ -12435,14 +12422,6 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
-  '@types/lodash.isplainobject@4.0.9':
-    dependencies:
-      '@types/lodash': 4.17.23
-
-  '@types/lodash.mergewith@4.6.9':
-    dependencies:
-      '@types/lodash': 4.17.23
-
   '@types/lodash@4.17.23': {}
 
   '@types/ms@2.1.0': {}
@@ -12721,7 +12700,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 5.0.1(@opentelemetry/api@1.9.1)(@types/node@24.10.13)(@vitest/coverage-v8@5.0.1)(vite@8.0.13(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.4))
+      vitest: 5.0.1(@opentelemetry/api@1.9.1)(@types/node@24.1.0)(@vitest/coverage-v8@5.0.1)(vite@8.0.13(@types/node@24.1.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.4))
 
   '@vitest/eslint-plugin@1.6.6(eslint@8.57.0)(typescript@6.0.2)(vitest@5.0.1)':
     dependencies:
@@ -15217,14 +15196,13 @@ snapshots:
       esquery: 1.7.0
       jsonc-eslint-parser: 2.4.2
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@6.0.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.0):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.53.1(eslint@8.57.0)(typescript@6.0.2))(eslint-import-resolver-node@0.3.9)(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
-      '@typescript-eslint/parser': 6.21.0(eslint@8.57.0)(typescript@6.0.2)
+      '@typescript-eslint/parser': 8.53.1(eslint@8.57.0)(typescript@6.0.2)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -15245,7 +15223,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@6.0.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.0)
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.53.1(eslint@8.57.0)(typescript@6.0.2))(eslint-import-resolver-node@0.3.9)(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -16587,11 +16565,7 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
-  lodash.isplainobject@4.0.6: {}
-
   lodash.merge@4.6.2: {}
-
-  lodash.mergewith@4.6.2: {}
 
   lodash@4.17.23: {}
 

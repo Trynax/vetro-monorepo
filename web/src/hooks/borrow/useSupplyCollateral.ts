@@ -54,7 +54,7 @@ export const useSupplyCollateral = function ({
         }),
       );
 
-      const morphoAddress = getChainAddresses(ethereumChain.id).morpho;
+      const morphoAddress = getChainAddresses(ethereumChain.id).blue;
 
       const collateralBalanceKey = tokenBalanceQueryKey(
         { address: market.params.collateralToken, chainId: ethereumChain.id },
@@ -127,7 +127,7 @@ export const useSupplyCollateral = function ({
       const market = queryClient.getQueryData(marketOptions.queryKey);
 
       if (market) {
-        const morphoAddress = getChainAddresses(ethereumChain.id).morpho;
+        const morphoAddress = getChainAddresses(ethereumChain.id).blue;
 
         queryClient.invalidateQueries({
           queryKey: allowanceQueryKey({

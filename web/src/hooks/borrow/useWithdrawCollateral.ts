@@ -51,7 +51,7 @@ export const useWithdrawCollateral = function ({
         }),
       );
 
-      const morphoAddress = getChainAddresses(ethereumChain.id).morpho;
+      const morphoAddress = getChainAddresses(ethereumChain.id).blue;
 
       const collateralBalanceKey = tokenBalanceQueryKey(
         { address: market.params.collateralToken, chainId: ethereumChain.id },

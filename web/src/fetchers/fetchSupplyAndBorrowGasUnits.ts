@@ -50,7 +50,7 @@ export const fetchSupplyAndBorrowGasUnits = async function ({
       stateOverride: createMorphoCollateralStateOverride({
         collateralAmount,
         marketId,
-        morphoAddress: getChainAddresses(client.chain!.id).morpho,
+        morphoAddress: getChainAddresses(client.chain!.id).blue,
         user: owner,
       }),
     }),

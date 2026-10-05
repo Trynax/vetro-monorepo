@@ -49,7 +49,7 @@ export async function supplyMarketLiquidity({
     transport,
   });
 
-  const morpho = getChainAddresses(mainnet.id).morpho;
+  const morpho = getChainAddresses(mainnet.id).blue;
   const marketParams = await getMarketParams({
     address: morpho,
     client: publicClient,

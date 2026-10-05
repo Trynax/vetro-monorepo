@@ -257,7 +257,7 @@ export function RepayLoanForm({ market, onClose }: Props) {
 
   const { data: needsApproval } = useNeedsApproval({
     amount: repayAmountBigInt,
-    spender: getChainAddresses(ethereumChain.id).morpho,
+    spender: getChainAddresses(ethereumChain.id).blue,
     token: loanToken,
   });
 

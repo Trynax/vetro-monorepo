@@ -157,7 +157,7 @@ export function BorrowForm({
 
   const { data: needsApproval } = useNeedsApproval({
     amount: collateralAmountBigInt,
-    spender: getChainAddresses(ethereumChain.id).morpho,
+    spender: getChainAddresses(ethereumChain.id).blue,
     token: collateralToken,
   });
 

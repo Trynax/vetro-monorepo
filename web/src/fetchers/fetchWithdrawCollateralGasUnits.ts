@@ -24,7 +24,7 @@ export const fetchWithdrawCollateralGasUnits = async function ({
   queryClient: QueryClient;
 }) {
   const chainId = client.chain!.id;
-  const morphoAddress = getChainAddresses(chainId).morpho;
+  const morphoAddress = getChainAddresses(chainId).blue;
 
   const [morphoMarket, position] = await Promise.all([
     queryClient.ensureQueryData(
