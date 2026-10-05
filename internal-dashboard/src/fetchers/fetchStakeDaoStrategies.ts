@@ -40,9 +40,12 @@ export const fetchStakeDaoStrategies = async function (
 ) {
   const pools = await queryClient.ensureQueryData(trackedPoolsOptions());
   const gaugedPools = pools.filter(isCurvePoolWithGauge);
+  if (gaugedPools.length === 0) {
+    return {};
+  }
   const chainIds = [...new Set(gaugedPools.map((pool) => pool.chainId))];
 
-  const entries = await Promise.all(
+  const results = await Promise.allSettled(
     chainIds.map((chainId) =>
       fetchChainStrategies({
         chainId,
@@ -50,5 +53,17 @@ export const fetchStakeDaoStrategies = async function (
       }),
     ),
   );
-  return Object.fromEntries(entries.flat());
+
+  const fulfilled = results.filter(
+    (
+      result,
+    ): result is PromiseFulfilledResult<
+      Awaited<ReturnType<typeof fetchChainStrategies>>
+    > => result.status === "fulfilled",
+  );
+  if (fulfilled.length === 0) {
+    throw (results[0] as PromiseRejectedResult).reason;
+  }
+
+  return Object.fromEntries(fulfilled.flatMap((result) => result.value));
 };

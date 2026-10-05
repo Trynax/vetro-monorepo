@@ -187,6 +187,57 @@ describe("fetchStakeDaoStrategies", function () {
     });
   });
 
+  it("keeps the chains that load when another fails", async function () {
+    vi.mocked(fetchStakeDaoStrategiesByGauge).mockImplementation(
+      async function ({ chainId }) {
+        if (chainId === 43111) {
+          throw new Error("chain 43111 failed");
+        }
+        return [crvUsdStrategy];
+      },
+    );
+    const queryClient = seededClient([
+      pool({
+        chainId: 43111,
+        dex: "curve",
+        gaugeAddress: optimismGauge,
+        id: "hemi",
+      }),
+      pool({ dex: "curve", gaugeAddress: crvUsdGauge, id: "mainnet" }),
+    ]);
+
+    const result = await fetchStakeDaoStrategies(queryClient);
+
+    expect(result).toStrictEqual({ mainnet: crvUsdStrategy });
+    expect(fetchStakeDaoStrategiesByGauge).toHaveBeenCalledTimes(2);
+    expect(fetchStakeDaoStrategiesByGauge).toHaveBeenCalledWith({
+      chainId: 43111,
+      gauges: [optimismGauge],
+    });
+  });
+
+  it("throws when every chain fails", async function () {
+    vi.mocked(fetchStakeDaoStrategiesByGauge).mockImplementation(
+      async function ({ chainId }) {
+        throw new Error(`chain ${chainId} failed`);
+      },
+    );
+    const queryClient = seededClient([
+      pool({ dex: "curve", gaugeAddress: crvUsdGauge, id: "mainnet" }),
+      pool({
+        chainId: 43111,
+        dex: "curve",
+        gaugeAddress: optimismGauge,
+        id: "hemi",
+      }),
+    ]);
+
+    await expect(fetchStakeDaoStrategies(queryClient)).rejects.toThrow(
+      "chain 1 failed",
+    );
+    expect(fetchStakeDaoStrategiesByGauge).toHaveBeenCalledTimes(2);
+  });
+
   it("returns an empty map without calling the API when no Curve pool has a gauge", async function () {
     const queryClient = seededClient([
       pool({ dex: "curve", gaugeAddress: undefined, id: "curve-no-gauge" }),
