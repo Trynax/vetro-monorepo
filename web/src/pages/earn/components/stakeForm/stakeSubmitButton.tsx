@@ -40,6 +40,9 @@ export function StakeSubmitButton({
     if (inputError === "enter-amount") {
       return t("common.enter-amount");
     }
+    if (inputError === "exceeds-max-request") {
+      return t("common.exceeds-max-request");
+    }
     if (inputError === "insufficient-balance") {
       return t("common.insufficient-balance");
     }

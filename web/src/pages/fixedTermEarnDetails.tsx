@@ -9,6 +9,7 @@ import { StripedDivider } from "components/stripedDivider";
 import { TokenLogo } from "components/tokenLogo";
 import { useShareToken } from "hooks/useShareToken";
 import { useVaultPeggedToken } from "hooks/useVaultPeggedToken";
+import { TargetYieldForm } from "pages/earn/components/targetYieldForm";
 import { targetYieldVaultAddresses } from "pages/earn/targetYieldVaults";
 import { ErrorPage } from "pages/errorPage";
 import { useTranslation } from "react-i18next";
@@ -35,14 +36,6 @@ const VaultDropdownItem = function ({
     </div>
   );
 };
-
-// TODO: replace with the target-yield stake form
-// See https://github.com/vetro-protocol/vetro-monorepo/issues/646
-const StakeFormPlaceholder = () => (
-  <div className="text-b-medium flex h-[615px] items-center justify-center text-gray-500">
-    Form goes here
-  </div>
-);
 
 const FixedTermEarnDetailsContent = function ({
   stakingVaultAddress,
@@ -123,7 +116,12 @@ const FixedTermEarnDetailsContent = function ({
         </div>
         <div className="w-full shrink-0 md:w-[341px] md:border-b md:border-l md:border-gray-200">
           <div className="md:sticky md:top-0">
-            <StakeFormPlaceholder />
+            <TargetYieldForm
+              key={stakingVaultAddress}
+              peggedToken={peggedToken}
+              shareToken={shareToken}
+              stakingVaultAddress={stakingVaultAddress}
+            />
           </div>
         </div>
       </div>

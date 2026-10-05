@@ -6,12 +6,13 @@ import { PieChartIcon } from "components/icons/pieChartIcon";
 import { PlayIcon } from "components/icons/playIcon";
 import { SparklesIcon } from "components/icons/sparklesIcon";
 import { useDeposits } from "pages/earn/hooks/targetYieldPool/useDeposits";
-import { useTargetApy } from "pages/earn/hooks/targetYieldPool/useTargetApy";
-import { useTerm } from "pages/earn/hooks/targetYieldPool/useTerm";
+import { useEpochEndDate } from "pages/earn/hooks/targetYieldPool/useEpochEndDate";
+import { useEpochPeriod } from "pages/earn/hooks/targetYieldPool/useEpochPeriod";
+import { useTargetApr } from "pages/earn/hooks/targetYieldPool/useTargetApr";
 import { Trans, useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import { formatUsd } from "utils/currency";
-import { SECONDS_PER_DAY, formatMediumDate } from "utils/date";
+import { SECONDS_PER_DAY } from "utils/date";
 import { formatPercentage } from "utils/format";
 import type { Address } from "viem";
 
@@ -19,32 +20,26 @@ type Props = {
   stakingVaultAddress: Address;
 };
 
-const termTimeZone = "UTC";
-
-const TargetFixedApyCard = function ({ stakingVaultAddress }: Props) {
-  const { i18n, t } = useTranslation();
-  const targetApy = useTargetApy(stakingVaultAddress);
-  const term = useTerm(stakingVaultAddress);
+const TargetFixedAprCard = function ({ stakingVaultAddress }: Props) {
+  const { t } = useTranslation();
+  const targetApr = useTargetApr(stakingVaultAddress);
+  const epochEndDate = useEpochEndDate(stakingVaultAddress);
 
   function renderFixedUntil() {
-    if (term.data) {
+    if (epochEndDate.data) {
       return t("pages.earn.fixed-term.fixed-until", {
-        date: formatMediumDate(
-          Number(term.data.epochEnd),
-          i18n.language,
-          termTimeZone,
-        ),
+        date: epochEndDate.data,
       });
     }
-    return term.isLoading ? <Skeleton width={140} /> : undefined;
+    return epochEndDate.isLoading ? <Skeleton width={140} /> : undefined;
   }
 
   return (
     <InfoCard
-      data={targetApy.data}
+      data={targetApr.data}
       icon={<SparklesIcon className="text-blue-500" />}
-      isLoading={targetApy.isLoading}
-      label={t("pages.earn.fixed-term.target-fixed-apy")}
+      isLoading={targetApr.isLoading}
+      label={t("pages.earn.fixed-term.target-fixed-apr")}
       render={formatPercentage}
       subtitle={renderFixedUntil()}
     />
@@ -92,16 +87,16 @@ const PoolCapacityCard = function ({ stakingVaultAddress }: Props) {
 
 const TermLengthCard = function ({ stakingVaultAddress }: Props) {
   const { t } = useTranslation();
-  const { data: term, isLoading } = useTerm(stakingVaultAddress);
+  const { data: epochPeriod, isLoading } = useEpochPeriod(stakingVaultAddress);
 
   return (
     <InfoCard
       data={
-        term
+        epochPeriod
           ? // Floored so a partial day never reads as a longer term than the
             // one the vault actually locks funds for.
             Math.floor(
-              Number(term.epochEnd - term.epochStart) / SECONDS_PER_DAY,
+              Number(epochPeriod.end - epochPeriod.start) / SECONDS_PER_DAY,
             )
           : undefined
       }
@@ -116,18 +111,17 @@ const TermLengthCard = function ({ stakingVaultAddress }: Props) {
 };
 
 const TermEndDateCard = function ({ stakingVaultAddress }: Props) {
-  const { i18n, t } = useTranslation();
-  const { data: term, isLoading } = useTerm(stakingVaultAddress);
+  const { t } = useTranslation();
+  const { data: epochEndDate, isLoading } =
+    useEpochEndDate(stakingVaultAddress);
 
   return (
     <InfoCard
-      data={term?.epochEnd}
+      data={epochEndDate}
       icon={<CalendarIcon className="text-blue-500" />}
       isLoading={isLoading}
       label={t("pages.earn.fixed-term.term-end-date")}
-      render={(epochEnd) =>
-        formatMediumDate(Number(epochEnd), i18n.language, termTimeZone)
-      }
+      render={(date) => date}
     />
   );
 };
@@ -135,7 +129,7 @@ const TermEndDateCard = function ({ stakingVaultAddress }: Props) {
 export const FixedTermInfoCards = ({ stakingVaultAddress }: Props) => (
   <div className="border-b border-gray-200">
     <CardRow
-      left={<TargetFixedApyCard stakingVaultAddress={stakingVaultAddress} />}
+      left={<TargetFixedAprCard stakingVaultAddress={stakingVaultAddress} />}
       right={<PoolCapacityCard stakingVaultAddress={stakingVaultAddress} />}
     />
     <CardRow

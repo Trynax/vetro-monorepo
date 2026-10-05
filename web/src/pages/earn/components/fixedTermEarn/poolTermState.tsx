@@ -2,10 +2,10 @@ import { useTranslation } from "react-i18next";
 import { unixNowTimestamp } from "utils/date";
 import type { Address } from "viem";
 
-import { useTerm } from "../../hooks/targetYieldPool/useTerm";
+import { useEpochPeriod } from "../../hooks/targetYieldPool/useEpochPeriod";
 import { PoolInfoItem } from "../poolInfoBar/poolInfoItem";
 
-import { getTermState } from "./getTermState";
+import { getEpochState } from "./getEpochState";
 
 type Props = {
   stakingVaultAddress: Address;
@@ -13,13 +13,20 @@ type Props = {
 
 export function PoolTermState({ stakingVaultAddress }: Props) {
   const { t } = useTranslation();
-  const { data: term, isError, isPending } = useTerm(stakingVaultAddress);
+  const {
+    data: epochPeriod,
+    isError,
+    isPending,
+  } = useEpochPeriod(stakingVaultAddress);
 
   function getLabel() {
-    if (!term) {
+    if (!epochPeriod) {
       return undefined;
     }
-    const state = getTermState({ ...term, now: BigInt(unixNowTimestamp()) });
+    const state = getEpochState({
+      ...epochPeriod,
+      now: BigInt(unixNowTimestamp()),
+    });
     if (state === "open-to-deposits") {
       return t("pages.earn.fixed-term.open-to-deposits");
     }
