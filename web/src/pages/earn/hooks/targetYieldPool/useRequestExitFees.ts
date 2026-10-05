@@ -13,7 +13,7 @@ const requestExitFeesOptions = ({
     enabled: amount > 0n,
     queryFn: ({ client: queryClient }) =>
       fetchRequestExitFees({ queryClient, token }),
-    queryKey: ["target-yield-pool-request-exit-fees", token.chainId],
+    queryKey: ["target-yield-pool-request-exit-fees", token.address],
   });
 
 export const useRequestExitFees = ({
