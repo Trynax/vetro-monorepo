@@ -29,6 +29,11 @@ const fetchChainStrategies = async function ({
   });
 };
 
+// A pool has a StakeDAO strategy when it's a Curve pool with a gauge and
+// StakeDAO's v2 Curve feed for its chain has an entry for that gauge. This is
+// independent of Votemarket campaigns. The Rewards APR line also requires a
+// rewards APR above 0; the detail page's deposit link doesn't, since
+// depositing into a vault that earns nothing yet is still valid.
 export const fetchStakeDaoStrategies = async function (
   queryClient: QueryClient,
 ) {

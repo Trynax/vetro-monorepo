@@ -17,6 +17,7 @@ import { useGaugeEmissions } from "../hooks/useGaugeEmissions";
 import { useStakeDaoStrategy } from "../hooks/useStakeDaoStrategy";
 import { useTrackedPools } from "../hooks/useTrackedPools";
 import {
+  formatAprRange,
   formatOptionalPercent,
   formatOptionalUsd,
   formatPercent,
@@ -167,12 +168,12 @@ const GaugeSection = function ({ pool }: { pool: TrackedPool }) {
         value={emission ? formatTokenAmount(emission.estCrvPerDay) : "—"}
       />
       <StatCard
-        label="CRV APY"
-        value={
-          pool.emissionApyMax > pool.emissionApy
-            ? `${formatPercent(pool.emissionApy)} – ${formatPercent(pool.emissionApyMax)}`
-            : formatPercent(pool.emissionApy)
-        }
+        hint="Unboosted → max boost"
+        label="CRV APR"
+        value={formatAprRange({
+          max: pool.emissionApyMax,
+          min: pool.emissionApy,
+        })}
       />
       {!hasEmissions && emission ? (
         <p className="col-span-full text-xs text-neutral-500">
@@ -346,17 +347,9 @@ export const DexPoolPage = function () {
         <StatCard label="24h Volume" value={formatUsd(pool.volumeUsd24h)} />
         <FeesCard pool={pool} />
         <StatCard
-          hint={
-            pool.emissionApy > 0
-              ? `${formatOptionalPercent(pool.baseApy)} base + ${formatPercent(pool.emissionApy)} CRV`
-              : undefined
-          }
-          label="APY"
-          value={formatOptionalPercent(
-            pool.baseApy === undefined
-              ? undefined
-              : pool.baseApy + pool.emissionApy,
-          )}
+          hint="Trading fees"
+          label="Pool APY"
+          value={formatOptionalPercent(pool.baseApy)}
         />
         <StatCard
           hint="24h volume / TVL"

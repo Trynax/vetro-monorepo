@@ -1,6 +1,10 @@
 import { Link, useNavigate } from "react-router";
 
-import { formatOptionalUsd, formatPoolApy, formatUsd } from "../../lib/format";
+import {
+  formatOptionalPercent,
+  formatOptionalUsd,
+  formatUsd,
+} from "../../lib/format";
 import { type TrackedPool } from "../../lib/types";
 
 import { CampaignsBadge } from "./campaignsBadge";
@@ -55,13 +59,13 @@ export const PoolsTable = function ({ pools }: Props) {
                 <div>
                   <dt className="text-xs text-neutral-500">Pool APY</dt>
                   <dd className="font-semibold text-neutral-950">
-                    {formatPoolApy(pool)}
+                    {formatOptionalPercent(pool.baseApy)}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-xs text-neutral-500">Rewards APR</dt>
                   <dd className="font-semibold text-neutral-950">
-                    <RewardsApr className="items-start" poolId={pool.id} />
+                    <RewardsApr align="start" pool={pool} />
                   </dd>
                 </div>
               </dl>
@@ -115,10 +119,10 @@ export const PoolsTable = function ({ pools }: Props) {
                   {formatUsd(pool.volumeUsd24h)}
                 </td>
                 <td className="py-3 pr-4 text-right font-medium text-neutral-950">
-                  {formatPoolApy(pool)}
+                  {formatOptionalPercent(pool.baseApy)}
                 </td>
                 <td className="py-3 pr-4 text-right font-medium text-neutral-950">
-                  <RewardsApr className="items-end" poolId={pool.id} />
+                  <RewardsApr align="end" pool={pool} />
                 </td>
                 <td className="py-3 text-right">
                   <CampaignsBadge poolId={pool.id} />

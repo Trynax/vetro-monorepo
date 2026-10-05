@@ -23,10 +23,9 @@ export type TrackedPool = {
   chainId: number;
   coins: PoolCoin[];
   dex: Dex; // venue this pool belongs to
-  // % from the venue's own emissions to LPs (Curve gauge CRV), unboosted / max
-  // boost. 0 for venues without emissions. Third-party rewards (Merkl campaigns,
-  // StakeDAO strategies) are not included; the Rewards APR column reads them
-  // separately.
+  // APR % from the venue's own emissions to LPs (Curve gauge CRV), unboosted /
+  // max boost. 0 for venues without emissions. Shown as a Rewards APR line, not
+  // as part of Pool APY.
   emissionApy: number;
   emissionApyMax: number;
   // Rolling-24h trading fees in USD, when the venue's API hands them to us

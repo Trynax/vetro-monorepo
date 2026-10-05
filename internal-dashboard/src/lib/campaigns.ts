@@ -37,32 +37,41 @@ export const campaignLabel = ({
 }) =>
   `${campaignSourceLabels[campaign.source]} · ${campaign.rewardTokenSymbol} · ${formatDuration(campaign.endTimestamp - nowSeconds)}`;
 
+type RewardSource = CampaignSource | "curveGauge";
+
 export type RewardAprRow = {
   aprPercent: number;
+  aprPercentMax?: number;
   id: string;
-  source: CampaignSource;
+  source: RewardSource;
   tokenSymbols: string;
 };
 
-// StakeDAO campaigns are Votemarket incentives paid to veCRV voters, not to
-// LPs, so only Merkl campaigns and the StakeDAO LP strategy count as rewards.
+// Rows in a fixed order: the venue's gauge emissions (what an LP gets by
+// staking in the Curve gauge directly), then the StakeDAO LP strategy, which
+// is an alternative to that gauge line, not an addition, so it sits right
+// under it. Merkl campaigns follow, highest APR first. StakeDAO campaigns are
+// Votemarket incentives paid to veCRV voters, not to LPs, so they stay out.
 export const rewardAprRows = function ({
   campaigns,
+  emission,
   stakeDaoStrategy,
 }: {
   campaigns: PoolCampaign[];
+  emission: { emissionApy: number; emissionApyMax: number; id: string };
   stakeDaoStrategy: StakeDaoStrategy | null;
 }) {
-  const rows: RewardAprRow[] = campaigns
-    .filter(
-      (campaign): campaign is MerklPoolCampaign => campaign.source === "merkl",
-    )
-    .map((campaign) => ({
-      aprPercent: campaign.aprPercent,
-      id: campaign.id,
-      source: "merkl",
-      tokenSymbols: campaign.rewardTokenSymbol,
-    }));
+  const rows: RewardAprRow[] = [];
+  if (emission.emissionApy > 0) {
+    rows.push({
+      aprPercent: emission.emissionApy,
+      aprPercentMax: emission.emissionApyMax,
+      id: `curve-gauge-${emission.id}`,
+      source: "curveGauge",
+      // Only Curve gauges set emissions today.
+      tokenSymbols: "CRV",
+    });
+  }
   if (stakeDaoStrategy) {
     const aprPercent = stakeDaoRewardsAprPercent(stakeDaoStrategy);
     if (aprPercent > 0) {
@@ -78,5 +87,18 @@ export const rewardAprRows = function ({
       });
     }
   }
-  return rows.sort((a, b) => b.aprPercent - a.aprPercent);
+  const merklRows = campaigns
+    .filter(
+      (campaign): campaign is MerklPoolCampaign => campaign.source === "merkl",
+    )
+    .map(
+      (campaign): RewardAprRow => ({
+        aprPercent: campaign.aprPercent,
+        id: campaign.id,
+        source: "merkl",
+        tokenSymbols: campaign.rewardTokenSymbol,
+      }),
+    )
+    .sort((a, b) => b.aprPercent - a.aprPercent);
+  return [...rows, ...merklRows];
 };

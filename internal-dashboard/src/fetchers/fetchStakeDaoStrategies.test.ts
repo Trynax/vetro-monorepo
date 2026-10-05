@@ -16,6 +16,7 @@ vi.mock("../lib/stakeDaoApi", () => ({
 }));
 
 const crvUsdGauge: Address = "0x737e7700e03A8c451C9B72103554a40760F1B57A";
+const msUsdGauge: Address = "0x28a72343bFf5e10b36E72d86b1041ED2447Dc0Cc";
 const unmatchedGauge: Address = "0x4444444444444444444444444444444444444444";
 const optimismGauge: Address = "0x5555555555555555555555555555555555555555";
 
@@ -145,6 +146,44 @@ describe("fetchStakeDaoStrategies", function () {
     expect(fetchStakeDaoStrategiesByGauge).toHaveBeenCalledWith({
       chainId: 10,
       gauges: [optimismGauge, crvUsdGauge],
+    });
+  });
+
+  it("maps VUSD/msUSD and VUSD/crvUSD to their strategies from one call", async function () {
+    const msUsdStrategy: StakeDaoStrategy = {
+      apr: { current: { total: 7.871434679506586 } },
+      gaugeAddress: msUsdGauge,
+      key: "1-0x757360820728819953937b752f6b83aeb11090c7",
+      rewards: [{ token: { symbol: "CRV" } }],
+      tradingApy: 0.01,
+    };
+    vi.mocked(fetchStakeDaoStrategiesByGauge).mockResolvedValue([
+      crvUsdStrategy,
+      msUsdStrategy,
+    ]);
+    const queryClient = seededClient([
+      pool({
+        dex: "curve",
+        gaugeAddress: crvUsdGauge,
+        id: "0xAFbA5800252530CE71b03Ba2BCa2Dd5aE44a7F3d",
+      }),
+      pool({
+        dex: "curve",
+        gaugeAddress: msUsdGauge,
+        id: "0x8bEA2a46D56c321A216F97Ab6b61C34098B819d2",
+      }),
+    ]);
+
+    const result = await fetchStakeDaoStrategies(queryClient);
+
+    expect(result).toStrictEqual({
+      "0x8bEA2a46D56c321A216F97Ab6b61C34098B819d2": msUsdStrategy,
+      "0xAFbA5800252530CE71b03Ba2BCa2Dd5aE44a7F3d": crvUsdStrategy,
+    });
+    expect(fetchStakeDaoStrategiesByGauge).toHaveBeenCalledTimes(1);
+    expect(fetchStakeDaoStrategiesByGauge).toHaveBeenCalledWith({
+      chainId: 1,
+      gauges: [crvUsdGauge, msUsdGauge],
     });
   });
 

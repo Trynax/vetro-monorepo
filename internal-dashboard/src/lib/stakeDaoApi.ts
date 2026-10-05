@@ -48,6 +48,7 @@ export const fetchStakeDaoStrategiesByGauge = ({
     queryString: { chainId, gauges: gauges.join(",") },
   });
 
+// Boosted CRV plus any extra gauge rewards (the v2 feed carries no SDT).
 // Trading fees are already part of the pool's own APY, so they are left out
 // here, as the StakeDAO app does.
 export const stakeDaoRewardsAprPercent = (strategy: StakeDaoStrategy) =>
