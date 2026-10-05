@@ -34,11 +34,11 @@ export function StakeSubmitButton({
     if (isPending) {
       return pendingText;
     }
-    if (!balancesLoaded) {
-      return actionText;
-    }
     if (inputError === "enter-amount") {
       return t("common.enter-amount");
+    }
+    if (!balancesLoaded) {
+      return actionText;
     }
     if (inputError === "exceeds-max-request") {
       return t("common.exceeds-max-request");

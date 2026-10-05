@@ -32,6 +32,7 @@
   "vars": {
     "CONTACT_FORM_RECIPIENT": "support@vetro.org",
     "CONTACT_FORM_SENDER": "noreply@forms.vetro.org",
+    "CUSTOM_RPC_URL_MAINNET": "https://eth.drpc.org",
     "MERKL_OPPORTUNITY_SVETBTC": "",
     "MERKL_OPPORTUNITY_SVUSD": "",
     "ORIGINS": "http://localhost:3000,http://localhost:5173",
