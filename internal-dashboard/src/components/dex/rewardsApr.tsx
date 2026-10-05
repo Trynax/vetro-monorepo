@@ -10,7 +10,7 @@ import { TokenIcon } from "./tokenIcon";
 
 type Align = "end" | "start";
 
-type Props = {
+type RewardsAprProps = {
   align: Align;
   pool: TrackedPool;
 };
@@ -53,7 +53,7 @@ const RewardLine = ({ align, row }: { align: Align; row: RewardAprRow }) => (
   </span>
 );
 
-export const RewardsApr = function ({ align, pool }: Props) {
+export const RewardsApr = function ({ align, pool }: RewardsAprProps) {
   const { column } = alignClasses[align];
   const campaignsQuery = usePoolCampaigns({ poolId: pool.id });
   const strategyQuery = useStakeDaoStrategy(pool.id);
