@@ -123,6 +123,7 @@ describe("rewardAprRows", function () {
             id: "merkl-2",
             rewardTokenSymbol: "PYUSD",
           },
+          stakeDaoCampaign,
         ],
         emission,
         stakeDaoStrategy,
@@ -153,7 +154,7 @@ describe("rewardAprRows", function () {
   it("adds no CRV row when the gauge has no emissions", function () {
     expect(
       rewardAprRows({
-        campaigns: [],
+        campaigns: [stakeDaoCampaign],
         emission: { emissionApy: 0, emissionApyMax: 0, id: msUsdPoolId },
         stakeDaoStrategy,
       }),
@@ -170,7 +171,7 @@ describe("rewardAprRows", function () {
   it("keeps only the CRV row when the StakeDAO strategy has a 0 rewards APR", function () {
     expect(
       rewardAprRows({
-        campaigns: [],
+        campaigns: [stakeDaoCampaign],
         emission,
         stakeDaoStrategy: {
           ...stakeDaoStrategy,
@@ -181,11 +182,9 @@ describe("rewardAprRows", function () {
     ).toStrictEqual([crvRow]);
   });
 
-  // VUSD/msUSD has a StakeDAO LP strategy but no running Votemarket campaign;
-  // the StakeDAO line must not depend on Votemarket.
-  it("shows CRV and the StakeDAO strategy for VUSD/msUSD with no Merkl or running Votemarket campaign", function () {
-    const total = 7.871434679506586;
-    const tradingApy = 0.01;
+  // VUSD/msUSD has a live StakeDAO strategy, but all its Votemarket campaigns
+  // are past their vote deadline, so it shows no StakeDAO row.
+  it("shows only CRV for VUSD/msUSD: live strategy but no active Votemarket campaign", function () {
     expect(
       rewardAprRows({
         campaigns: [],
@@ -195,11 +194,11 @@ describe("rewardAprRows", function () {
           id: msUsdPoolId,
         },
         stakeDaoStrategy: {
-          apr: { current: { total } },
+          apr: { current: { total: 7.871434679506586 } },
           gaugeAddress: "0x28a72343bFf5e10b36E72d86b1041ED2447Dc0Cc",
           key: "1-0x757360820728819953937b752f6b83aeb11090c7",
           rewards: [{ token: { symbol: "CRV" } }],
-          tradingApy,
+          tradingApy: 0.01,
         },
       }),
     ).toStrictEqual([
@@ -210,11 +209,61 @@ describe("rewardAprRows", function () {
         source: "curveGauge",
         tokenSymbols: "CRV",
       },
+    ]);
+  });
+
+  // VUSD/crvUSD has a live StakeDAO strategy and running Votemarket campaigns.
+  it("shows CRV and the StakeDAO strategy for VUSD/crvUSD with an active Votemarket campaign", function () {
+    const crvUsdPoolId = "0xAFbA5800252530CE71b03Ba2BCa2Dd5aE44a7F3d";
+    const total = 18.423951191461402;
+    const tradingApy = 0.08;
+    expect(
+      rewardAprRows({
+        campaigns: [stakeDaoCampaign],
+        emission: {
+          emissionApy: 15.25,
+          emissionApyMax: 38.12,
+          id: crvUsdPoolId,
+        },
+        stakeDaoStrategy: {
+          apr: { current: { total } },
+          gaugeAddress: "0x737e7700e03A8c451C9B72103554a40760F1B57A",
+          key: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
+          rewards: [{ token: { symbol: "CRV" } }],
+          tradingApy,
+        },
+      }),
+    ).toStrictEqual([
       {
-        aprPercent: total - tradingApy,
-        id: "1-0x757360820728819953937b752f6b83aeb11090c7",
+        aprPercent: 15.25,
+        aprPercentMax: 38.12,
+        id: "curve-gauge-0xAFbA5800252530CE71b03Ba2BCa2Dd5aE44a7F3d",
+        source: "curveGauge",
+        tokenSymbols: "CRV",
+      },
+      {
+        aprPercent: 18.423951191461402 - 0.08,
+        id: "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
         source: "stakeDao",
         tokenSymbols: "CRV",
+      },
+    ]);
+  });
+
+  it("adds no StakeDAO row when the pool has only Merkl campaigns", function () {
+    expect(
+      rewardAprRows({
+        campaigns: [merklCampaign],
+        emission,
+        stakeDaoStrategy,
+      }),
+    ).toStrictEqual([
+      crvRow,
+      {
+        aprPercent: 5,
+        id: "merkl-1",
+        source: "merkl",
+        tokenSymbols: "VUSD",
       },
     ]);
   });
@@ -294,7 +343,7 @@ describe("rewardAprRows", function () {
   it("adds no row for a strategy that earns only trading fees", function () {
     expect(
       rewardAprRows({
-        campaigns: [merklCampaign],
+        campaigns: [merklCampaign, stakeDaoCampaign],
         emission: noEmission,
         stakeDaoStrategy: {
           ...stakeDaoStrategy,
@@ -317,7 +366,7 @@ describe("rewardAprRows", function () {
     expect(apr).toBeDefined();
     expect(
       rewardAprRows({
-        campaigns: [],
+        campaigns: [stakeDaoCampaign],
         emission: noEmission,
         stakeDaoStrategy: withoutApr,
       }),
@@ -327,7 +376,7 @@ describe("rewardAprRows", function () {
   it("joins unique reward symbols in order", function () {
     expect(
       rewardAprRows({
-        campaigns: [],
+        campaigns: [stakeDaoCampaign],
         emission: noEmission,
         stakeDaoStrategy: {
           ...stakeDaoStrategy,

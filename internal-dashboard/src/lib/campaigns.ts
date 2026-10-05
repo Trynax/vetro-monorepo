@@ -47,11 +47,18 @@ export type RewardAprRow = {
   tokenSymbols: string;
 };
 
+// The campaigns come already filtered to running ones (vote deadline in the
+// future, see fetchStakeDaoCampaigns), so this matches the Campaigns column.
+const hasActiveStakeDaoCampaign = (campaigns: PoolCampaign[]) =>
+  campaigns.some((campaign) => campaign.source === "stakeDao");
+
 // Rows in a fixed order: the venue's gauge emissions (what an LP gets by
 // staking in the Curve gauge directly), then the StakeDAO LP strategy, which
 // is an alternative to that gauge line, not an addition, so it sits right
-// under it. Merkl campaigns follow, highest APR first. StakeDAO campaigns are
-// Votemarket incentives paid to veCRV voters, not to LPs, so they stay out.
+// under it. The strategy line shows only while the pool has a running StakeDAO
+// Votemarket campaign. Merkl campaigns follow, highest APR first. The
+// Votemarket campaigns themselves never become rows: they pay veCRV voters,
+// not LPs.
 export const rewardAprRows = function ({
   campaigns,
   emission,
@@ -72,7 +79,7 @@ export const rewardAprRows = function ({
       tokenSymbols: "CRV",
     });
   }
-  if (stakeDaoStrategy) {
+  if (stakeDaoStrategy && hasActiveStakeDaoCampaign(campaigns)) {
     const aprPercent = stakeDaoRewardsAprPercent(stakeDaoStrategy);
     if (aprPercent > 0) {
       rows.push({

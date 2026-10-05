@@ -69,7 +69,9 @@ export const RewardsApr = function ({ align, pool }: Props) {
     );
   }
 
-  // A failed source falls back to empty so the other one still renders.
+  // A failed source falls back to empty so the remaining rows still render. The
+  // StakeDAO strategy row also needs an active Votemarket campaign, so it hides
+  // without campaigns data.
   const rows = rewardAprRows({
     campaigns: campaignsQuery.data ?? [],
     emission: pool,
