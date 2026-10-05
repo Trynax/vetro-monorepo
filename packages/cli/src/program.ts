@@ -49,6 +49,7 @@ export function createProgram() {
   const { option: rpcUrlOption, redactUsageError } = createRpcUrlOption();
 
   program
+    .configureHelp({ showGlobalOptions: true })
     .configureOutput({
       outputError: (message, write) => write(redactUsageError(message)),
     })
