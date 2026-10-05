@@ -77,8 +77,6 @@ export type MerklPoolCampaign = PoolCampaignBase & {
 
 export type StakeDaoPoolCampaign = PoolCampaignBase & {
   campaignNumber: number;
-  gauge: Address;
-  gaugeChainId: number;
   source: "stakeDao";
   totalRewardUsd: number;
   usdPerVote: number;

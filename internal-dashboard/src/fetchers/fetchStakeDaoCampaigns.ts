@@ -26,8 +26,6 @@ const toPoolCampaign = function (
   return {
     campaignNumber: campaign.id,
     endTimestamp: voteDeadline(campaign),
-    gauge: campaign.gauge,
-    gaugeChainId: campaign.gaugeChainId,
     id: campaign.key,
     rewardTokenSymbol: symbol,
     source: "stakeDao",
