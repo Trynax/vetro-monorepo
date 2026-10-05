@@ -49,7 +49,7 @@ export type RewardAprRow = {
 
 // The campaigns come already filtered to running ones (vote deadline in the
 // future, see fetchStakeDaoCampaigns), so this matches the Campaigns column.
-const hasActiveStakeDaoCampaign = (campaigns: PoolCampaign[]) =>
+export const hasActiveStakeDaoCampaign = (campaigns: PoolCampaign[]) =>
   campaigns.some((campaign) => campaign.source === "stakeDao");
 
 // The boosted CRV the strategy APR is built on, plus extra rewards still

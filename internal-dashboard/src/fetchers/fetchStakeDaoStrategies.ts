@@ -7,7 +7,7 @@ import { type TrackedPool } from "../lib/types";
 
 type GaugedPool = TrackedPool & { gaugeAddress: Address };
 
-const isCurvePoolWithGauge = (pool: TrackedPool): pool is GaugedPool =>
+export const isCurvePoolWithGauge = (pool: TrackedPool): pool is GaugedPool =>
   pool.dex === "curve" && pool.gaugeAddress !== undefined;
 
 const fetchChainStrategies = async function ({

@@ -1,8 +1,13 @@
+import { isCurvePoolWithGauge } from "../../fetchers/fetchStakeDaoStrategies";
 import { usePoolCampaigns } from "../../hooks/usePoolCampaigns";
 import { useStakeDaoStrategy } from "../../hooks/useStakeDaoStrategy";
-import { type RewardAprRow, rewardAprRows } from "../../lib/campaigns";
+import {
+  hasActiveStakeDaoCampaign,
+  type RewardAprRow,
+  rewardAprRows,
+} from "../../lib/campaigns";
 import { formatAprRange } from "../../lib/format";
-import { type TrackedPool } from "../../lib/types";
+import { type PoolCampaign, type TrackedPool } from "../../lib/types";
 import { Tooltip } from "../tooltip";
 
 import { CampaignSourceIcon } from "./campaignSourceIcon";
@@ -53,25 +58,77 @@ const RewardLine = ({ align, row }: { align: Align; row: RewardAprRow }) => (
   </span>
 );
 
+const isPending = (query: { data: unknown; error: Error | null }) =>
+  query.data === undefined && !query.error;
+
+// The strategy row needs a gauged Curve pool and an active StakeDAO campaign;
+// once campaigns settle without one, the strategy can't add a row, so the
+// cell doesn't wait on (or report errors from) that query.
+const canShowStrategy = ({
+  campaignsQuery,
+  pool,
+}: {
+  campaignsQuery: { data: PoolCampaign[] | undefined; error: Error | null };
+  pool: TrackedPool;
+}) =>
+  isCurvePoolWithGauge(pool) &&
+  (isPending(campaignsQuery) ||
+    hasActiveStakeDaoCampaign(campaignsQuery.data ?? []));
+
+const RewardLineWithTooltip = function ({
+  align,
+  row,
+}: {
+  align: Align;
+  row: RewardAprRow;
+}) {
+  const tooltip = tooltips[row.source];
+  return tooltip ? (
+    <Tooltip label={tooltip} multiline>
+      <RewardLine align={align} row={row} />
+    </Tooltip>
+  ) : (
+    <RewardLine align={align} row={row} />
+  );
+};
+
 export const RewardsApr = function ({ align, pool }: RewardsAprProps) {
   const { column } = alignClasses[align];
   const campaignsQuery = usePoolCampaigns({ poolId: pool.id });
   const strategyQuery = useStakeDaoStrategy(pool.id);
 
-  const isLoading = [campaignsQuery, strategyQuery].some(
-    (query) => query.data === undefined && !query.error,
-  );
-  if (isLoading) {
+  const strategyApplies = canShowStrategy({ campaignsQuery, pool });
+
+  if (
+    isPending(campaignsQuery) ||
+    (strategyApplies && isPending(strategyQuery))
+  ) {
+    // The gauge emission comes with the pool, so show it right away. It is
+    // always the first row, so later rows append below it without reordering.
+    const emissionRows = rewardAprRows({
+      campaigns: [],
+      emission: pool,
+      // Only read for strategy rewards, and there's no strategy here.
+      nowSeconds: 0,
+      stakeDaoStrategy: null,
+    });
     return (
-      <span className={`flex flex-col ${column}`}>
+      <span className={`flex flex-col gap-y-0.5 ${column}`}>
+        {emissionRows.map((row) => (
+          <RewardLineWithTooltip
+            align={align}
+            key={`${row.source}-${row.id}`}
+            row={row}
+          />
+        ))}
         <span className="h-5 w-16 animate-pulse rounded bg-neutral-100" />
       </span>
     );
   }
 
-  // A failed source falls back to empty so the remaining rows still render. The
-  // StakeDAO strategy row also needs an active Votemarket campaign, so it hides
-  // without campaigns data.
+  // Once the sources that apply settle, a failed one falls back to empty so the
+  // remaining rows still render. The StakeDAO strategy row also needs an
+  // active Votemarket campaign, so it hides without campaigns data.
   const rows = rewardAprRows({
     campaigns: campaignsQuery.data ?? [],
     emission: pool,
@@ -81,7 +138,8 @@ export const RewardsApr = function ({ align, pool }: RewardsAprProps) {
   });
 
   if (rows.length === 0) {
-    const error = campaignsQuery.error ?? strategyQuery.error;
+    const error =
+      campaignsQuery.error ?? (strategyApplies ? strategyQuery.error : null);
     return (
       <span className={`flex flex-col ${column}`}>
         {error ? (
@@ -97,17 +155,13 @@ export const RewardsApr = function ({ align, pool }: RewardsAprProps) {
 
   return (
     <span className={`flex flex-col gap-y-0.5 ${column}`}>
-      {rows.map(function (row) {
-        const key = `${row.source}-${row.id}`;
-        const tooltip = tooltips[row.source];
-        return tooltip ? (
-          <Tooltip key={key} label={tooltip} multiline>
-            <RewardLine align={align} row={row} />
-          </Tooltip>
-        ) : (
-          <RewardLine align={align} key={key} row={row} />
-        );
-      })}
+      {rows.map((row) => (
+        <RewardLineWithTooltip
+          align={align}
+          key={`${row.source}-${row.id}`}
+          row={row}
+        />
+      ))}
     </span>
   );
 };
