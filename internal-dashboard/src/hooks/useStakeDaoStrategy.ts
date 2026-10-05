@@ -6,8 +6,9 @@ const stakeDaoStrategiesOptions = () =>
   queryOptions({
     queryFn: ({ client: queryClient }) => fetchStakeDaoStrategies(queryClient),
     queryKey: ["stake-dao-strategies"],
-    refetchInterval: 60 * 1000,
-    staleTime: 60 * 1000,
+    // Matches the worker's stakeDaoCacheSeconds; refetching sooner hits the same cached response
+    refetchInterval: 3 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
   });
 
 export const useStakeDaoStrategy = (poolId: string) =>
