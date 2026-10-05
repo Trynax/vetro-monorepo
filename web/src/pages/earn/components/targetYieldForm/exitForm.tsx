@@ -27,6 +27,7 @@ import { parseTokenUnits } from "utils/token";
 import type { Address } from "viem";
 
 import { getInputError } from "./getInputError";
+import { isFormLoading } from "./isFormLoading";
 import { LockNote } from "./lockNote";
 import { Review, ReviewRow } from "./review";
 
@@ -90,17 +91,25 @@ export function ExitForm({
       now: BigInt(unixNowTimestamp()),
     }) === "open-to-exit";
 
-  function getActionText() {
+  const isLoading =
+    isFormLoading({
+      balance: shareTokenBalance,
+      isMaxRequestError: isMaxRequestRedeemError,
+      maxRequest: maxRequestRedeem,
+      nativeBalance,
+    }) || epochPeriod.isPending;
+
+  function getBlockingText() {
     if (isMaxRequestRedeemError) {
       return t("pages.earn.fixed-term.max-exit-error");
     }
     if (epochPeriod.isError) {
       return t("pages.earn.fixed-term.exit-window-error");
     }
-    if (epochPeriod.data !== undefined && !isExitWindowOpen) {
+    if (!isExitWindowOpen) {
       return t("pages.earn.fixed-term.exit-window-closed");
     }
-    return t("pages.earn.fixed-term.request-exit");
+    return undefined;
   }
 
   const renderEpochEndDate = () =>
@@ -161,9 +170,10 @@ export function ExitForm({
       </div>
       <div className="flex border-y border-gray-200 p-3 *:flex-1">
         <StakeSubmitButton
-          actionText={getActionText()}
-          balancesLoaded={balancesLoaded && isExitWindowOpen}
+          actionText={t("pages.earn.fixed-term.request-exit")}
+          blockingText={getBlockingText()}
           inputError={inputError}
+          isLoading={isLoading}
           isPending={false}
           pendingText={t("pages.earn.fixed-term.request-exit")}
         />

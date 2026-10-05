@@ -31,6 +31,7 @@ import { parseTokenUnits } from "utils/token";
 import type { Address } from "viem";
 
 import { getInputError } from "./getInputError";
+import { isFormLoading } from "./isFormLoading";
 import { LockNote } from "./lockNote";
 import { Review, ReviewRow } from "./review";
 
@@ -176,13 +177,19 @@ export function DepositForm({
       </div>
       <div className="flex border-y border-gray-200 p-3 *:flex-1">
         <StakeSubmitButton
-          actionText={
+          actionText={t("pages.earn.fixed-term.request-deposit")}
+          blockingText={
             isMaxRequestDepositError
               ? t("pages.earn.fixed-term.max-deposit-error")
-              : t("pages.earn.fixed-term.request-deposit")
+              : undefined
           }
-          balancesLoaded={balancesLoaded}
           inputError={inputError}
+          isLoading={isFormLoading({
+            balance: peggedTokenBalance,
+            isMaxRequestError: isMaxRequestDepositError,
+            maxRequest: maxRequestDeposit,
+            nativeBalance,
+          })}
           isPending={false}
           pendingText={t("pages.earn.fixed-term.request-deposit")}
         />

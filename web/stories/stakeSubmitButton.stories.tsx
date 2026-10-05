@@ -14,6 +14,13 @@ const meta: Meta<typeof StakeSubmitButton> = {
     return () => mocked(useAccount).mockReset();
   },
   component: StakeSubmitButton,
+  decorators: [
+    (Story) => (
+      <div className="flex w-72 *:flex-1">
+        <Story />
+      </div>
+    ),
+  ],
   title: "Components/StakeSubmitButton",
 };
 
@@ -23,8 +30,8 @@ type Story = StoryObj<typeof StakeSubmitButton>;
 export const Default: Story = {
   args: {
     actionText: "Deposit",
-    balancesLoaded: true,
     inputError: undefined,
+    isLoading: false,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -33,8 +40,8 @@ export const Default: Story = {
 export const ConnectWallet: Story = {
   args: {
     actionText: "Deposit",
-    balancesLoaded: true,
     inputError: undefined,
+    isLoading: false,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -46,8 +53,8 @@ export const ConnectWallet: Story = {
 export const EnterAmount: Story = {
   args: {
     actionText: "Deposit",
-    balancesLoaded: true,
     inputError: "enter-amount",
+    isLoading: false,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -56,8 +63,8 @@ export const EnterAmount: Story = {
 export const InsufficientBalance: Story = {
   args: {
     actionText: "Deposit",
-    balancesLoaded: true,
     inputError: "insufficient-balance",
+    isLoading: false,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -66,8 +73,8 @@ export const InsufficientBalance: Story = {
 export const InsufficientGas: Story = {
   args: {
     actionText: "Deposit",
-    balancesLoaded: true,
     inputError: "insufficient-gas",
+    isLoading: false,
     isPending: false,
     pendingText: "Depositing...",
   },
@@ -76,28 +83,39 @@ export const InsufficientGas: Story = {
 export const Pending: Story = {
   args: {
     actionText: "Deposit",
-    balancesLoaded: true,
     inputError: undefined,
+    isLoading: false,
     isPending: true,
     pendingText: "Depositing...",
   },
 };
 
-export const BalancesLoading: Story = {
+export const Loading: Story = {
   args: {
     actionText: "Deposit",
-    balancesLoaded: false,
     inputError: undefined,
+    isLoading: true,
     isPending: false,
     pendingText: "Depositing...",
+  },
+};
+
+export const Blocked: Story = {
+  args: {
+    actionText: "Request exit",
+    blockingText: "Exit window closed",
+    inputError: "enter-amount",
+    isLoading: false,
+    isPending: false,
+    pendingText: "Request exit",
   },
 };
 
 export const WithdrawAction: Story = {
   args: {
     actionText: "Withdraw",
-    balancesLoaded: true,
     inputError: undefined,
+    isLoading: false,
     isPending: false,
     pendingText: "Withdrawing...",
   },
