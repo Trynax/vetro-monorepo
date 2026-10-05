@@ -24,7 +24,7 @@ const RewardLine = ({ row }: { row: RewardAprRow }) => (
 
 export const RewardsApr = function ({ className = "", poolId }: Props) {
   const campaignsQuery = usePoolCampaigns({ poolId });
-  const strategyQuery = useStakeDaoStrategy({ poolId });
+  const strategyQuery = useStakeDaoStrategy(poolId);
 
   const isLoading = [campaignsQuery, strategyQuery].some(
     (query) => query.data === undefined && !query.error,

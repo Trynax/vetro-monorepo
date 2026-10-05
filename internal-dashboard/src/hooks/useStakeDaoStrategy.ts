@@ -10,7 +10,7 @@ const stakeDaoStrategiesOptions = () =>
     staleTime: 60 * 1000,
   });
 
-export const useStakeDaoStrategy = ({ poolId }: { poolId: string }) =>
+export const useStakeDaoStrategy = (poolId: string) =>
   useQuery({
     ...stakeDaoStrategiesOptions(),
     select: (strategies) => strategies[poolId] ?? null,

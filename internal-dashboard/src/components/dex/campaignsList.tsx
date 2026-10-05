@@ -140,7 +140,7 @@ const StakeDaoCampaignCard = function ({
   nowSeconds: number;
   poolId: string;
 }) {
-  const { data: strategy } = useStakeDaoStrategy({ poolId });
+  const { data: strategy } = useStakeDaoStrategy(poolId);
   const strategyKey = strategy?.key;
 
   return (

@@ -207,7 +207,7 @@ const GaugeRow = function ({
   gauge: Address;
   poolId: string;
 }) {
-  const { data: strategy } = useStakeDaoStrategy({ poolId });
+  const { data: strategy } = useStakeDaoStrategy(poolId);
   const strategyKey = strategy?.key;
 
   return (
