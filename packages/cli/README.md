@@ -41,7 +41,7 @@ Only `http`/`https` endpoints are accepted; anything else is rejected as a usage
 
 ### Supported chains
 
-Vetro is deployed on Ethereum mainnet only, so every command starts by reading the endpoint's `eth_chainId` and fails if it is anything other than:
+Vetro is deployed on Ethereum mainnet only, so every command that reads the chain starts by reading the endpoint's `eth_chainId` and fails if it is anything other than:
 
 | Chain ID | Endpoint                           |
 | -------- | ---------------------------------- |
@@ -56,6 +56,7 @@ Successful output is JSON on stdout, so it's directly consumable by an agent.
 
 - Addresses and other strings are emitted as JSON strings; booleans as JSON booleans.
 - `uint256` on-chain values are serialized as decimal strings, since `bigint` can't be represented in JSON.
+- Amounts are in human units on input and in the token's decimals on output.
 
 Failures always exit non-zero, but come in two shapes:
 
@@ -86,6 +87,12 @@ To discover the symbols a gateway takes, run `swap whitelisted-tokens --gateway 
 
 This is the list of commands available
 
+### `gateways` — the enabled gateways
+
+| Command              | Reads | Returns                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vetro-cli gateways` | —     | Every enabled gateway. Each entry carries `address`, `peggedToken` (the pegged token the gateway mints) and `stakingVault` (the vault that stakes that pegged token, or `null` when the gateway has none). `address` is the `--gateway` of the gateway-level `swap` reads. The list is static and covers Ethereum mainnet only. The command makes no RPC call, so it ignores `--rpc-url` |
+
 ### `swap` — whitelisted ↔ pegged token
 
 #### Write operations
@@ -102,7 +109,7 @@ This is the list of commands available
 
 | Command                                                              | Reads                                                                         | Returns                                                                                                                                                                                                                                                                                                                                                       |
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vetro-cli swap allowance --token <tok> --account <addr>`            | `allowance`                                                                   | Gateway's spending allowance, in human units. `<tok>` may be a whitelisted token (swap-in) or a pegged token (swap-out; the gateway pulls the pegged token at `send-to-queue`, or at the redeem itself when it is one step)                                                                                                                                   |
+| `vetro-cli swap allowance --token <tok> --account <addr>`            | `allowance`                                                                   | Gateway's spending allowance, in the token's decimals. `<tok>` may be a whitelisted token (swap-in) or a pegged token (swap-out; the gateway pulls the pegged token at `send-to-queue`, or at the redeem itself when it is one step)                                                                                                                          |
 | `vetro-cli swap cooldown --gateway <addr>`                           | `getWithdrawalDelayEnabled`, `getWithdrawalDelay`                             | Redeem Queue cooldown of the gateway, in seconds. `0` when the delay is disabled — a redeem is then one-step, with no queue. This is the gateway-wide contract value, not a per-account one.                                                                                                                                                                  |
 | `vetro-cli swap cooldown-enabled --gateway <addr>`                   | `getWithdrawalDelayEnabled`                                                   | Whether the gateway's Redeem Queue is on. `false` means a redeem is one-step for every account, and `swap send-to-queue` fails.                                                                                                                                                                                                                               |
 | `vetro-cli swap is-instant-redeem --account <addr> --gateway <addr>` | `isInstantRedeemWhitelisted`                                                  | Whether `<addr>` is whitelisted to skip the gateway's Redeem Queue. `true` means its redeem is one-step: no `send-to-queue`, no cooldown.                                                                                                                                                                                                                     |

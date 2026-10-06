@@ -1,13 +1,14 @@
-import { Command, Option } from "commander";
+import { Command, Help, Option } from "commander";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { register as gateways } from "./features/gateways/index.ts";
 import { register as swap } from "./features/swap/index.ts";
 import { parseRpcUrl } from "./lib/args.ts";
 import { redactOptionValues } from "./lib/output.ts";
 
-const features = [swap];
+const features = [gateways, swap];
 
 /**
  * The option, paired with the redactor for the usage errors it can raise.
@@ -48,6 +49,13 @@ export function createProgram() {
   const { option: rpcUrlOption, redactUsageError } = createRpcUrlOption();
 
   program
+    .configureHelp({
+      optionDescription(option) {
+        const description = Help.prototype.optionDescription.call(this, option);
+        return option.mandatory ? `${description} (required)` : description;
+      },
+      showGlobalOptions: true,
+    })
     .configureOutput({
       outputError: (message, write) => write(redactUsageError(message)),
     })

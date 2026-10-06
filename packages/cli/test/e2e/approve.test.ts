@@ -1,5 +1,5 @@
 import { TEST_ADDRESS } from "@hemilabs/anvil-fork-setup/utils";
-import { isAddressEqual } from "viem";
+import { isAddressEqual, parseUnits } from "viem";
 import { describe, expect, inject, it } from "vitest";
 
 import {
@@ -47,7 +47,9 @@ describe("swap approve", function () {
     const receipt = await sendTransactionRequest({ request, rpcUrl });
     expect(receipt.status).toBe("success");
 
-    expect(await readAllowance(usdc.symbol)).toBe(swapAmount);
+    expect(await readAllowance(usdc.symbol)).toBe(
+      parseUnits(swapAmount, usdc.decimals).toString(),
+    );
   });
 
   it("grants the gateway an allowance on the pegged token", async function () {
@@ -60,7 +62,9 @@ describe("swap approve", function () {
     const receipt = await sendTransactionRequest({ request, rpcUrl });
     expect(receipt.status).toBe("success");
 
-    expect(await readAllowance(vusd.symbol)).toBe(swapAmount);
+    expect(await readAllowance(vusd.symbol)).toBe(
+      parseUnits(swapAmount, vusd.decimals).toString(),
+    );
   });
 
   it("resolves a token given a non-checksummed address", async function () {
