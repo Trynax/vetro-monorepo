@@ -41,7 +41,7 @@ Only `http`/`https` endpoints are accepted; anything else is rejected as a usage
 
 ### Supported chains
 
-Vetro is deployed on Ethereum mainnet only, so every command starts by reading the endpoint's `eth_chainId` and fails if it is anything other than:
+Vetro is deployed on Ethereum mainnet only, so every command that reads the chain starts by reading the endpoint's `eth_chainId` and fails if it is anything other than:
 
 | Chain ID | Endpoint                           |
 | -------- | ---------------------------------- |
@@ -89,9 +89,9 @@ This is the list of commands available
 
 ### `gateways` — the enabled gateways
 
-| Command              | Reads | Returns                                                                                                                                                                                                                                                                   |
-| -------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vetro-cli gateways` | —     | Every enabled gateway. Each entry carries `address`, `peggedToken` (the pegged token the gateway mints) and `stakingVault` (the vault that stakes that pegged token, or `null` when the gateway has none). `address` is the `--gateway` of the gateway-level `swap` reads |
+| Command              | Reads | Returns                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vetro-cli gateways` | —     | Every enabled gateway. Each entry carries `address`, `peggedToken` (the pegged token the gateway mints) and `stakingVault` (the vault that stakes that pegged token, or `null` when the gateway has none). `address` is the `--gateway` of the gateway-level `swap` reads. The list is static and covers Ethereum mainnet only. The command makes no RPC call, so it ignores `--rpc-url` |
 
 ### `swap` — whitelisted ↔ pegged token
 
