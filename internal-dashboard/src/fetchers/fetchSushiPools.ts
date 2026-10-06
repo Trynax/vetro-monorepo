@@ -28,15 +28,16 @@ const buildCoins = ({
 
 // The Sushi implementation of a DEX pool source. One GraphQL call to Sushi's own
 // API (fetchSushiPoolData) supplies everything the whole-pool entry needs — token
-// identity, balances, TVL, prices, 24h volume / fees / APR. A configured price
-// band additionally needs the pool's liquidity spread across ticks, which no data
-// API publishes, so that much is read on-chain (lib/v3PoolState) and turned into
+// identity, balances, TVL, prices, 24h volume / fees. A configured price band
+// additionally needs the pool's liquidity spread across ticks, which no data API
+// publishes, so that much is read on-chain (lib/v3PoolState) and turned into
 // token amounts with Uniswap's own Position math (lib/v3PositionMath). A band's
-// part of the 24h volume, fees and incentives comes from the price path of the
-// pool's swaps (lib/sushiSubgraph, lib/bandActivity). USD prices
-// anchor the reference leg (the non-tracked stable) at $1 and take the tracked
-// leg's price from the pool rate. Gauge emissions aren't a Sushi concept, so that
-// stays unset.
+// part of the 24h volume and fees comes from the price path of the pool's swaps
+// (lib/sushiSubgraph, lib/bandActivity). USD prices anchor the reference leg (the
+// non-tracked stable) at $1 and take the tracked leg's price from the pool rate.
+// Gauge emissions aren't a Sushi concept, so emissionApr stays 0. Sushi's
+// incentives run as Merkl campaigns, which the rewards sources (lib/merklApi)
+// already report, so Sushi's incentiveApr is left out to avoid counting them twice.
 const fetchSushiPool = async function ({
   pool,
   trackedAddresses,
@@ -68,7 +69,6 @@ const fetchSushiPool = async function ({
     id,
     isRangeView,
     rangeLabel,
-    timeShare = 1,
     tvlUsd,
     volumeShare = 1,
   }: {
@@ -76,14 +76,10 @@ const fetchSushiPool = async function ({
     id: string;
     isRangeView?: boolean;
     rangeLabel: string;
-    timeShare?: number;
     tvlUsd: number | undefined;
     volumeShare?: number;
   }): TrackedPool {
     const feesUsd24h = data.feesUsd24h * volumeShare;
-    const rewardApy = tvlUsd
-      ? data.rewardApy * (data.liquidityUsd / tvlUsd) * timeShare
-      : 0;
     return {
       address: pool.address,
       baseApy:
@@ -95,6 +91,8 @@ const fetchSushiPool = async function ({
       chainId: mainnet.id,
       coins,
       dex: "sushi",
+      emissionApr: 0,
+      emissionAprMax: 0,
       feesUsd24h,
       gaugeAddress: undefined,
       id,
@@ -103,8 +101,6 @@ const fetchSushiPool = async function ({
       name: data.name,
       poolType: isRangeView ? `${baseType} · ${rangeLabel}` : baseType,
       rangeLabel,
-      rewardApy,
-      rewardApyMax: rewardApy,
       tvlUsd,
       url,
       virtualPrice: 0,
@@ -180,7 +176,7 @@ const fetchSushiPool = async function ({
       lowerPrice: range.lowerPrice,
       upperPrice: range.upperPrice,
     });
-    const { timeShare, volumeShare } = bandActivity({
+    const { volumeShare } = bandActivity({
       lowerTick: priceToTick({ ...decimals, price: range.lowerPrice }),
       nowSeconds,
       opening,
@@ -197,7 +193,6 @@ const fetchSushiPool = async function ({
       id: `${pool.address}-${range.lowerPrice}-${range.upperPrice}`,
       isRangeView: true,
       rangeLabel: `$${range.lowerPrice}–$${range.upperPrice}`,
-      timeShare,
       tvlUsd: poolTvlUsd(coins),
       volumeShare,
     });

@@ -23,7 +23,7 @@ These practices MUST be followed:
 
 1. **Use @tanstack/react-query**: Custom hooks use `useQuery` and return the output directly for flexibility
 2. **One file, one query**: Each file defines a single query — its `queryOptions` factory, the hook that wraps it, and an optional `[name]QueryKey` function — with only one `useQuery` call, unless input depends on other hooks
-3. **Single object parameter**: Hooks accept one parameter which is an object containing all needed variables
+3. **Parameters**: A hook that needs one variable takes it directly (e.g. `usePoolStrategy(poolId)`). A hook that needs 2+ variables takes a single object containing them. The same applies to `queryOptions` and `[name]QueryKey` functions
 4. **queryKey naming**: Keys start with a kebab-case string representing the key name, sorted from generic to specific
    - Example: `['user-balance', listVariable, detailVariable, filterVariable]`
 5. **Always create a `queryOptions` function**: Create a function that returns `queryOptions({...})` from `@tanstack/react-query`. This encapsulates `queryKey`, `queryFn`, and `enabled` together. The hook then calls `useQuery(myOptions({...}))`. **Scope of use**: `queryOptions` functions are consumed only by `useQuery` and by other queries'/fetchers' `queryFn` via `queryClient.ensureQueryData(myOptions({...}))`. **Mutations must not import or call a `queryOptions` function** — when a mutation needs to invalidate or update a query's cache, it should use a separately exported `[name]QueryKey` function (see best practice 5a). Export `queryOptions` only when another query/fetcher needs it.
@@ -172,7 +172,7 @@ export const [fetcherName] = async function ({
    - ✓ Import from '@tanstack/react-query'
    - ✓ Returns `useQuery` result directly
    - ✓ One `useQuery` per file
-   - ✓ Single object parameter
+   - ✓ One variable passed directly, or a single object for 2+ variables
    - ✓ queryKey array starts with kebab-case string
    - ✓ queryKey ordered generic to specific
    - ✓ `queryOptions` function exists (exported only when another query/fetcher needs it)
@@ -358,7 +358,7 @@ Use this checklist when validating hooks:
 - [ ] Import `queryOptions` and `useQuery` from '@tanstack/react-query'
 - [ ] Hook returns `useQuery` result directly (not destructured)
 - [ ] Only one `useQuery` per file (or dependencies justified)
-- [ ] Single object parameter with typed properties
+- [ ] One variable passed directly, or a single object with typed properties for 2+ variables
 - [ ] `queryKey` is an array starting with kebab-case string
 - [ ] `queryKey` ordered generic to specific
 - [ ] `queryOptions` function exists (named `[featureName]Options`; exported only when another query/fetcher needs it)

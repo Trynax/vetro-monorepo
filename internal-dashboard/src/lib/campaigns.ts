@@ -1,7 +1,14 @@
-import { campaignSourceLabels } from "../config/campaignSources";
+import {
+  type CampaignSource,
+  campaignSourceLabels,
+} from "../config/campaignSources";
 
 import { formatDuration } from "./format";
-import { type PoolCampaign } from "./types";
+import {
+  type StakeDaoStrategy,
+  stakeDaoRewardsAprPercent,
+} from "./stakeDaoApi";
+import { type MerklPoolCampaign, type PoolCampaign } from "./types";
 
 const day = 24 * 60 * 60;
 const endingSoonThresholdDays = 7;
@@ -29,3 +36,98 @@ export const campaignLabel = ({
   nowSeconds: number;
 }) =>
   `${campaignSourceLabels[campaign.source]} · ${campaign.rewardTokenSymbol} · ${formatDuration(campaign.endTimestamp - nowSeconds)}`;
+
+type RewardSource = CampaignSource | "curveGauge";
+
+export type RewardAprRow = {
+  aprPercent: number;
+  aprPercentMax?: number;
+  id: string;
+  source: RewardSource;
+  tokenSymbols: string;
+};
+
+// The campaigns come already filtered to running ones (vote deadline in the
+// future, see fetchStakeDaoCampaigns), so this matches the Campaigns column.
+export const hasActiveStakeDaoCampaign = (campaigns: PoolCampaign[]) =>
+  campaigns.some((campaign) => campaign.source === "stakeDao");
+
+// The boosted CRV the strategy APR is built on, plus extra rewards still
+// paying out. The feed keeps dead entries (APR 0 or an end in the past).
+const activeRewardSymbols = ({
+  nowSeconds,
+  rewards,
+}: {
+  nowSeconds: number;
+  rewards: StakeDaoStrategy["rewards"];
+}) =>
+  [
+    ...new Set(
+      rewards
+        .filter(
+          (reward) =>
+            reward.token.symbol === "CRV" ||
+            (reward.apr > 0 && reward.end > nowSeconds),
+        )
+        .map((reward) => reward.token.symbol),
+    ),
+  ].join("/");
+
+// Rows in a fixed order: the venue's gauge emissions (what an LP gets by
+// staking in the Curve gauge directly), then the StakeDAO LP strategy, which
+// is an alternative to that gauge line, not an addition, so it sits right
+// under it. The strategy line shows only while the pool has a running StakeDAO
+// Votemarket campaign. Merkl campaigns follow, highest APR first. The
+// Votemarket campaigns themselves never become rows: they pay veCRV voters,
+// not LPs.
+export const rewardAprRows = function ({
+  campaigns,
+  emission,
+  nowSeconds,
+  stakeDaoStrategy,
+}: {
+  campaigns: PoolCampaign[];
+  emission: { emissionApr: number; emissionAprMax: number; id: string };
+  nowSeconds: number;
+  stakeDaoStrategy: StakeDaoStrategy | null;
+}) {
+  const rows: RewardAprRow[] = [];
+  if (emission.emissionApr > 0) {
+    rows.push({
+      aprPercent: emission.emissionApr,
+      aprPercentMax: emission.emissionAprMax,
+      id: `curve-gauge-${emission.id}`,
+      source: "curveGauge",
+      // Only Curve gauges set emissions today.
+      tokenSymbols: "CRV",
+    });
+  }
+  if (stakeDaoStrategy && hasActiveStakeDaoCampaign(campaigns)) {
+    const aprPercent = stakeDaoRewardsAprPercent(stakeDaoStrategy);
+    if (aprPercent > 0) {
+      rows.push({
+        aprPercent,
+        id: stakeDaoStrategy.key,
+        source: "stakeDao",
+        tokenSymbols: activeRewardSymbols({
+          nowSeconds,
+          rewards: stakeDaoStrategy.rewards,
+        }),
+      });
+    }
+  }
+  const merklRows = campaigns
+    .filter(
+      (campaign): campaign is MerklPoolCampaign => campaign.source === "merkl",
+    )
+    .map(
+      (campaign): RewardAprRow => ({
+        aprPercent: campaign.aprPercent,
+        id: campaign.id,
+        source: "merkl",
+        tokenSymbols: campaign.rewardTokenSymbol,
+      }),
+    )
+    .sort((a, b) => b.aprPercent - a.aprPercent);
+  return [...rows, ...merklRows];
+};

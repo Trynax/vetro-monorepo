@@ -5,7 +5,7 @@ import {
   campaignSourceLabels,
 } from "../../config/campaignSources";
 import { usePoolCampaigns } from "../../hooks/usePoolCampaigns";
-import { useStakeDaoStrategyKey } from "../../hooks/useStakeDaoStrategyKey";
+import { useStakeDaoStrategy } from "../../hooks/useStakeDaoStrategy";
 import { endingSoonTooltip, endsSoon } from "../../lib/campaigns";
 import {
   formatDuration,
@@ -134,14 +134,14 @@ const MerklCampaignCard = ({
 const StakeDaoCampaignCard = function ({
   campaign,
   nowSeconds,
+  poolId,
 }: {
   campaign: StakeDaoPoolCampaign;
   nowSeconds: number;
+  poolId: string;
 }) {
-  const { data: strategyKey } = useStakeDaoStrategyKey({
-    chainId: campaign.gaugeChainId,
-    gauge: campaign.gauge,
-  });
+  const { data: strategy } = useStakeDaoStrategy(poolId);
+  const strategyKey = strategy?.key;
 
   return (
     <div className="rounded-lg border border-neutral-200 p-4">
@@ -182,14 +182,20 @@ const StakeDaoCampaignCard = function ({
 const CampaignCard = ({
   campaign,
   nowSeconds,
+  poolId,
 }: {
   campaign: PoolCampaign;
   nowSeconds: number;
+  poolId: string;
 }) =>
   campaign.source === "merkl" ? (
     <MerklCampaignCard campaign={campaign} nowSeconds={nowSeconds} />
   ) : (
-    <StakeDaoCampaignCard campaign={campaign} nowSeconds={nowSeconds} />
+    <StakeDaoCampaignCard
+      campaign={campaign}
+      nowSeconds={nowSeconds}
+      poolId={poolId}
+    />
   );
 
 export const CampaignsList = function ({ poolId }: { poolId: string }) {
@@ -211,6 +217,7 @@ export const CampaignsList = function ({ poolId }: { poolId: string }) {
             campaign={campaign}
             key={`${campaign.source}-${campaign.id}`}
             nowSeconds={dataUpdatedAt / 1000}
+            poolId={poolId}
           />
         ))}
       </div>

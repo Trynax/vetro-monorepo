@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDuration } from "./format";
+import { formatAprRange, formatDuration } from "./format";
 
 describe("formatDuration", function () {
   it("floors sub-minute durations to <1m", function () {
@@ -40,5 +40,19 @@ describe("formatDuration", function () {
   it("treats negative durations as sub-minute", function () {
     expect(formatDuration(-30)).toBe("<1m");
     expect(formatDuration(-3600)).toBe("<1m");
+  });
+});
+
+describe("formatAprRange", function () {
+  it("shows a single value when there is no boost spread", function () {
+    expect(formatAprRange({ max: 2, min: 2 })).toBe("2.00%");
+  });
+
+  it("shows the boost range", function () {
+    expect(formatAprRange({ max: 5, min: 2 })).toBe("2.00% → 5.00%");
+  });
+
+  it("shows the minimum alone when the maximum is lower", function () {
+    expect(formatAprRange({ max: 0, min: 1.5 })).toBe("1.50%");
   });
 });

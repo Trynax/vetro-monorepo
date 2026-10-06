@@ -14,9 +14,10 @@ import { VenueBadge } from "../components/dex/venueBadge";
 import { type Dex, dexLabels } from "../config/dexes";
 import { useCurvePoolStats } from "../hooks/useCurvePoolStats";
 import { useGaugeEmissions } from "../hooks/useGaugeEmissions";
-import { useStakeDaoStrategyKey } from "../hooks/useStakeDaoStrategyKey";
+import { useStakeDaoStrategy } from "../hooks/useStakeDaoStrategy";
 import { useTrackedPools } from "../hooks/useTrackedPools";
 import {
+  formatAprRange,
   formatOptionalPercent,
   formatOptionalUsd,
   formatPercent,
@@ -167,12 +168,12 @@ const GaugeSection = function ({ pool }: { pool: TrackedPool }) {
         value={emission ? formatTokenAmount(emission.estCrvPerDay) : "—"}
       />
       <StatCard
-        label="CRV APY"
-        value={
-          pool.rewardApyMax > pool.rewardApy
-            ? `${formatPercent(pool.rewardApy)} – ${formatPercent(pool.rewardApyMax)}`
-            : formatPercent(pool.rewardApy)
-        }
+        hint="Unboosted → max boost"
+        label="CRV APR"
+        value={formatAprRange({
+          max: pool.emissionAprMax,
+          min: pool.emissionApr,
+        })}
       />
       {!hasEmissions && emission ? (
         <p className="col-span-full text-xs text-neutral-500">
@@ -201,11 +202,14 @@ const AddressRow = ({
 const GaugeRow = function ({
   chainId,
   gauge,
+  poolId,
 }: {
   chainId: number;
   gauge: Address;
+  poolId: string;
 }) {
-  const { data: strategyKey } = useStakeDaoStrategyKey({ chainId, gauge });
+  const { data: strategy } = useStakeDaoStrategy(poolId);
+  const strategyKey = strategy?.key;
 
   return (
     <div className="flex items-center justify-between gap-x-4 py-2 text-sm">
@@ -244,7 +248,11 @@ const AddressesSection = ({ pool }: { pool: TrackedPool }) => (
         </span>
       </div>
       {pool.gaugeAddress ? (
-        <GaugeRow chainId={pool.chainId} gauge={pool.gaugeAddress} />
+        <GaugeRow
+          chainId={pool.chainId}
+          gauge={pool.gaugeAddress}
+          poolId={pool.id}
+        />
       ) : null}
       {pool.lpTokenAddress &&
       !isAddressEqual(pool.lpTokenAddress, pool.address) ? (
@@ -339,13 +347,9 @@ export const DexPoolPage = function () {
         <StatCard label="24h Volume" value={formatUsd(pool.volumeUsd24h)} />
         <FeesCard pool={pool} />
         <StatCard
-          hint={`${formatOptionalPercent(pool.baseApy)} base + ${formatPercent(pool.rewardApy)} rewards`}
-          label="APY"
-          value={formatOptionalPercent(
-            pool.baseApy === undefined
-              ? undefined
-              : pool.baseApy + pool.rewardApy,
-          )}
+          hint="Trading fees"
+          label="Pool APY"
+          value={formatOptionalPercent(pool.baseApy)}
         />
         <StatCard
           hint="24h volume / TVL"

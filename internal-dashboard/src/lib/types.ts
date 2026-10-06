@@ -23,6 +23,11 @@ export type TrackedPool = {
   chainId: number;
   coins: PoolCoin[];
   dex: Dex; // venue this pool belongs to
+  // APR % from the venue's own emissions to LPs (Curve gauge CRV), unboosted /
+  // max boost. 0 for venues without emissions. Shown as a Rewards APR line, not
+  // as part of Pool APY.
+  emissionApr: number;
+  emissionAprMax: number;
   // Rolling-24h trading fees in USD, when the venue's API hands them to us
   // directly (Sushi). Undefined for venues whose fees are fetched on demand
   // instead (Curve), so the details page knows to fetch per-pool.
@@ -41,8 +46,6 @@ export type TrackedPool = {
   name: string;
   poolType: string; // venue's own classification (e.g. Curve registry id)
   rangeLabel?: string; // short label for the view (e.g. "Full range", "$0.96–$1.04")
-  rewardApy: number; // % from incentive emissions, unboosted (range minimum)
-  rewardApyMax: number; // % from incentive emissions, max boost (range maximum)
   tvlUsd: number | undefined;
   url: string; // the pool's page on its DEX
   virtualPrice: number;
@@ -74,8 +77,6 @@ export type MerklPoolCampaign = PoolCampaignBase & {
 
 export type StakeDaoPoolCampaign = PoolCampaignBase & {
   campaignNumber: number;
-  gauge: Address;
-  gaugeChainId: number;
   source: "stakeDao";
   totalRewardUsd: number;
   usdPerVote: number;

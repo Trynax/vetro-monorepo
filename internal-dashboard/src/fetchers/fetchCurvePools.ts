@@ -41,8 +41,8 @@ export const fetchCurvePools = async function (
       }));
 
       const baseApy = volume?.latestDailyApyPcent ?? 0;
-      const rewardApy = pool.gaugeCrvApy?.[0] ?? 0;
-      const rewardApyMax = pool.gaugeCrvApy?.[1] ?? rewardApy;
+      const emissionApr = pool.gaugeCrvApy?.[0] ?? 0;
+      const emissionAprMax = pool.gaugeCrvApy?.[1] ?? emissionApr;
       const address = getAddress(pool.address);
 
       return {
@@ -51,6 +51,8 @@ export const fetchCurvePools = async function (
         chainId: mainnet.id,
         coins,
         dex: "curve",
+        emissionApr,
+        emissionAprMax,
         gaugeAddress: normalizeAddress(pool.gaugeAddress),
         id: address,
         lpTokenAddress: pool.lpTokenAddress
@@ -58,8 +60,6 @@ export const fetchCurvePools = async function (
           : undefined,
         name: pool.name,
         poolType: pool.registryId,
-        rewardApy,
-        rewardApyMax,
         tvlUsd: pool.usdTotal,
         url: pool.poolUrls?.swap?.[0] ?? "",
         virtualPrice: Number(pool.virtualPrice) / 1e18,
