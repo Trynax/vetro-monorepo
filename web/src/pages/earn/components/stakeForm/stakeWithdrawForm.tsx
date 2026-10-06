@@ -270,8 +270,8 @@ export function StakeWithdrawForm({
         <div className="flex border-y border-gray-200 p-3 *:flex-1">
           <StakeSubmitButton
             actionText={actionText}
-            balancesLoaded={balancesLoaded && !isWithdrawPathLoading}
             inputError={inputError}
+            isLoading={!balancesLoaded || isWithdrawPathLoading}
             isPending={withdrawMutation.isPending}
             pendingText={pendingText}
           />

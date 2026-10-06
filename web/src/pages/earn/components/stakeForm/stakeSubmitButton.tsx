@@ -1,4 +1,5 @@
 import { Button } from "components/base/button";
+import { Spinner } from "components/base/spinner";
 import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIcon";
 import { RequireWalletConnected } from "components/requireWalletConnected";
 import { useTranslation } from "react-i18next";
@@ -6,16 +7,18 @@ import { isGeoRestricted } from "utils/geoRestriction";
 
 type Props = {
   actionText: string;
-  balancesLoaded: boolean;
+  blockingText?: string;
   inputError: string | undefined;
+  isLoading: boolean;
   isPending: boolean;
   pendingText: string;
 };
 
 export function StakeSubmitButton({
   actionText,
-  balancesLoaded,
+  blockingText,
   inputError,
+  isLoading,
   isPending,
   pendingText,
 }: Props) {
@@ -34,8 +37,11 @@ export function StakeSubmitButton({
     if (isPending) {
       return pendingText;
     }
-    if (!balancesLoaded) {
-      return actionText;
+    if (isLoading) {
+      return <Spinner />;
+    }
+    if (blockingText) {
+      return blockingText;
     }
     if (inputError === "enter-amount") {
       return t("common.enter-amount");
@@ -52,7 +58,7 @@ export function StakeSubmitButton({
     return actionText;
   }
 
-  const isDisabled = !balancesLoaded || !!inputError || isPending;
+  const isDisabled = isLoading || !!blockingText || !!inputError || isPending;
 
   return (
     <RequireWalletConnected size="small">

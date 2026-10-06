@@ -264,8 +264,8 @@ export function StakeDepositForm({
         <div className="flex border-y border-gray-200 p-3 *:flex-1">
           <StakeSubmitButton
             actionText={actionText}
-            balancesLoaded={balancesLoaded}
             inputError={inputError}
+            isLoading={!balancesLoaded}
             isPending={depositMutation.isPending}
             pendingText={pendingText}
           />

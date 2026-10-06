@@ -46,7 +46,7 @@ export const stakedBalanceQueryOptions = ({
       );
       return queryClient.ensureQueryData(
         convertToAssetsQueryOptions({
-          client,
+          client: client!,
           shares,
           stakingVaultAddress,
         }),

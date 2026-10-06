@@ -47,7 +47,7 @@ export function ShareTokenFiatValue({ token, value }: Props) {
         ),
         queryClient.ensureQueryData(
           convertToAssetsQueryOptions({
-            client,
+            client: client!,
             shares: value,
             stakingVaultAddress,
           }),

@@ -7,6 +7,7 @@ import type { TokenWithGateway } from "types";
 import type { Address } from "viem";
 
 import { DepositForm } from "./depositForm";
+import { ExitForm } from "./exitForm";
 import type { TargetYieldMode } from "./types";
 
 type Props = {
@@ -53,11 +54,10 @@ export function TargetYieldForm({
           value={mode}
         />
       </div>
-      {/* TODO add exit form https://github.com/vetro-protocol/vetro-monorepo/issues/646 */}
       {mode === "deposit" ? (
         <DepositForm {...sharedProps} />
       ) : (
-        <span>ExitForm</span>
+        <ExitForm {...sharedProps} />
       )}
     </>
   );
