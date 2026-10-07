@@ -10,7 +10,7 @@ const localChainId = 31337;
 const supportedChainIds = [mainnet.id, localChainId];
 
 // viem's default mainnet RPC (eth.merkle.io) heavily rate-limits the CLI's requests.
-const defaultRpcUrl = "https://eth.drpc.org";
+export const defaultRpcUrl = "https://eth.drpc.org";
 
 const mainnetOn = (rpcUrl: string) =>
   defineChain({ ...mainnet, rpcUrls: { default: { http: [rpcUrl] } } });

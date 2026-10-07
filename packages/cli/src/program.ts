@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { register as gateways } from "./features/gateways/index.ts";
 import { register as swap } from "./features/swap/index.ts";
 import { parseRpcUrl } from "./lib/args.ts";
+import { defaultRpcUrl } from "./lib/client.ts";
 import { redactOptionValues } from "./lib/output.ts";
 
 const features = [gateways, swap];
@@ -21,7 +22,7 @@ const createRpcUrlOption = function () {
   return {
     option: new Option(
       "--rpc-url <url>",
-      "RPC endpoint to read from, which also determines the chain the calldata is stamped with; defaults to a public Ethereum mainnet RPC",
+      `RPC endpoint to read from, which also determines the chain the calldata is stamped with; defaults to ${defaultRpcUrl}`,
     )
       .argParser(function (value: string) {
         attempted = value;
