@@ -9,11 +9,14 @@ export type GlobalOptions = { rpcUrl?: string };
 const localChainId = 31337;
 const supportedChainIds = [mainnet.id, localChainId];
 
+// viem's default mainnet RPC (eth.merkle.io) heavily rate-limits the CLI's requests.
+const defaultRpcUrl = "https://eth.drpc.org";
+
 const mainnetOn = (rpcUrl: string) =>
   defineChain({ ...mainnet, rpcUrls: { default: { http: [rpcUrl] } } });
 
 export async function createVetroClient({ rpcUrl }: GlobalOptions) {
-  const client = createChainClient(rpcUrl ? mainnetOn(rpcUrl) : mainnet);
+  const client = createChainClient(mainnetOn(rpcUrl ?? defaultRpcUrl));
 
   const chainId = await getChainId(client);
   if (!supportedChainIds.includes(chainId)) {
