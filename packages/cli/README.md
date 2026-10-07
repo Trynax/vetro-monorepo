@@ -35,7 +35,7 @@ It sets the endpoint every read goes to, and therefore the chain the emitted cal
 
 1. `--rpc-url`
 2. `RPC_URL`
-3. a public Ethereum mainnet RPC (viem's default for mainnet)
+3. `https://eth.drpc.org`, a public Ethereum mainnet RPC
 
 Only `http`/`https` endpoints are accepted; anything else is rejected as a usage error before any request is made.
 
