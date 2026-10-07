@@ -1,7 +1,20 @@
 {
   "name": "@vetro-protocol/cli",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0",
   "description": "CLI to read and operate on Vetro.",
+  "keywords": [
+    "cli",
+    "defi",
+    "ethereum",
+    "hemi",
+    "hemilabs",
+    "vetro",
+    "viem"
+  ],
+  "homepage": "https://github.com/vetro-protocol/vetro-monorepo/tree/master/packages/cli#readme",
+  "bugs": {
+    "url": "https://github.com/vetro-protocol/vetro-monorepo/issues"
+  },
   "license": "MIT",
   "files": [
     "LICENSE",
@@ -53,7 +66,8 @@
   },
   "private": false,
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "type": "module"
 }
