@@ -12,5 +12,5 @@
       }
     ]
   },
-  "enableAllProjectMcpServers": true
+  "enabledMcpjsonServers": ["figmaDesktop"]
 }
