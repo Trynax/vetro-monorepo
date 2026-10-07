@@ -1,8 +1,9 @@
 # Releasing packages
 
-This monorepo publishes four packages to npm under `@vetro-protocol/*`:
+This monorepo publishes five packages to npm under `@vetro-protocol/*`:
 
 - `@vetro-protocol/bridge`
+- `@vetro-protocol/cli`
 - `@vetro-protocol/earn`
 - `@vetro-protocol/gateway`
 - `@vetro-protocol/treasury`
@@ -30,7 +31,7 @@ Nothing has hit npm yet. Review the draft on GitHub and edit the notes if you wa
 
 `.github/workflows/publish.yml` fires on `release: published`. It:
 
-1. Allowlists tag prefixes `bridge@`, `earn@`, `gateway@`, `treasury@` at the job level — non-package releases (e.g. `web@<date>`, `vetro-app-subgraph@<version>`) are ignored here.
+1. Allowlists tag prefixes `bridge@`, `cli@`, `earn@`, `gateway@`, `treasury@` at the job level — non-package releases (e.g. `web@<date>`, `vetro-app-subgraph@<version>`) are ignored here.
 2. Extracts the package name from the tag (`bridge@1.0.1` → `bridge`).
 3. Runs `./scripts/publish-package.sh <pkg> <version>` (both derived from the tag), which fails fast if `<version>` doesn't match `packages/<pkg>/package.json`, then runs `pnpm publish` (with `prepublishOnly` chaining the clean + emit step).
 
