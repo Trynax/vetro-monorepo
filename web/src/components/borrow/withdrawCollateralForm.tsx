@@ -25,6 +25,7 @@ import { usePositionInfo } from "hooks/borrow/usePositionInfo";
 import { useWithdrawCollateral } from "hooks/borrow/useWithdrawCollateral";
 import { useTotalWithdrawCollateralFees } from "hooks/borrow/useWithdrawCollateralFees";
 import { useWithdrawCollateralReview } from "hooks/borrow/useWithdrawCollateralReview";
+import { useActivityTracking } from "hooks/useActivityTracking";
 import { useAmount } from "hooks/useAmount";
 import { useAnimatedVisibility } from "hooks/useAnimatedVisibility";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
@@ -233,6 +234,16 @@ export function WithdrawCollateralForm({ market, onClose }: Props) {
     marketId,
   });
 
+  const { onCompleted, onFailed, onPending, onTransactionHash } =
+    useActivityTracking({
+      page: "borrow",
+      text: t("pages.borrow.withdraw-collateral-progress.toast-description", {
+        amount: collateralInput,
+        symbol: collateralToken.symbol,
+      }),
+      title: `${t("nav.borrow")} · ${t("pages.borrow.withdraw-collateral-progress.withdraw-title")}`,
+    });
+
   const withdrawMutation = useWithdrawCollateral({
     collateralAmount: collateralAmountBigInt,
     marketId,
@@ -240,26 +251,36 @@ export function WithdrawCollateralForm({ market, onClose }: Props) {
       emitter.on("pre-withdraw-collateral", () =>
         setFlowStatus("withdraw-ready"),
       );
-      emitter.on("user-signed-withdraw-collateral", () =>
-        setFlowStatus("withdrawing"),
-      );
+      emitter.on("user-signed-withdraw-collateral", function (hash) {
+        onTransactionHash(hash);
+        onPending();
+        setFlowStatus("withdrawing");
+      });
       emitter.on("withdraw-collateral-transaction-succeeded", function () {
+        onCompleted();
         setFlowStatus("withdrawn");
         setShowToast(true);
       });
-      emitter.on("withdraw-collateral-transaction-reverted", () =>
-        setFlowStatus("withdraw-error"),
-      );
-      emitter.on("withdraw-collateral-failed", () =>
-        setFlowStatus("withdraw-error"),
-      );
-      emitter.on("withdraw-collateral-failed-validation", () =>
-        setFlowStatus("withdraw-error"),
-      );
-      emitter.on("user-signing-withdraw-collateral-error", () =>
-        setFlowStatus("withdraw-error"),
-      );
-      emitter.on("unexpected-error", () => setFlowStatus("withdraw-error"));
+      emitter.on("withdraw-collateral-transaction-reverted", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
+      emitter.on("withdraw-collateral-failed", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
+      emitter.on("withdraw-collateral-failed-validation", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
+      emitter.on("user-signing-withdraw-collateral-error", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
+      emitter.on("unexpected-error", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
     },
   });
 
