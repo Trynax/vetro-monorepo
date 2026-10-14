@@ -405,40 +405,7 @@ describe("pages/analytics/utils", function () {
       });
     });
 
-    it("flattens strategies across multiple tokens", function () {
-      const items = toYieldItems({
-        prices,
-        treasuryTokens: [
-          {
-            ...baseTreasuryToken,
-            activeStrategies: [
-              { name: "USDT Strategy", totalDebt: "500000000" },
-            ],
-            totalDebt: "500000000",
-            withdrawable: "500000000",
-          },
-          {
-            ...baseTreasuryToken,
-            activeStrategies: [
-              { name: "USDC Strategy", totalDebt: "800000000" },
-            ],
-            tokenAddress: usdcToken.address,
-            totalDebt: "800000000",
-            withdrawable: "800000000",
-          },
-        ],
-        whitelistedTokens: [usdtToken, usdcToken],
-      });
-
-      // The second token's strategy ($800) is larger, so it comes first.
-      expect(items).toHaveLength(2);
-      expect(items[0]?.label).toBe("USDC Strategy");
-      expect(items[0]?.amount).toBeCloseTo(800);
-      expect(items[1]?.label).toBe("USDT Strategy");
-      expect(items[1]?.amount).toBeCloseTo(500);
-    });
-
-    it("sorts strategies by USD amount descending across tokens", function () {
+    it("flattens and sorts strategies by USD amount descending across tokens", function () {
       const items = toYieldItems({
         prices,
         treasuryTokens: [
