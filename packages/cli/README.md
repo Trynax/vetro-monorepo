@@ -173,6 +173,12 @@ vetro-cli swap redeem --to USDT --amount 100 --receiver 0xAgent --slippage 0.5
 
 A pegged token has exactly one staking vault, so the vault is inferred from `--token` and never passed explicitly. `vetro-cli gateways` lists the `stakingVault` of each gateway. Commands that take `<pegged>` accept only the pegged token, by symbol or address. Commands that take `<tok>` accept the pegged token or its share token, by symbol or address.
 
+#### Write operations
+
+| Command                                                          | Encodes             | Notes                                                                                                              |
+| ---------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `vetro-cli variable-yield approve --token <pegged> --amount <n>` | `encodeApproveData` | Generates the calldata that allows the staking vault to spend the pegged token. `--amount 0` resets the allowance. |
+
 #### Read operations
 
 | Command                                                                       | Reads                                               | Returns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |

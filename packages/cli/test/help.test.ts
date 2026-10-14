@@ -11,6 +11,7 @@ describe("help", function () {
     ["swap", "mint"],
     ["variable-yield"],
     ["variable-yield", "allowance"],
+    ["variable-yield", "approve"],
     ["variable-yield", "cooldown"],
     ["variable-yield", "exit-tickets"],
     ["variable-yield", "is-instant-withdraw"],

@@ -165,20 +165,31 @@ export async function getGatewayPeggedToken({
   return { address, decimals: tokenDecimals, symbol: tokenSymbol };
 }
 
-export function getStakingVault({
-  gatewayAddress,
+function withStakingVault<T extends { gatewayAddress: Address }>({
   token,
+  value,
 }: {
-  gatewayAddress: Address;
-  token: string;
+  token: T;
+  value: string;
 }) {
   const stakingVault = gateways.find((gateway) =>
-    isAddressEqual(gateway.address, gatewayAddress),
+    isAddressEqual(gateway.address, token.gatewayAddress),
   )?.stakingVault;
   if (!stakingVault) {
-    throw new Error(`No staking vault for pegged token: "${token}"`);
+    throw new Error(`No staking vault for pegged token: "${value}"`);
   }
-  return stakingVault;
+  return { ...token, stakingVault };
+}
+
+export async function resolveStakablePeggedToken({
+  client,
+  value,
+}: {
+  client: Client;
+  value: string;
+}) {
+  const token = await resolvePeggedToken({ client, value });
+  return withStakingVault({ token, value });
 }
 
 const getShareCandidates = () =>
@@ -207,11 +218,5 @@ export async function resolveStakingToken({
     kind: "pegged or share",
     value,
   });
-  return {
-    ...token,
-    stakingVault: getStakingVault({
-      gatewayAddress: token.gatewayAddress,
-      token: value,
-    }),
-  };
+  return withStakingVault({ token, value });
 }
