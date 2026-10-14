@@ -587,6 +587,25 @@ const updateCooldownDurationAbi = parseAbi([
   "function updateCooldownDuration(uint256 duration_)",
 ]);
 
+const impersonateVaultOwner = async function ({
+  rpcUrl,
+  vault,
+}: {
+  rpcUrl: string;
+  vault: Address;
+}) {
+  const { publicClient, testClient } = createClients(rpcUrl);
+  const owner = await readContract(publicClient, {
+    abi: stakingVaultAbi,
+    address: vault,
+    functionName: "owner",
+  });
+
+  await impersonateAccount(testClient, { address: owner });
+  await setBalance(testClient, { address: owner, value: parseEther("1") });
+  return owner;
+};
+
 /** Turns the staking vault's unstake cooldown on or off, and sets its duration when given. */
 export const setStakingCooldown = async function ({
   duration,
@@ -600,14 +619,7 @@ export const setStakingCooldown = async function ({
   vault: Address;
 }) {
   const { publicClient, testClient } = createClients(rpcUrl);
-  const owner = await readContract(publicClient, {
-    abi: stakingVaultAbi,
-    address: vault,
-    functionName: "owner",
-  });
-
-  await impersonateAccount(testClient, { address: owner });
-  await setBalance(testClient, { address: owner, value: parseEther("1") });
+  const owner = await impersonateVaultOwner({ rpcUrl, vault });
   try {
     if (duration !== undefined) {
       await confirmWrite({
@@ -629,6 +641,35 @@ export const setStakingCooldown = async function ({
         address: vault,
         args: [enabled],
         functionName: "updateCooldownEnabled",
+      }),
+    });
+  } finally {
+    await stopImpersonatingAccount(testClient, { address: owner });
+  }
+};
+
+export const setInstantWithdrawWhitelisted = async function ({
+  account,
+  rpcUrl,
+  vault,
+  whitelisted,
+}: {
+  account: Address;
+  rpcUrl: string;
+  vault: Address;
+  whitelisted: boolean;
+}) {
+  const { publicClient, testClient } = createClients(rpcUrl);
+  const owner = await impersonateVaultOwner({ rpcUrl, vault });
+  try {
+    await confirmWrite({
+      client: publicClient,
+      hash: await writeContract(testClient, {
+        abi: stakingVaultAbi,
+        account: owner,
+        address: vault,
+        args: [account, whitelisted],
+        functionName: "updateInstantWithdrawWhitelist",
       }),
     });
   } finally {

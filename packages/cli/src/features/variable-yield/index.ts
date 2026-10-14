@@ -2,6 +2,7 @@ import { type Command } from "commander";
 
 import { register as allowance } from "./commands/allowance.ts";
 import { register as cooldown } from "./commands/cooldown.ts";
+import { register as isInstantWithdraw } from "./commands/isInstantWithdraw.ts";
 import { register as position } from "./commands/position.ts";
 import { register as previewStake } from "./commands/previewStake.ts";
 import { register as totalAssets } from "./commands/totalAssets.ts";
@@ -9,6 +10,7 @@ import { register as totalAssets } from "./commands/totalAssets.ts";
 const variableYieldCommands = [
   allowance,
   cooldown,
+  isInstantWithdraw,
   position,
   previewStake,
   totalAssets,
