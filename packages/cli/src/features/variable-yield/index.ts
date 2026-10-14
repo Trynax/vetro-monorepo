@@ -4,8 +4,15 @@ import { register as allowance } from "./commands/allowance.ts";
 import { register as cooldown } from "./commands/cooldown.ts";
 import { register as position } from "./commands/position.ts";
 import { register as previewStake } from "./commands/previewStake.ts";
+import { register as totalAssets } from "./commands/totalAssets.ts";
 
-const variableYieldCommands = [allowance, cooldown, position, previewStake];
+const variableYieldCommands = [
+  allowance,
+  cooldown,
+  position,
+  previewStake,
+  totalAssets,
+];
 
 export function register(program: Command) {
   const variableYield = program
