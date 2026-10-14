@@ -110,7 +110,7 @@ export const toTvlHistorySeries = ({
 // Transforms /analytics/treasury response into yield allocation items,
 // one item per active strategy across all tokens. Strategies with no funds
 // are kept so every configured strategy stays visible.
-export const toYieldItems = function ({
+export const toYieldItems = ({
   prices,
   treasuryTokens,
   whitelistedTokens,
@@ -118,27 +118,27 @@ export const toYieldItems = function ({
   prices: Prices;
   treasuryTokens: TreasuryToken[];
   whitelistedTokens: Token[];
-}) {
-  const items: { amount: number; color: string; label: string }[] = [];
-
-  for (const { activeStrategies, tokenAddress } of treasuryTokens) {
-    const token = findToken(tokenAddress, whitelistedTokens);
-    if (!token) {
-      continue;
-    }
-
-    for (const { name, totalDebt } of activeStrategies) {
-      const amount = tokenAmountToUsd({
-        amount: BigInt(totalDebt),
-        prices,
-        token,
-      });
-      items.push({ amount, color: assignColor(items.length), label: name });
-    }
-  }
-
-  return items;
-};
+}) =>
+  treasuryTokens
+    .flatMap(function ({ activeStrategies, tokenAddress }) {
+      const token = findToken(tokenAddress, whitelistedTokens);
+      if (!token) {
+        return [];
+      }
+      return activeStrategies.map(({ name, totalDebt }) => ({
+        amount: tokenAmountToUsd({
+          amount: BigInt(totalDebt),
+          prices,
+          token,
+        }),
+        label: name,
+      }));
+    })
+    .map(({ amount, label }, index) => ({
+      amount,
+      color: assignColor(index),
+      label,
+    }));
 
 // Converts collateralization data into percentage-based allocation items.
 // Rounds to 2 decimal places and adjusts the largest item so they sum to exactly 100.
