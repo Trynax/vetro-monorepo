@@ -285,8 +285,10 @@
       },
       "rewards-apr": "Rewards APR",
       "title": "Dex liquidity",
+      "total-tvl": "Total TVL",
       "try-again": "Try again",
-      "tvl": "TVL"
+      "tvl": "TVL",
+      "volume-24h": "24h volume"
     },
     "earn": {
       "activity": {

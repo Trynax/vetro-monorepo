@@ -15,7 +15,7 @@ import { formatUsd } from "utils/currency";
 import { formatPercentage } from "utils/format";
 
 import { useDexPools } from "../hooks/useDexPools";
-import { getDepositUrl, isPoolVisible, sortByTvl } from "../utils";
+import { getDepositUrl, sortByTvl } from "../utils";
 
 import { PoolName } from "./poolName";
 import { RewardsList } from "./rewardsList";
@@ -118,7 +118,7 @@ export function PoolsTable() {
   } = useDexPools();
   const { width } = useWindowSize();
 
-  const pools = useMemo(() => sortByTvl(data.filter(isPoolVisible)), [data]);
+  const pools = useMemo(() => sortByTvl(data), [data]);
 
   const columns = useMemo(
     (): TableColumnDef<DexPool>[] => [

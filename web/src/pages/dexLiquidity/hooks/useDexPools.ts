@@ -2,7 +2,11 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { DexPool } from "@vetro-protocol/core";
 import fetch from "fetch-plus-plus";
 
+import { isPoolVisible } from "../utils";
+
 const apiUrl = import.meta.env.VITE_VETRO_API_URL;
+
+const selectVisiblePools = (pools: DexPool[]) => pools.filter(isPoolVisible);
 
 const dexPoolsOptions = () =>
   queryOptions({
@@ -13,4 +17,5 @@ const dexPoolsOptions = () =>
     staleTime: 60 * 1000,
   });
 
-export const useDexPools = () => useQuery(dexPoolsOptions());
+export const useDexPools = () =>
+  useQuery({ ...dexPoolsOptions(), select: selectVisiblePools });

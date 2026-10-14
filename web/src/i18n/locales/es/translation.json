@@ -286,8 +286,10 @@
       },
       "rewards-apr": "APR de recompensas",
       "title": "Liquidez DEX",
+      "total-tvl": "TVL total",
       "try-again": "Intentar de nuevo",
-      "tvl": "TVL"
+      "tvl": "TVL",
+      "volume-24h": "Volumen 24h"
     },
     "earn": {
       "activity": {

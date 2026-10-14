@@ -47,3 +47,12 @@ export const sortByTvl = (pools: DexPool[]) =>
 
 export const isPoolVisible = (pool: DexPool) =>
   pool.rewards.length > 0 || (pool.tvlUsd ?? 0) >= minTvlUsd;
+
+export const getPoolsTotals = (pools: DexPool[]) =>
+  pools.reduce(
+    (totals, pool) => ({
+      tvlUsd: totals.tvlUsd + (pool.tvlUsd ?? 0),
+      volumeUsd24h: totals.volumeUsd24h + pool.volumeUsd24h,
+    }),
+    { tvlUsd: 0, volumeUsd24h: 0 },
+  );

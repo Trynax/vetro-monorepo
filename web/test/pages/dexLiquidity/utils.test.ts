@@ -1,5 +1,9 @@
 import type { DexPool } from "@vetro-protocol/core";
-import { isPoolVisible, sortByTvl } from "pages/dexLiquidity/utils";
+import {
+  getPoolsTotals,
+  isPoolVisible,
+  sortByTvl,
+} from "pages/dexLiquidity/utils";
 import { describe, expect, it } from "vitest";
 
 const reward: DexPool["rewards"][number] = {
@@ -61,5 +65,35 @@ describe("sortByTvl", function () {
     const pools = [null, 0, 100].map((tvlUsd) => buildPool({ tvlUsd }));
 
     expect(sortByTvl(pools).map((pool) => pool.tvlUsd)).toEqual([100, 0, null]);
+  });
+});
+
+describe("getPoolsTotals", function () {
+  it("sums the TVL and the 24h volume of the pools", function () {
+    const pools = [
+      buildPool({ tvlUsd: 1000, volumeUsd24h: 250 }),
+      buildPool({ tvlUsd: 2500.5, volumeUsd24h: 40.25 }),
+    ];
+
+    expect(getPoolsTotals(pools)).toEqual({
+      tvlUsd: 3500.5,
+      volumeUsd24h: 290.25,
+    });
+  });
+
+  it("adds nothing to the TVL for a pool with an unknown TVL", function () {
+    const pools = [
+      buildPool({ tvlUsd: 1000, volumeUsd24h: 250 }),
+      buildPool({ tvlUsd: null, volumeUsd24h: 75 }),
+    ];
+
+    expect(getPoolsTotals(pools)).toEqual({
+      tvlUsd: 1000,
+      volumeUsd24h: 325,
+    });
+  });
+
+  it("returns zero totals for an empty list", function () {
+    expect(getPoolsTotals([])).toEqual({ tvlUsd: 0, volumeUsd24h: 0 });
   });
 });
