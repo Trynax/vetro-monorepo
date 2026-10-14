@@ -148,9 +148,6 @@ Key terms: **health factor** (above 1.0 safe; at/below 1.0 liquidatable), **LTV*
 
 ### Dex liquidity
 
-> [!NOTE]
-> This page is in development. Its scope and data can change.
-
 A read-only list of the DEX pools that hold a pegged token or a share token, with their TVL, 24h volume, fee APR and rewards. The data comes from `GET /dex-liquidity/pools` in `api/`. Each venue has its own sources:
 
 - **Curve** (Ethereum): the Curve API only, for the pools, TVL, volume, fee APR and the gauge APR.
