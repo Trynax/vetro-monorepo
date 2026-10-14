@@ -1,6 +1,6 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 
-type QueryState<T = unknown> = Pick<
+export type QueryState<T = unknown> = Pick<
   UseQueryResult<T>,
   "data" | "isError" | "isLoading" | "isPending"
 >;
