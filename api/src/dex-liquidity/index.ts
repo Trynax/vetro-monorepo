@@ -1,9 +1,8 @@
-import { createMainnetClient } from "@vetro-protocol/core";
+import { createMainnetClient, type DexPool } from "@vetro-protocol/core";
 
 import { getBrownfiPools } from "./brownfi.ts";
 import { getCurvePools } from "./curve.ts";
 import { getSushiPools } from "./sushi.ts";
-import type { Pool } from "./types.ts";
 import { getUniswapPools } from "./uniswap.ts";
 
 type VenueArgs = {
@@ -26,12 +25,12 @@ const venuePools = {
     }),
   uniswap: ({ rpcUrl }: VenueArgs) =>
     getUniswapPools(createMainnetClient(rpcUrl)),
-} satisfies Record<string, (args: VenueArgs) => Promise<Pool[]>>;
+} satisfies Record<string, (args: VenueArgs) => Promise<DexPool[]>>;
 
 export const venues = Object.keys(venuePools) as (keyof typeof venuePools)[];
 
 export const getVenuePools = ({
   venue,
   ...args
-}: VenueArgs & { venue: keyof typeof venuePools }): Promise<Pool[]> =>
+}: VenueArgs & { venue: keyof typeof venuePools }): Promise<DexPool[]> =>
   venuePools[venue](args);

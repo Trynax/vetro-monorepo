@@ -1,3 +1,8 @@
+import type {
+  DexPool,
+  DexPoolReward,
+  DexRewardToken,
+} from "@vetro-protocol/core";
 import { type Address, checksumAddress, type Hash, isAddressEqual } from "viem";
 import { hemi, mainnet } from "viem/chains";
 
@@ -9,7 +14,6 @@ import {
   type StakeDaoStrategy,
   strategyRewardsApr,
 } from "./stake-dao.ts";
-import type { Pool, PoolReward, RewardToken } from "./types.ts";
 
 type MerklReward = {
   apr: number;
@@ -17,7 +21,7 @@ type MerklReward = {
   chainId: number;
   identifier: Address;
   opportunityId: string;
-  token: RewardToken;
+  token: DexRewardToken;
 };
 
 type GaugedStrategy = StakeDaoStrategy & { gaugeAddress: Address };
@@ -28,10 +32,10 @@ export type IncentiveSources = {
   strategies: GaugedStrategy[];
 };
 
-const curveGaugeAddress = (pool: Pool) =>
+const curveGaugeAddress = (pool: DexPool) =>
   pool.dex === "curve" ? pool.dexMetadata.gaugeAddress : undefined;
 
-const poolAddresses = (pool: Pool) =>
+const poolAddresses = (pool: DexPool) =>
   [
     pool.address,
     curveGaugeAddress(pool),
@@ -43,7 +47,7 @@ export const getMerklRewards = async function ({
   pools,
 }: {
   nowSeconds: number;
-  pools: Pool[];
+  pools: DexPool[];
 }) {
   const identifiers = [...new Set(pools.flatMap(poolAddresses))];
   const opportunities = await getLiveOpportunities({
@@ -91,7 +95,7 @@ const stakeDaoReward = function ({
   gauge: Address;
   nowSeconds: number;
   sources: IncentiveSources;
-}): PoolReward[] {
+}): DexPoolReward[] {
   const hasCampaign = sources.campaignGauges.some(
     (campaign) =>
       campaign.chainId === chainId && isAddressEqual(campaign.gauge, gauge),
@@ -133,9 +137,9 @@ const merklRewards = function ({
   pool,
   sources,
 }: {
-  pool: Pool;
+  pool: DexPool;
   sources: IncentiveSources;
-}): PoolReward[] {
+}): DexPoolReward[] {
   const addresses = poolAddresses(pool);
   return sources.merklRewards
     .filter(
@@ -165,9 +169,9 @@ export function addIncentives({
   sources,
 }: {
   nowSeconds: number;
-  pool: Pool;
+  pool: DexPool;
   sources: IncentiveSources;
-}): Pool {
+}): DexPool {
   const gaugeAddress = curveGaugeAddress(pool);
   return {
     ...pool,

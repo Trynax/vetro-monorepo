@@ -1,3 +1,4 @@
+import type { DexPool } from "@vetro-protocol/core";
 import type { Hash } from "viem";
 import { describe, expect, it } from "vitest";
 
@@ -5,7 +6,6 @@ import {
   addIncentives,
   type IncentiveSources,
 } from "../../src/dex-liquidity/incentives.ts";
-import type { Pool } from "../../src/dex-liquidity/types.ts";
 
 const nowSeconds = 1_000_000;
 const crv = "0xD533a949740bb3306d119CC777fa900bA034cd52";
@@ -18,7 +18,7 @@ const lpTokenAddress = "0x3333333333333333333333333333333333333333";
 const campaignId = (digit: string): Hash => `0x${digit.repeat(64)}`;
 const highCampaignId = campaignId("2");
 
-const curveGaugeReward: Pool["rewards"][number] = {
+const curveGaugeReward: DexPool["rewards"][number] = {
   apr: 2,
   aprMax: 5,
   source: "curveGauge",
@@ -26,7 +26,7 @@ const curveGaugeReward: Pool["rewards"][number] = {
   tokens: [{ address: crv, chainId: 1 }],
 };
 
-const curvePool: Pool = {
+const curvePool: DexPool = {
   address: poolAddress,
   apr: 1,
   chainId: 1,

@@ -1,3 +1,4 @@
+import type { DexPool } from "@vetro-protocol/core";
 import type { Address, Client } from "viem";
 import { mainnet } from "viem/chains";
 
@@ -5,7 +6,6 @@ import { runQuery } from "../graphql.ts";
 import { fulfilledValues } from "../utils/promises.ts";
 
 import { feeApr, poolTvlUsd } from "./pool-metrics.ts";
-import type { Pool } from "./types.ts";
 import { findV3Pools, type V3Pool } from "./v3-factory.ts";
 
 const factoryAddress = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
@@ -97,7 +97,7 @@ const fetchPoolData = async function (address: Address) {
   return v3Pool;
 };
 
-const buildPool = async function (pool: V3Pool): Promise<Pool> {
+const buildPool = async function (pool: V3Pool): Promise<DexPool> {
   const data = await fetchPoolData(pool.address);
   const supplies = [data.token0Supply ?? 0, data.token1Supply ?? 0];
   const usdPrices = resolvePrices({
