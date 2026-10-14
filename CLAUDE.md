@@ -1,7 +1,7 @@
 # Domain
 
 VETRO is a protocol for minting and managing pegged tokens and putting them to work for yield.
-The `web/` app exposes the Swap, Earn, Borrow, Bridge, and Analytics pages. The glossary below is always available; when working on a specific feature, read `docs/DOMAIN.md` for the full per-page flows.
+The `web/` app exposes the Swap, Earn, Borrow, Bridge, Dex liquidity, and Analytics pages. The glossary below is always available; when working on a specific feature, read `docs/DOMAIN.md` for the full per-page flows.
 
 @docs/glossary.md
 

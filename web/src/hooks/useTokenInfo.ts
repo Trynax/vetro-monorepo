@@ -1,6 +1,7 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { fetchTokenInfo } from "fetchers/fetchTokenInfo";
 import type { Address, Chain, Client } from "viem";
+import { usePublicClient } from "wagmi";
 
 const tokenInfoQueryKey = ({
   address,
@@ -27,3 +28,14 @@ export const tokenInfoOptions = ({
     // cache indefinitely as the token info is unlikely to change
     staleTime: Infinity,
   });
+
+export const useTokenInfo = function ({
+  address,
+  chainId,
+}: {
+  address: Address;
+  chainId: Chain["id"];
+}) {
+  const client = usePublicClient({ chainId });
+  return useQuery(tokenInfoOptions({ address, chainId, client }));
+};
