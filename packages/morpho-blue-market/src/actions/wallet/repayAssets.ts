@@ -18,12 +18,11 @@ import { getMarketParams } from "../public/getMarketParams.ts";
 
 type RepayAssetsParamsBase = {
   address: Address;
-  approveAmount?: bigint;
   marketId: Hash;
   onBehalf: Address;
 };
 
-type RepayAssetsMode =
+type RepayMode =
   | {
       amount: bigint;
       shares?: never;
@@ -33,7 +32,19 @@ type RepayAssetsMode =
       shares: bigint;
     };
 
-export type RepayAssetsParams = RepayAssetsParamsBase & RepayAssetsMode;
+export type RepayAssetsParams = RepayAssetsParamsBase &
+  (
+    | {
+        amount: bigint;
+        approveAmount?: bigint;
+        shares?: never;
+      }
+    | {
+        amount?: never;
+        approveAmount: bigint;
+        shares: bigint;
+      }
+  );
 
 const canRepayAmounts = function ({
   amount,
@@ -309,7 +320,7 @@ export const encodeRepayAssets = function ({
 }: {
   marketParams: MarketParams;
   onBehalf: Address;
-} & RepayAssetsMode) {
+} & RepayMode) {
   if ((amount === undefined) === (shares === undefined)) {
     throw new Error("Exactly one of amount or shares must be provided");
   }

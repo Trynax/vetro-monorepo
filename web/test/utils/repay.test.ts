@@ -67,14 +67,14 @@ describe("getRepayShares", function () {
     ).toBeUndefined();
   });
 
-  it("uses shares when the wallet balance exactly covers the debt", function () {
+  it("keeps repayment asset-based when the balance does not cover the buffer", function () {
     expect(
       getRepayShares({
         ...repayment,
         amount: 1000n,
         loanTokenBalance: 1000n,
       }),
-    ).toBe(repayment.borrowShares);
+    ).toBeUndefined();
   });
 
   it("does not use shares when the wallet cannot cover the debt", function () {
@@ -93,6 +93,7 @@ describe("getRepayShares", function () {
         ...repayment,
         amount: 1000n,
         borrowAssets: 1001n,
+        loanTokenBalance: 1011n,
       }),
     ).toBe(repayment.borrowShares);
   });

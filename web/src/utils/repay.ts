@@ -5,6 +5,9 @@ import { applyBps, minBigInt } from "./bigint";
 // Allow a small amount of interest to accrue before a full repayment is included.
 const REPAYMENT_BUFFER_BPS = 100n;
 
+const addRepaymentBuffer = (amount: bigint) =>
+  amount + applyBps(amount, REPAYMENT_BUFFER_BPS);
+
 export const getCurrentBorrowAssets = function ({
   borrowShares,
   market,
@@ -23,8 +26,8 @@ export const isFullMaxRepayment = ({
   currentBorrowAssets,
   maxRepayable,
 }: {
-  maxRepayable: bigint | undefined;
   currentBorrowAssets: bigint | undefined;
+  maxRepayable: bigint | undefined;
 }) =>
   currentBorrowAssets !== undefined &&
   maxRepayable !== undefined &&
@@ -51,7 +54,7 @@ export const getRepayShares = function ({
     borrowShares !== undefined &&
     borrowShares > 0n &&
     loanTokenBalance !== undefined &&
-    loanTokenBalance >= borrowAssets;
+    loanTokenBalance >= addRepaymentBuffer(borrowAssets);
 
   return isFullRepayment ? borrowShares : undefined;
 };
@@ -89,7 +92,7 @@ export const getRepayApprovalAmount = function ({
     return amount;
   }
 
-  const bufferedAmount = amount + applyBps(amount, REPAYMENT_BUFFER_BPS);
+  const bufferedAmount = addRepaymentBuffer(amount);
 
   return loanTokenBalance === undefined
     ? bufferedAmount

@@ -81,22 +81,28 @@ export const useRepayAssets = function ({
         marketId,
       });
 
-      const repayParams =
-        repayShares === undefined
-          ? {
-              address: morphoAddress,
-              amount: repayAmount,
-              approveAmount,
-              marketId,
-              onBehalf: account,
-            }
-          : {
-              address: morphoAddress,
-              approveAmount,
-              marketId,
-              onBehalf: account,
-              shares: repayShares,
-            };
+      let repayParams;
+      if (repayShares === undefined) {
+        repayParams = {
+          address: morphoAddress,
+          amount: repayAmount,
+          approveAmount,
+          marketId,
+          onBehalf: account,
+        };
+      } else {
+        if (approveAmount === undefined) {
+          throw new Error("Approve amount is required for share repayment");
+        }
+
+        repayParams = {
+          address: morphoAddress,
+          approveAmount,
+          marketId,
+          onBehalf: account,
+          shares: repayShares,
+        };
+      }
 
       const { emitter, promise } = repayAssets(walletClient!, repayParams);
 
@@ -146,24 +152,23 @@ export const useRepayAssets = function ({
             chainId: mainnet.id,
             marketId,
           }),
-          (old: MarketData | undefined) =>
-            old === undefined
-              ? old
-              : {
-                  ...old,
-                  liquidity:
-                    old.liquidity +
-                    getEffectiveRepaymentAssets({
-                      assets: repayment.assets,
-                      totalBorrowAssets: old.totalBorrowAssets,
-                    }),
-                  totalBorrowAssets:
-                    old.totalBorrowAssets -
-                    getEffectiveRepaymentAssets({
-                      assets: repayment.assets,
-                      totalBorrowAssets: old.totalBorrowAssets,
-                    }),
-                },
+          function (old: MarketData | undefined) {
+            if (old === undefined) {
+              return old;
+            }
+
+            const effectiveRepaymentAssets = getEffectiveRepaymentAssets({
+              assets: repayment.assets,
+              totalBorrowAssets: old.totalBorrowAssets,
+            });
+
+            return {
+              ...old,
+              liquidity: old.liquidity + effectiveRepaymentAssets,
+              totalBorrowAssets:
+                old.totalBorrowAssets - effectiveRepaymentAssets,
+            };
+          },
         );
       });
 
