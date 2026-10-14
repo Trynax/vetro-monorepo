@@ -393,16 +393,16 @@ describe("pages/analytics/utils", function () {
         whitelistedTokens: [usdtToken],
       });
 
-      // 500 USDT (6 decimals) @ $1 = $500
+      // 500 USDT (6 decimals) @ $1 = $500, sorted before the $0 strategy
       expect(items).toHaveLength(2);
-      expect(items[0]).toEqual({
+      expect(items[0]?.label).toBe("Active Strategy");
+      expect(items[0]?.amount).toBeCloseTo(500);
+      expect(items[0]?.color).toBe("bg-emerald-400");
+      expect(items[1]).toEqual({
         amount: 0,
-        color: "bg-emerald-400",
+        color: "bg-blue-400",
         label: "Zero Strategy",
       });
-      expect(items[1]?.label).toBe("Active Strategy");
-      expect(items[1]?.amount).toBeCloseTo(500);
-      expect(items[1]?.color).toBe("bg-blue-400");
     });
 
     it("flattens strategies across multiple tokens", function () {
@@ -420,8 +420,40 @@ describe("pages/analytics/utils", function () {
           {
             ...baseTreasuryToken,
             activeStrategies: [
-              { name: "USDC Strategy", totalDebt: "200000000" },
+              { name: "USDC Strategy", totalDebt: "800000000" },
             ],
+            tokenAddress: usdcToken.address,
+            totalDebt: "800000000",
+            withdrawable: "800000000",
+          },
+        ],
+        whitelistedTokens: [usdtToken, usdcToken],
+      });
+
+      // The second token's strategy ($800) is larger, so it comes first.
+      expect(items).toHaveLength(2);
+      expect(items[0]?.label).toBe("USDC Strategy");
+      expect(items[0]?.amount).toBeCloseTo(800);
+      expect(items[1]?.label).toBe("USDT Strategy");
+      expect(items[1]?.amount).toBeCloseTo(500);
+    });
+
+    it("sorts strategies by USD amount descending across tokens", function () {
+      const items = toYieldItems({
+        prices,
+        treasuryTokens: [
+          {
+            ...baseTreasuryToken,
+            activeStrategies: [
+              { name: "USDT 100", totalDebt: "100000000" },
+              { name: "USDT 300", totalDebt: "300000000" },
+            ],
+            totalDebt: "400000000",
+            withdrawable: "400000000",
+          },
+          {
+            ...baseTreasuryToken,
+            activeStrategies: [{ name: "USDC 200", totalDebt: "200000000" }],
             tokenAddress: usdcToken.address,
             totalDebt: "200000000",
             withdrawable: "200000000",
@@ -430,9 +462,40 @@ describe("pages/analytics/utils", function () {
         whitelistedTokens: [usdtToken, usdcToken],
       });
 
-      expect(items).toHaveLength(2);
-      expect(items[0]?.label).toBe("USDT Strategy");
-      expect(items[1]?.label).toBe("USDC Strategy");
+      expect(items.map((item) => item.label)).toEqual([
+        "USDT 300",
+        "USDC 200",
+        "USDT 100",
+      ]);
+      expect(items.map((item) => item.color)).toEqual([
+        "bg-emerald-400",
+        "bg-blue-400",
+        "bg-amber-400",
+      ]);
+      expect(items[0]?.amount).toBeCloseTo(300);
+      expect(items[1]?.amount).toBeCloseTo(200);
+      expect(items[2]?.amount).toBeCloseTo(100);
+    });
+
+    it("keeps the original order for equal amounts", function () {
+      const items = toYieldItems({
+        prices,
+        treasuryTokens: [
+          {
+            ...baseTreasuryToken,
+            activeStrategies: [
+              { name: "First Zero", totalDebt: "0" },
+              { name: "Second Zero", totalDebt: "0" },
+            ],
+          },
+        ],
+        whitelistedTokens: [usdtToken],
+      });
+
+      expect(items).toEqual([
+        { amount: 0, color: "bg-emerald-400", label: "First Zero" },
+        { amount: 0, color: "bg-blue-400", label: "Second Zero" },
+      ]);
     });
 
     it("computes correct USD amount per strategy", function () {

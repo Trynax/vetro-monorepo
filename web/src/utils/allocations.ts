@@ -108,7 +108,7 @@ export const toTvlHistorySeries = ({
   }));
 
 // Transforms /analytics/treasury response into yield allocation items,
-// one item per active strategy across all tokens.
+// one item per active strategy across all tokens, sorted by USD amount (largest first).
 export const toYieldItems = ({
   prices,
   treasuryTokens,
@@ -133,6 +133,7 @@ export const toYieldItems = ({
         label: name,
       }));
     })
+    .sort((a, b) => b.amount - a.amount)
     .map(({ amount, label }, index) => ({
       amount,
       color: assignColor(index),
