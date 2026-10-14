@@ -17,10 +17,16 @@ const sourceIcons = {
   stakeDao: <StakeDaoIcon className="text-gray-900" />,
 };
 
-const formatRewardApr = ({ apr, aprMax }: DexPoolReward) =>
-  aprMax !== undefined && aprMax !== apr
-    ? `${formatPercentage(apr)} → ${formatPercentage(aprMax)}`
-    : formatPercentage(apr);
+const formatRewardApr = function ({ apr, aprMax }: DexPoolReward) {
+  const formattedApr = formatPercentage(apr);
+  if (aprMax === undefined) {
+    return formattedApr;
+  }
+  const formattedAprMax = formatPercentage(aprMax);
+  return formattedAprMax === formattedApr
+    ? formattedApr
+    : `${formattedApr} → ${formattedAprMax}`;
+};
 
 type Props = {
   pool: DexPool;
