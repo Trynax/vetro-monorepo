@@ -10,6 +10,7 @@ describe("help", function () {
     ["swap"],
     ["swap", "mint"],
     ["variable-yield"],
+    ["variable-yield", "allowance"],
     ["variable-yield", "cooldown"],
     ["variable-yield", "preview-stake"],
   ])("lists --rpc-url in the help of %s", async function (command) {

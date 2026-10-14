@@ -59,6 +59,12 @@ export const usdc = {
   symbol: "USDC",
 } as const;
 
+export const vetBtc = {
+  address: "0xf196C68233464A16CFDa319a47c21f4cECa62001",
+  decimals: 18,
+  symbol: "vetBTC",
+} as const;
+
 export const vusd = {
   address: "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3",
   decimals: 18,
