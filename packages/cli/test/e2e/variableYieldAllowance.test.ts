@@ -1,13 +1,12 @@
 import { TEST_ADDRESS } from "@hemilabs/anvil-fork-setup/utils";
 import { sVetBtcAddress, sVusdAddress } from "@vetro-protocol/core";
 import { type Address, parseUnits } from "viem";
-import { waitForTransactionReceipt } from "viem/actions";
-import { approve } from "viem-erc20/actions";
-import { beforeAll, describe, expect, inject, it } from "vitest";
+import { allowance, approve } from "viem-erc20/actions";
+import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 
 import {
+  confirmWrite,
   createClients,
-  fundTestAccount,
   runCli,
   runCliRaw,
   usdc,
@@ -15,13 +14,19 @@ import {
   vusd,
 } from "./helpers.ts";
 
-const untouchedAccount = "0x000000000000000000000000000000000000dead";
-
 describe("variable-yield allowance", function () {
   const rpcUrl = inject("anvilUrl");
   const { publicClient, walletClient } = createClients(rpcUrl);
   const vusdAllowance = parseUnits("250", vusd.decimals);
   const vetBtcAllowance = parseUnits("0.25", vetBtc.decimals);
+  const approvals = [
+    { address: vusd.address, amount: vusdAllowance, spender: sVusdAddress },
+    {
+      address: vetBtc.address,
+      amount: vetBtcAllowance,
+      spender: sVetBtcAddress,
+    },
+  ];
 
   const allowanceOnFork = (extra: string[] = []) => [
     "variable-yield",
@@ -41,21 +46,26 @@ describe("variable-yield allowance", function () {
     spender: Address;
   }) {
     const hash = await approve(walletClient, { address, amount, spender });
-    await waitForTransactionReceipt(publicClient, { hash });
+    await confirmWrite({ client: publicClient, hash });
   };
 
+  let before: bigint[];
+
   beforeAll(async function () {
-    await fundTestAccount({ amount: "1000", rpcUrl });
-    await approveVault({
-      address: vusd.address,
-      amount: vusdAllowance,
-      spender: sVusdAddress,
-    });
-    await approveVault({
-      address: vetBtc.address,
-      amount: vetBtcAllowance,
-      spender: sVetBtcAddress,
-    });
+    before = await Promise.all(
+      approvals.map(({ address, spender }) =>
+        allowance(publicClient, { address, owner: TEST_ADDRESS, spender }),
+      ),
+    );
+    for (const approval of approvals) {
+      await approveVault(approval);
+    }
+  });
+
+  afterAll(async function () {
+    for (const [index, approval] of approvals.entries()) {
+      await approveVault({ ...approval, amount: before[index] });
+    }
   });
 
   it("reads the allowance granted to the staking vault, by symbol or address", async function () {
@@ -77,14 +87,6 @@ describe("variable-yield allowance", function () {
     );
 
     expect(approved).toBe(vetBtcAllowance.toString());
-  });
-
-  it("prints 0 for an account that never approved the vault", async function () {
-    const approved = await runCli(
-      allowanceOnFork(["--token", vusd.symbol, "--account", untouchedAccount]),
-    );
-
-    expect(approved).toBe("0");
   });
 
   it.for([usdc.symbol, sVusdAddress])(

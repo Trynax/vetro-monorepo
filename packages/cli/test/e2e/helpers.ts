@@ -304,7 +304,7 @@ export const setMaxMint = async function ({
   return { maxMintAfter, maxMintBefore };
 };
 
-const confirmWrite = async function ({
+export const confirmWrite = async function ({
   client,
   hash,
 }: {
