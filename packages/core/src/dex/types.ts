@@ -2,14 +2,14 @@ import type { Address, Hash } from "viem";
 
 type PoolCoin = { address: Address; amount: number };
 
-export type PoolRange = { lowerPrice: number; upperPrice: number };
+export type DexPoolRange = { lowerPrice: number; upperPrice: number };
 
-export type RewardToken = { address: Address; chainId: number };
+export type DexRewardToken = { address: Address; chainId: number };
 
-export type PoolReward = {
+export type DexPoolReward = {
   apr: number;
   aprMax?: number;
-  tokens: RewardToken[];
+  tokens: DexRewardToken[];
 } & (
   | { source: "curveGauge"; sourceMetadata: { gaugeAddress: Address } }
   | {
@@ -31,13 +31,13 @@ type PoolDex =
     }
   | { dex: "sushi" | "uniswap" };
 
-export type Pool = {
+export type DexPool = {
   address: Address;
   apr: number | null;
   chainId: number;
   coins: PoolCoin[];
-  range?: PoolRange;
-  rewards: PoolReward[];
+  range?: DexPoolRange;
+  rewards: DexPoolReward[];
   tvlUsd: number | null;
   volumeUsd24h: number;
 } & PoolDex;

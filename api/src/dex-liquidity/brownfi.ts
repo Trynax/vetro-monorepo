@@ -1,4 +1,4 @@
-import { knownTokens } from "@vetro-protocol/core";
+import { knownTokens, type DexPool } from "@vetro-protocol/core";
 import { type Address, checksumAddress, isAddressEqual } from "viem";
 import { hemi, mainnet } from "viem/chains";
 
@@ -7,7 +7,6 @@ import { runQuery } from "../graphql.ts";
 
 import { feeApr, poolTvlUsd } from "./pool-metrics.ts";
 import { trackedTokenAddresses } from "./tracked-tokens.ts";
-import type { Pool } from "./types.ts";
 
 const trackedSymbols = knownTokens
   .filter(
@@ -89,7 +88,7 @@ const buildPool = function ({
 }: {
   nativeUsdPrice: number | undefined;
   pool: BrownfiPool;
-}): Pool {
+}): DexPool {
   const coins = [
     { amount: pool.totalValueLockedToken0, token: pool.token0 },
     { amount: pool.totalValueLockedToken1, token: pool.token1 },

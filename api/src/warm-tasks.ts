@@ -1,3 +1,4 @@
+import type { DexPool } from "@vetro-protocol/core";
 import { gatewayAddresses } from "@vetro-protocol/gateway";
 
 import {
@@ -13,7 +14,6 @@ import {
 } from "./dex-liquidity/incentives.ts";
 import { getVenuePools, venues } from "./dex-liquidity/index.ts";
 import { getCampaignGauges } from "./dex-liquidity/stake-dao.ts";
-import type { Pool } from "./dex-liquidity/types.ts";
 import { withTimeout } from "./utils/promises.ts";
 import { getApy } from "./variable-stake.ts";
 import { globalWarmTask, keyedWarmTask } from "./warm-cache.ts";
@@ -110,7 +110,7 @@ export const dexMerklRewardsTask = globalWarmTask({
   async produce(env) {
     const cached = await Promise.all(
       venues.map((venue) =>
-        env.CACHE_KV.get<Pool[]>(dexVenuePoolsTask.key(venue), "json"),
+        env.CACHE_KV.get<DexPool[]>(dexVenuePoolsTask.key(venue), "json"),
       ),
     );
     const pools = cached.filter((venuePools) => venuePools !== null).flat();

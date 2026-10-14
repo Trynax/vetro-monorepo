@@ -1,4 +1,8 @@
-import { knownTokens } from "@vetro-protocol/core";
+import {
+  knownTokens,
+  type DexPool,
+  type DexPoolRange,
+} from "@vetro-protocol/core";
 import {
   type Address,
   type Client,
@@ -17,7 +21,6 @@ import { fulfilledValues } from "../utils/promises.ts";
 import { bandActivity } from "./band-activity.ts";
 import { feeApr, poolTvlUsd } from "./pool-metrics.ts";
 import { isTrackedToken } from "./tracked-tokens.ts";
-import type { Pool, PoolRange } from "./types.ts";
 import { findV3Pools } from "./v3-factory.ts";
 import { fetchV3PoolState } from "./v3-pool-state.ts";
 import { computeBandAmounts, priceToTick } from "./v3-position-math.ts";
@@ -25,7 +28,7 @@ import { computeBandAmounts, priceToTick } from "./v3-position-math.ts";
 const factoryAddress = "0xbACEB8eC6b9355Dfc0269C18bac9d6E2Bdc29C4F";
 
 // Pools that we want to list in specific ranges need to have the range hardcoded
-const poolRanges: { address: Address; ranges: PoolRange[] }[] = [
+const poolRanges: { address: Address; ranges: DexPoolRange[] }[] = [
   {
     // VUSD/USDT
     address: "0x6C2bd2F9711f204E595D334c6B7B672851b7d699",
@@ -269,10 +272,10 @@ const getSushiPool = async function ({
     volumeShare,
   }: {
     amounts: number[];
-    range?: PoolRange;
+    range?: DexPoolRange;
     tvlUsd: number | null;
     volumeShare: number;
-  }): Pool => ({
+  }): DexPool => ({
     address,
     apr: feeApr({ feesUsd24h: data.feeUSD1d * volumeShare, tvlUsd }),
     chainId: mainnet.id,

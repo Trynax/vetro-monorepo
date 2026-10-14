@@ -1,4 +1,4 @@
-import { knownTokens } from "@vetro-protocol/core";
+import { knownTokens, type DexPool } from "@vetro-protocol/core";
 import fetchJson from "tiny-fetch-json";
 import {
   type Address,
@@ -10,7 +10,6 @@ import {
 import { mainnet } from "viem/chains";
 
 import { isTrackedToken } from "./tracked-tokens.ts";
-import type { Pool } from "./types.ts";
 
 export const crvAddress = knownTokens.find(
   (token) => token.chainId === mainnet.id && token.symbol === "CRV",
@@ -52,7 +51,7 @@ const buildPool = function ({
 }: {
   pool: CurveApiPool;
   volume: CurveVolume | undefined;
-}): Pool {
+}): DexPool {
   const hasUnpricedCoin = pool.coins.some(
     (coin) => coin.usdPrice === null && BigInt(coin.poolBalance) > 0n,
   );
