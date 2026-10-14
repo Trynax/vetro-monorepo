@@ -108,8 +108,7 @@ export const toTvlHistorySeries = ({
   }));
 
 // Transforms /analytics/treasury response into yield allocation items,
-// one item per active strategy across all tokens. Strategies with no funds
-// are kept so every configured strategy stays visible.
+// one item per active strategy across all tokens.
 export const toYieldItems = ({
   prices,
   treasuryTokens,
