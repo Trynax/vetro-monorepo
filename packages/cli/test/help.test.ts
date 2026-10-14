@@ -12,6 +12,7 @@ describe("help", function () {
     ["variable-yield"],
     ["variable-yield", "allowance"],
     ["variable-yield", "cooldown"],
+    ["variable-yield", "position"],
     ["variable-yield", "preview-stake"],
   ])("lists --rpc-url in the help of %s", async function (command) {
     const { exitCode, stdout } = await runCliRaw([...command, "--help"]);

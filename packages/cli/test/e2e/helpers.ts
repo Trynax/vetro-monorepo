@@ -61,12 +61,14 @@ export const usdc = {
 
 export const vetBtc = {
   address: "0xf196C68233464A16CFDa319a47c21f4cECa62001",
+  balanceSlot: 0,
   decimals: 18,
   symbol: "vetBTC",
 } as const;
 
 export const vusd = {
   address: "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3",
+  balanceSlot: 0,
   decimals: 18,
   symbol: "VUSD",
 } as const;
@@ -237,9 +239,11 @@ export const createClients = function (rpcUrl: string) {
 export const fundTestAccount = async function ({
   amount,
   rpcUrl,
+  token = usdc,
 }: {
   amount: string;
   rpcUrl: string;
+  token?: { address: Address; balanceSlot: number; decimals: number };
 }) {
   const { testClient } = createClients(rpcUrl);
   await setBalance(testClient, {
@@ -247,14 +251,14 @@ export const fundTestAccount = async function ({
     value: parseEther("10"),
   });
   await setStorageAt(testClient, {
-    address: usdc.address,
+    address: token.address,
     index: keccak256(
       encodePacked(
         ["bytes32", "bytes32"],
-        [pad(TEST_ADDRESS), pad(toHex(usdc.balanceSlot))],
+        [pad(TEST_ADDRESS), pad(toHex(token.balanceSlot))],
       ),
     ),
-    value: pad(toHex(parseUnits(amount, usdc.decimals))),
+    value: pad(toHex(parseUnits(amount, token.decimals))),
   });
 };
 
