@@ -1,11 +1,12 @@
+import { useNowTickingPast } from "hooks/useNowTickingPast";
 import { useTranslation } from "react-i18next";
 import { unixNowTimestamp } from "utils/date";
 import type { Address } from "viem";
 
-import { useEpochPeriod } from "../../hooks/targetYieldPool/useEpochPeriod";
+import { useDepositState } from "../../hooks/targetYieldPool/useDepositState";
 import { PoolInfoItem } from "../poolInfoBar/poolInfoItem";
 
-import { getEpochState } from "./getEpochState";
+import { isOpenToDeposits } from "./isOpenToDeposits";
 
 type Props = {
   stakingVaultAddress: Address;
@@ -14,26 +15,28 @@ type Props = {
 export function PoolTermState({ stakingVaultAddress }: Props) {
   const { t } = useTranslation();
   const {
-    data: epochPeriod,
+    data: depositState,
     isError,
     isPending,
-  } = useEpochPeriod(stakingVaultAddress);
+  } = useDepositState(stakingVaultAddress);
+
+  useNowTickingPast(
+    depositState
+      ? [depositState.entryWindow.start, depositState.entryWindow.end]
+      : undefined,
+    (timestamp) => Number(timestamp),
+  );
 
   function getLabel() {
-    if (!epochPeriod) {
+    if (!depositState) {
       return undefined;
     }
-    const state = getEpochState({
-      ...epochPeriod,
+    return isOpenToDeposits({
+      ...depositState,
       now: BigInt(unixNowTimestamp()),
-    });
-    if (state === "open-to-deposits") {
-      return t("pages.earn.fixed-term.open-to-deposits");
-    }
-    if (state === "open-to-exit") {
-      return t("pages.earn.fixed-term.open-to-exit");
-    }
-    return undefined;
+    })
+      ? t("pages.earn.fixed-term.open-to-deposits")
+      : t("pages.earn.fixed-term.deposits-closed");
   }
 
   return (

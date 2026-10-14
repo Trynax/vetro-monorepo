@@ -1,6 +1,5 @@
-// TODO: Implement — the real mapping still has to be confirmed against the
-// entry and exit windows the vault exposes per epoch. Tests shall be added
-// once we make the real mapping.
+// TODO: Map the exit window the vault exposes per epoch. A future PR will
+// implement it.
 export function getEpochState({
   end,
   now,
@@ -10,10 +9,7 @@ export function getEpochState({
   now: bigint;
   start: bigint;
 }) {
-  if (now < start) {
-    return "open-to-deposits";
-  }
-  if (now < end) {
+  if (now >= start && now < end) {
     return "open-to-exit";
   }
   return undefined;

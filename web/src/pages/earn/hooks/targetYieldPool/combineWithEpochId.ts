@@ -1,23 +1,13 @@
-import type { UseQueryResult } from "@tanstack/react-query";
+import { combineQueryResults, type QueryState } from "utils/queries";
 
-type QueryState<T> = Pick<
-  UseQueryResult<T>,
-  "data" | "isError" | "isLoading" | "isPending"
->;
-
-export function combineWithEpochId<T>({
+export const combineWithEpochId = <T>({
   epochId,
   query,
 }: {
   epochId: QueryState<bigint>;
   query: QueryState<T>;
-}) {
-  const isError = epochId.isError || query.isError;
-
-  return {
-    data: query.data,
-    isError,
-    isLoading: !isError && (epochId.isLoading || query.isLoading),
-    isPending: !isError && (epochId.isPending || query.isPending),
-  };
-}
+}) =>
+  combineQueryResults({
+    results: [epochId, query],
+    select: ([, data]) => data,
+  });
