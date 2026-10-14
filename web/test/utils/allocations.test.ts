@@ -376,7 +376,7 @@ describe("pages/analytics/utils", function () {
       ).toEqual([]);
     });
 
-    it("excludes strategies with zero amount", function () {
+    it("includes strategies with zero amount", function () {
       const items = toYieldItems({
         prices,
         treasuryTokens: [
@@ -393,8 +393,16 @@ describe("pages/analytics/utils", function () {
         whitelistedTokens: [usdtToken],
       });
 
-      expect(items).toHaveLength(1);
-      expect(items[0]?.label).toBe("Active Strategy");
+      // 500 USDT (6 decimals) @ $1 = $500
+      expect(items).toHaveLength(2);
+      expect(items[0]).toEqual({
+        amount: 0,
+        color: "bg-emerald-400",
+        label: "Zero Strategy",
+      });
+      expect(items[1]?.label).toBe("Active Strategy");
+      expect(items[1]?.amount).toBeCloseTo(500);
+      expect(items[1]?.color).toBe("bg-blue-400");
     });
 
     it("flattens strategies across multiple tokens", function () {
