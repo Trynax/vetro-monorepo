@@ -159,7 +159,7 @@ export const claimWithdraw = (...args: Parameters<typeof runClaimWithdraw>) =>
 export const encodeClaimWithdraw = ({
   receiver,
   requestId,
-}: ClaimWithdrawParams) =>
+}: Omit<ClaimWithdrawParams, "vaultAddress">) =>
   encodeFunctionData({
     abi: stakingVaultAbi,
     args: [requestId, receiver],

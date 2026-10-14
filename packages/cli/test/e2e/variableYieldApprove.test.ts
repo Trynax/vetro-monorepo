@@ -2,15 +2,16 @@ import { TEST_ADDRESS } from "@hemilabs/anvil-fork-setup/utils";
 import { sVetBtcAddress, sVusdAddress } from "@vetro-protocol/core";
 import {
   type Address,
+  type Hex,
   decodeFunctionData,
   erc20Abi,
   isAddressEqual,
   numberToHex,
   parseUnits,
 } from "viem";
-import { getChainId } from "viem/actions";
+import { getChainId, revert, snapshot } from "viem/actions";
 import { allowance } from "viem-erc20/actions";
-import { beforeAll, describe, expect, inject, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 
 import {
   type TransactionRequest,
@@ -27,7 +28,9 @@ import {
 
 describe("variable-yield approve", function () {
   const rpcUrl = inject("anvilUrl");
-  const { publicClient } = createClients(rpcUrl);
+  const { publicClient, testClient } = createClients(rpcUrl);
+
+  let snapshotId: Hex;
 
   const approveOnFork = (extra: string[] = []) => [
     "variable-yield",
@@ -54,7 +57,12 @@ describe("variable-yield approve", function () {
       spender: sVusdAddress,
     });
 
-  beforeAll(() => fundTestAccount({ amount: "1000", rpcUrl, token: vusd }));
+  beforeAll(async function () {
+    snapshotId = await snapshot(testClient);
+    await fundTestAccount({ amount: "1000", rpcUrl, token: vusd });
+  });
+
+  afterAll(() => revert(testClient, { id: snapshotId }));
 
   it("targets the pegged token on the chain the RPC is on, with no native value", async function () {
     const request = await runCli<TransactionRequest>(

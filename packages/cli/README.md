@@ -76,7 +76,7 @@ Every numeric field is a hex `QUANTITY`, so the object can be lifted straight in
 
 Because a token belongs to exactly one gateway, the gateway is inferred from the token and never passed explicitly. For the same reason `swap mint --to` is optional — the pegged token is whatever that gateway mints.
 
-`--amount` is in human units of the token the operation spends. Its decimals come from `--from` or `--token` when the command takes one. On `preview-redeem` and `redeem` the spent token is the pegged token of the gateway inferred from `--to`, so the decimals come from that pegged token, not from `--to`. An amount with more decimals than that token has fails instead of being rounded.
+`--amount` is in human units of the token the operation spends. Its decimals come from `--from` or `--token` when the command takes one. On `preview-redeem` and `redeem` the spent token is the pegged token of the gateway inferred from `--to`, so the decimals come from that pegged token, not from `--to`. On `variable-yield unstake` the spent token is the pegged token for `--amount` and the share token for `--shares`, whichever of the two `--token` names. An amount with more decimals than that token has fails instead of being rounded.
 
 To discover the symbols a gateway takes, run `swap whitelisted-tokens --gateway <addr>` — a gateway-level read, so it takes the gateway explicitly instead of inferring it from a token.
 
@@ -175,16 +175,17 @@ A pegged token has exactly one staking vault, so the vault is inferred from `--t
 
 #### Write operations
 
-| Command                                                          | Encodes             | Notes                                                                                                              |
-| ---------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `vetro-cli variable-yield approve --token <pegged> --amount <n>` | `encodeApproveData` | Generates the calldata that allows the staking vault to spend the pegged token. `--amount 0` resets the allowance. |
+| Command                                                                                          | Encodes                                        | Notes                                                                                                                              |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `vetro-cli variable-yield approve --token <pegged> --amount <n>`                                 | `encodeApproveData`                            | Generates the calldata that allows the staking vault to spend the pegged token. `--amount 0` resets the allowance.                 |
+| `vetro-cli variable-yield unstake --token <tok> (--amount <n> \| --shares <n>) --account <addr>` | `encodeRequestWithdraw`, `encodeRequestRedeem` | Opens an exit ticket. The shares are burned, and the pegged token goes into cooldown. Fails when the vault's cooldown is disabled. |
 
 #### Read operations
 
 | Command                                                                       | Reads                                               | Returns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ----------------------------------------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `vetro-cli variable-yield allowance --token <pegged> --account <addr>`        | `allowance`                                         | Staking vault's spending allowance on the pegged token, in the pegged token's decimals.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `vetro-cli variable-yield cooldown --token <tok>`                             | `getCooldownEnabled`, `getCooldownDuration`         | Unstake cooldown of the vault, in seconds. `0` when the cooldown is disabled — an unstake is then instant.                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `vetro-cli variable-yield cooldown --token <tok>`                             | `getCooldownEnabled`, `getCooldownDuration`         | Unstake cooldown of the vault, in seconds. `0` when the cooldown is disabled — `unstake` then fails, and the vault takes a one-step withdraw.                                                                                                                                                                                                                                                                                                                                                                           |
 | `vetro-cli variable-yield exit-tickets --token <tok> --account <addr>`        | `getPendingRequests`, `getClaimableRequests`        | Open exit tickets of `<addr>`, as `[{ assets, claimableAt, requestId, status }]`, sorted by `requestId` ascending, which is the order the tickets were opened in. `assets` is the pegged token locked in the ticket, in the pegged token's decimals. `status` is `cooldown` while the cooldown runs, and `ready` once the ticket can be claimed. `claimableAt` is the unix timestamp the cooldown ends at, or `null` once `ready`. Claimed and cancelled tickets are not listed. `[]` when `<addr>` has no open ticket. |
 | `vetro-cli variable-yield is-instant-withdraw --token <tok> --account <addr>` | `getCooldownEnabled`, `getInstantWithdrawWhitelist` | Whether `<addr>` can unstake with no cooldown: `true` when the vault's cooldown is disabled, or when `<addr>` is on its instant-withdraw whitelist.                                                                                                                                                                                                                                                                                                                                                                     |
 | `vetro-cli variable-yield position --token <tok> --account <addr>`            | `balanceOf`                                         | Share token balance of `<addr>`, in the share token's decimals. Exit tickets are not included: their shares are burned when the cooldown starts.                                                                                                                                                                                                                                                                                                                                                                        |
@@ -197,3 +198,17 @@ A pegged token has exactly one staking vault, so the vault is inferred from `--t
 vetro-cli variable-yield allowance --token VUSD --account 0xAgent   # "0" → approval needed
 vetro-cli variable-yield approve --token VUSD --amount 100          # sign + broadcast
 ```
+
+### Unstaking on variable-yield
+
+Unstake opens an exit ticket. The vault burns the shares, and the pegged token stays in the ticket until the cooldown ends.
+
+```sh
+vetro-cli variable-yield cooldown --token sVUSD                      # "0" → the cooldown is disabled, and unstake fails
+vetro-cli variable-yield position --token sVUSD --account 0xAgent    # shares you can unstake, in base units
+vetro-cli variable-yield unstake --token sVUSD --shares 100 --account 0xAgent   # sign + broadcast
+```
+
+Give `--shares` to unstake an amount of the share token, or `--amount` to unstake an amount of the pegged token. Do not give both. To unstake the full position, use `--shares` with the value from `position` formatted with the token's decimals.
+
+To follow the cooldown, run `variable-yield exit-tickets --token sVUSD --account 0xAgent`. The `status` of each ticket changes from `cooldown` to `ready` at its `claimableAt`.

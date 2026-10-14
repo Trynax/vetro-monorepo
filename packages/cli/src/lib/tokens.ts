@@ -150,6 +150,20 @@ export async function resolveSwapToken({
   });
 }
 
+export async function readToken({
+  address,
+  client,
+}: {
+  address: Address;
+  client: Client;
+}) {
+  const [tokenDecimals, tokenSymbol] = await Promise.all([
+    decimals(client, { address }),
+    symbol(client, { address }),
+  ]);
+  return { address, decimals: tokenDecimals, symbol: tokenSymbol };
+}
+
 export async function getGatewayPeggedToken({
   client,
   gatewayAddress,
@@ -158,11 +172,7 @@ export async function getGatewayPeggedToken({
   gatewayAddress: Address;
 }) {
   const address = await getPeggedToken(client, { address: gatewayAddress });
-  const [tokenDecimals, tokenSymbol] = await Promise.all([
-    decimals(client, { address }),
-    symbol(client, { address }),
-  ]);
-  return { address, decimals: tokenDecimals, symbol: tokenSymbol };
+  return readToken({ address, client });
 }
 
 function withStakingVault<T extends { gatewayAddress: Address }>({
