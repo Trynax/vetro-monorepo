@@ -56,7 +56,10 @@ export function RewardsList({ pool }: Props) {
             className="group text-b-medium flex min-h-6 items-center gap-1 text-gray-900 md:min-h-0"
             href={getRewardUrl({ pool, reward })}
           >
-            <span className="flex *:size-4">{sourceIcons[reward.source]}</span>
+            <span aria-hidden="true" className="flex *:size-4">
+              {sourceIcons[reward.source]}
+            </span>
+            <span className="sr-only">{titles[reward.source]}</span>
             <span className="font-semibold text-gray-600 tabular-nums transition-colors group-hover:text-gray-900">
               {formatRewardApr(reward)}
             </span>
