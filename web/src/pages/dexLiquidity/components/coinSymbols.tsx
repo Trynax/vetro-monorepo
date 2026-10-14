@@ -4,12 +4,12 @@ import Skeleton from "react-loading-skeleton";
 import { formatEvmAddress } from "utils/format";
 import type { Address } from "viem";
 
-type Coin = {
+type CoinSymbolProps = {
   address: Address;
   chainId: number;
 };
 
-const CoinSymbol = function ({ address, chainId }: Coin) {
+const CoinSymbol = function ({ address, chainId }: CoinSymbolProps) {
   const { data: token, isError } = useTokenInfo({ address, chainId });
   if (token) {
     return token.symbol;
@@ -20,12 +20,12 @@ const CoinSymbol = function ({ address, chainId }: Coin) {
   return <Skeleton inline width={40} />;
 };
 
-type Props = {
-  coins: Coin[];
+type CoinSymbolsProps = {
+  coins: CoinSymbolProps[];
   separator: string;
 };
 
-export const CoinSymbols = ({ coins, separator }: Props) =>
+export const CoinSymbols = ({ coins, separator }: CoinSymbolsProps) =>
   coins.map(({ address, chainId }, index) => (
     <Fragment key={address}>
       {index > 0 && separator}

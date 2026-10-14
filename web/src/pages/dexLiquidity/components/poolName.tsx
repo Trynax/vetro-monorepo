@@ -10,12 +10,12 @@ import { dexNames } from "../utils";
 import { CoinSymbols } from "./coinSymbols";
 import { VenueLogo } from "./venueLogo";
 
-type CoinProps = {
+type CoinLogoProps = {
   address: Address;
   chainId: number;
 };
 
-const CoinLogo = function ({ address, chainId }: CoinProps) {
+const CoinLogo = function ({ address, chainId }: CoinLogoProps) {
   const { data: token, isError } = useTokenInfo({ address, chainId });
   if (token) {
     return <TokenLogo {...token} size="medium" />;
