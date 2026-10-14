@@ -34,7 +34,12 @@ export const getRewardUrl = function ({
   if (reward.source === "stakeDao") {
     return `https://app.stakedao.org/strategy?protocol=curve&vault=${encodeURIComponent(reward.sourceMetadata.strategyKey)}`;
   }
-  return getDepositUrl(pool);
+  if (reward.source === "curveGauge") {
+    return getDepositUrl(pool);
+  }
+  // make compilation fail if a new reward type was added
+  reward satisfies never;
+  return undefined;
 };
 
 export const sortByTvl = (pools: DexPool[]) =>
