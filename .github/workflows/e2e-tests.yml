@@ -25,7 +25,7 @@ jobs:
         with:
           package-manager: pnpm
       - run: pnpm --filter @vetro-protocol/web exec playwright install-deps chromium
-      - run: pnpm --filter @vetro-protocol/web exec playwright install chromium
+      - run: pnpm --filter @vetro-protocol/web exec playwright install chromium --only-shell
         env:
           DEBUG: pw:install
       - run: pnpm --filter @vetro-protocol/web exec playwright test
