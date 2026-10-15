@@ -109,7 +109,13 @@ const PoolCardSkeleton = () => (
 
 export function PoolsTable() {
   const { t } = useTranslation();
-  const { data = emptyPools, isError, isLoading, refetch } = useDexPools();
+  const {
+    data = emptyPools,
+    isError,
+    isFetching,
+    isLoading,
+    refetch,
+  } = useDexPools();
   const { width } = useWindowSize();
 
   const pools = useMemo(() => sortByTvl(data.filter(isPoolVisible)), [data]);
@@ -157,7 +163,7 @@ export function PoolsTable() {
   );
 
   const placeholder = isError ? (
-    <ErrorState onRetry={() => refetch()} />
+    <ErrorState isRetrying={isFetching} onRetry={() => refetch()} />
   ) : (
     <EmptyState />
   );

@@ -25,16 +25,18 @@ export function EmptyState() {
 }
 
 type ErrorStateProps = {
+  isRetrying: boolean;
   onRetry: VoidFunction;
 };
 
-export function ErrorState({ onRetry }: ErrorStateProps) {
+export function ErrorState({ isRetrying, onRetry }: ErrorStateProps) {
   const { t } = useTranslation();
   return (
     <TableState>
       <StatusMessage
         action={
           <Button
+            disabled={isRetrying}
             onClick={onRetry}
             size="xSmall"
             type="button"
