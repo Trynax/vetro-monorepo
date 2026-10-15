@@ -89,7 +89,7 @@ describe("variable-yield position", function () {
       const positions: string[] = [];
       for (const value of [token.symbol, token.address, shareSymbol, vault]) {
         positions.push(
-          await runCli<string>(
+          await runCli(
             positionOnFork(["--token", value, "--account", TEST_ADDRESS]),
           ),
         );
