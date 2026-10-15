@@ -1,7 +1,5 @@
 import type { DexPool, DexPoolReward } from "@vetro-protocol/core";
 
-const minTvlUsd = 500;
-
 export const dexNames: Record<DexPool["dex"], string> = {
   brownfi: "BrownFi",
   curve: "Curve",
@@ -44,9 +42,6 @@ export const getRewardUrl = function ({
 
 export const sortByTvl = (pools: DexPool[]) =>
   [...pools].sort((a, b) => (b.tvlUsd ?? -1) - (a.tvlUsd ?? -1));
-
-export const isPoolVisible = (pool: DexPool) =>
-  pool.rewards.length > 0 || (pool.tvlUsd ?? 0) >= minTvlUsd;
 
 export const getPoolsTotals = (pools: DexPool[]) =>
   pools.reduce(

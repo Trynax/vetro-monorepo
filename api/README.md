@@ -173,10 +173,13 @@ Returns the DEX pools that hold a VETRO token (a pegged token or its share token
 - `dexMetadata` is only on the Curve and BrownFi pools. On Curve, it has the `poolId`, the `gaugeAddress` (when the pool has a gauge) and the `lpTokenAddress`. Reward campaigns can target the pool, its gauge or its LP token. On BrownFi, it has `fee` and `overrideFee` as the subgraph gives them, in hundredths of a basis point (`3000` is 0.3%). An `overrideFee` of `0` means that the pool uses `fee`.
 - `rewards` includes rewards from Curve gauges, StakeDAO strategies and Merkl campaigns.
 
+By default, the response leaves out each pool with no `rewards` and a `tvlUsd` below 500 or `null`. A pool with any reward (Curve gauge, StakeDAO or Merkl) is always returned. With `includeRanges=true`, the range rows of a pool are returned only if its full-range row is.
+
 Query params:
 
 | Param           | Default | Description                                                                                                                                                                                                                                                 |
 | --------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `includeLowTvl` | `false` | When `true`, the response has every pool, including the pools with no rewards and a `tvlUsd` below 500 or `null`. Returns `400` if it is not `true` or `false`.                                                                                             |
 | `includeRanges` | `false` | When `true`, the response also has one row for each configured price range of a concentrated-liquidity pool (Sushi today). These rows have the same `address` as the full-range row, and they have a `range`. Returns `400` if it is not `true` or `false`. |
 
 #### Sample Response
