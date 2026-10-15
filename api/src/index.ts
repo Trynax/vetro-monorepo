@@ -293,11 +293,11 @@ app.get(
   async function (c) {
     try {
       const pools = await readDexPools(c);
-      const rangedPools = includesRanges(c)
+      const poolRows = includesRanges(c)
         ? pools
         : pools.filter((pool) => !pool.range);
       return c.json(
-        includesLowTvl(c) ? rangedPools : excludeLowTvlPools(rangedPools),
+        includesLowTvl(c) ? poolRows : excludeLowTvlPools(poolRows),
       );
     } catch (error) {
       throw new Error(`Failed to get DEX pools: ${error.message}`);
