@@ -41,6 +41,8 @@ import {
   writeContract,
 } from "viem/actions";
 import { mainnet } from "viem/chains";
+import { approve } from "viem-erc20/actions";
+import { deposit } from "viem-erc4626/actions";
 import {
   defaultAdmin,
   grantRole,
@@ -319,6 +321,36 @@ export const confirmWrite = async function ({
   if (status !== "success") {
     throw new Error("write reverted");
   }
+};
+
+export const stake = async function ({
+  amount,
+  rpcUrl,
+  token,
+  vault,
+}: {
+  amount: bigint;
+  rpcUrl: string;
+  token: Address;
+  vault: Address;
+}) {
+  const { publicClient, walletClient } = createClients(rpcUrl);
+  await confirmWrite({
+    client: publicClient,
+    hash: await approve(walletClient, {
+      address: token,
+      amount,
+      spender: vault,
+    }),
+  });
+  await confirmWrite({
+    client: publicClient,
+    hash: await deposit(walletClient, {
+      address: vault,
+      assets: amount,
+      receiver: TEST_ADDRESS,
+    }),
+  });
 };
 
 const treasuryAbi = parseAbi([
