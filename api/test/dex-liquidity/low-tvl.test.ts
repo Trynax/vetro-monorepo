@@ -55,7 +55,7 @@ const buildPool = ({
   chainId,
   coins: [],
   dex: "sushi",
-  ...(range ? { range } : {}),
+  range,
   rewards,
   tvlUsd,
   volumeUsd24h,
