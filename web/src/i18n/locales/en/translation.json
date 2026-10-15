@@ -278,12 +278,12 @@
       "pool": "Pool",
       "pool-apr": "Pool APR",
       "pools": "Pools",
-      "reward-sources": {
-        "curve-gauge": "CRV emissions from the Curve gauge. The range goes from no boost to the max veCRV boost.",
-        "merkl": "Merkl campaign. Claim the rewards on Merkl.",
-        "stake-dao": "StakeDAO strategy: boosted CRV and extra rewards, with an active Votemarket campaign on the gauge. Use it instead of the Curve gauge."
-      },
       "rewards-apr": "Rewards APR",
+      "rewards-apr-info": {
+        "curve-gauge": "Stake LP tokens directly in the Curve gauge to earn CRV rewards (boost depends on your veCRV).",
+        "merkl": "Off-chain rewards based on pool rules and price ranges. Review terms and claim at Merkl.",
+        "stake-dao": "Deposit LP tokens on Stake DAO to earn boosted CRV and SDT rewards without needing veCRV."
+      },
       "title": "Dex liquidity",
       "total-tvl": "Total TVL",
       "try-again": "Try again",

@@ -18,6 +18,7 @@ import { useDexPools } from "../hooks/useDexPools";
 import { getDepositUrl, sortByTvl } from "../utils";
 
 import { PoolName } from "./poolName";
+import { RewardsAprLabel } from "./rewardsAprLabel";
 import { RewardsList } from "./rewardsList";
 import { EmptyState, ErrorState } from "./tableStates";
 
@@ -86,7 +87,7 @@ const PoolCard = function ({ pool }: { pool: DexPool }) {
         </div>
         <div className="col-span-2 flex flex-col gap-0.5">
           <dt className="text-b-regular text-gray-500">
-            {t("pages.dex-liquidity.rewards-apr")}
+            <RewardsAprLabel />
           </dt>
           <dd>
             <RewardsList pool={pool} />
@@ -148,7 +149,11 @@ export function PoolsTable() {
       },
       {
         cell: ({ row }) => <RewardsList pool={row.original} />,
-        header: () => <Header text={t("pages.dex-liquidity.rewards-apr")} />,
+        header: () => (
+          <Header>
+            <RewardsAprLabel />
+          </Header>
+        ),
         id: "rewards-apr",
         meta: { className: "grow pl-10", width: "240px" },
       },
