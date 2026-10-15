@@ -46,6 +46,7 @@
     "analytics": "Analíticas",
     "borrow": "Préstamos",
     "bridge": "Puente",
+    "dex-liquidity": "Liquidez DEX",
     "earn": "Earn",
     "header-menu": {
       "company": "Empresa",
@@ -266,6 +267,29 @@
         "success-description": "Nos pondremos en contacto con usted en breve.",
         "success-title": "La ayuda está en camino"
       }
+    },
+    "dex-liquidity": {
+      "add-liquidity": "Agregar liquidez",
+      "chain": "Red",
+      "description": "Agregue liquidez a pools de DEX que tienen tokens de VETRO. Gane comisiones de intercambios y recompensas.",
+      "empty-description": "No hay pools de DEX con tokens de VETRO por ahora. Vuelva más tarde.",
+      "empty-title": "Todavía no hay pools",
+      "error-description": "Los datos de los pools no están disponibles ahora. Inténtelo de nuevo más tarde.",
+      "error-title": "No se pueden cargar los pools",
+      "pool": "Pool",
+      "pool-apr": "APR del pool",
+      "pools": "Pools",
+      "reward-sources": {
+        "curve-gauge": "Emisiones de CRV del gauge de Curve. El rango va de sin boost al boost máximo de veCRV.",
+        "merkl": "Campaña de Merkl. Reclame las recompensas en Merkl.",
+        "stake-dao": "Estrategia de StakeDAO: CRV con boost y recompensas extra, con una campaña activa de Votemarket en el gauge. Úsela en lugar del gauge de Curve."
+      },
+      "rewards-apr": "APR de recompensas",
+      "title": "Liquidez DEX",
+      "total-tvl": "TVL total",
+      "try-again": "Intentar de nuevo",
+      "tvl": "TVL",
+      "volume-24h": "Volumen 24h"
     },
     "earn": {
       "activity": {

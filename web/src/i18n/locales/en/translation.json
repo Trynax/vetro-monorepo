@@ -46,6 +46,7 @@
     "analytics": "Analytics",
     "borrow": "Borrow",
     "bridge": "Bridge",
+    "dex-liquidity": "Dex liquidity",
     "earn": "Earn",
     "header-menu": {
       "company": "Company",
@@ -265,6 +266,29 @@
         "success-description": "We’ll reach out shortly.",
         "success-title": "Help is on the way"
       }
+    },
+    "dex-liquidity": {
+      "add-liquidity": "Add liquidity",
+      "chain": "Chain",
+      "description": "Add liquidity to DEX pools that hold VETRO tokens. You earn trade fees and rewards.",
+      "empty-description": "There are no DEX pools with VETRO tokens at this time. Come back later.",
+      "empty-title": "No pools yet",
+      "error-description": "Pool data is not available now. Try again later.",
+      "error-title": "Cannot load pools",
+      "pool": "Pool",
+      "pool-apr": "Pool APR",
+      "pools": "Pools",
+      "reward-sources": {
+        "curve-gauge": "CRV emissions from the Curve gauge. The range goes from no boost to the max veCRV boost.",
+        "merkl": "Merkl campaign. Claim the rewards on Merkl.",
+        "stake-dao": "StakeDAO strategy: boosted CRV and extra rewards, with an active Votemarket campaign on the gauge. Use it instead of the Curve gauge."
+      },
+      "rewards-apr": "Rewards APR",
+      "title": "Dex liquidity",
+      "total-tvl": "Total TVL",
+      "try-again": "Try again",
+      "tvl": "TVL",
+      "volume-24h": "24h volume"
     },
     "earn": {
       "activity": {

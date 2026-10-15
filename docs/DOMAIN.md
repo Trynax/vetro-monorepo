@@ -148,17 +148,16 @@ Key terms: **health factor** (above 1.0 safe; at/below 1.0 liquidatable), **LTV*
 
 ### Dex liquidity
 
-> [!NOTE]
-> This page is in development. Its scope and data can change.
-
-A read-only list of the DEX pools that hold a pegged token or a share token, with their TVL, 24h volume, fee APR and rewards. The data comes from `GET /dex-liquidity/pools` in `api/`. Each venue has its own sources:
+A read-only list of the DEX pools that hold a pegged token or a share token, with their TVL, fee APR and rewards. The data comes from `GET /dex-liquidity/pools` in `api/`. Each venue has its own sources:
 
 - **Curve** (Ethereum): the Curve API only, for the pools, TVL, volume, fee APR and the gauge APR.
 - **Uniswap v3** (Ethereum): on-chain factory calls find the pools; the Uniswap interface GraphQL API gives TVL, volume and prices.
-- **Sushi v3** (Ethereum): on-chain factory calls find the pools; the Sushi data API gives TVL, volume and fees. Pools with a configured price range also show one row per range. These rows read the on-chain pool state (ticks and liquidity) and the 24h swaps from the Sushi subgraph.
+- **Sushi v3** (Ethereum): on-chain factory calls find the pools; the Sushi data API gives TVL, volume and fees.
 - **BrownFi** (Hemi): the BrownFi subgraph only.
 
 Rewards come from three other sources: the Curve gauge (in the Curve API data), the StakeDAO strategies (shown only while a Votemarket campaign runs on the gauge), and the live Merkl campaigns.
+
+The page hides a pool that has no rewards and a TVL below $500 or an unknown TVL.
 
 ## Where things live
 
