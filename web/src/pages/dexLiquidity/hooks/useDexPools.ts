@@ -9,6 +9,8 @@ const dexPoolsOptions = () =>
     enabled: apiUrl !== undefined && URL.canParse(apiUrl),
     queryFn: () => fetch(`${apiUrl}/dex-liquidity/pools`) as Promise<DexPool[]>,
     queryKey: ["dex-liquidity-pools"],
+    refetchInterval: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
   });
 
 export const useDexPools = () => useQuery(dexPoolsOptions());
