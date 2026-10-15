@@ -279,12 +279,12 @@
       "pool": "Pool",
       "pool-apr": "APR del pool",
       "pools": "Pools",
-      "reward-sources": {
-        "curve-gauge": "Emisiones de CRV del gauge de Curve. El rango va de sin boost al boost máximo de veCRV.",
-        "merkl": "Campaña de Merkl. Reclame las recompensas en Merkl.",
-        "stake-dao": "Estrategia de StakeDAO: CRV con boost y recompensas extra, con una campaña activa de Votemarket en el gauge. Úsela en lugar del gauge de Curve."
-      },
       "rewards-apr": "APR de recompensas",
+      "rewards-apr-info": {
+        "curve-gauge": "Haga stake de sus tokens LP directamente en el gauge de Curve para ganar recompensas en CRV (el boost depende de su veCRV).",
+        "merkl": "Recompensas off-chain según las reglas del pool y los rangos de precio. Revise los términos y reclame en Merkl.",
+        "stake-dao": "Deposite sus tokens LP en Stake DAO para ganar recompensas en CRV con boost y en SDT, sin necesidad de veCRV."
+      },
       "title": "Liquidez DEX",
       "total-tvl": "TVL total",
       "try-again": "Intentar de nuevo",
