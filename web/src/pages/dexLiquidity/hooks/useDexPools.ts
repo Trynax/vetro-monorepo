@@ -14,8 +14,8 @@ const dexPoolsOptions = () =>
     queryFn: () => fetch(`${apiUrl}/dex-liquidity/pools`) as Promise<DexPool[]>,
     queryKey: ["dex-liquidity-pools"],
     refetchInterval: 5 * 60 * 1000,
+    select: selectVisiblePools,
     staleTime: 60 * 1000,
   });
 
-export const useDexPools = () =>
-  useQuery({ ...dexPoolsOptions(), select: selectVisiblePools });
+export const useDexPools = () => useQuery(dexPoolsOptions());
