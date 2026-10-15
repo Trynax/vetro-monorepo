@@ -41,6 +41,8 @@ import {
   writeContract,
 } from "viem/actions";
 import { mainnet } from "viem/chains";
+import { approve } from "viem-erc20/actions";
+import { deposit } from "viem-erc4626/actions";
 import {
   defaultAdmin,
   grantRole,
@@ -59,8 +61,16 @@ export const usdc = {
   symbol: "USDC",
 } as const;
 
+export const vetBtc = {
+  address: "0xf196C68233464A16CFDa319a47c21f4cECa62001",
+  balanceSlot: 0,
+  decimals: 18,
+  symbol: "vetBTC",
+} as const;
+
 export const vusd = {
   address: "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3",
+  balanceSlot: 0,
   decimals: 18,
   symbol: "VUSD",
 } as const;
@@ -231,9 +241,11 @@ export const createClients = function (rpcUrl: string) {
 export const fundTestAccount = async function ({
   amount,
   rpcUrl,
+  token = usdc,
 }: {
   amount: string;
   rpcUrl: string;
+  token?: { address: Address; balanceSlot: number; decimals: number };
 }) {
   const { testClient } = createClients(rpcUrl);
   await setBalance(testClient, {
@@ -241,14 +253,14 @@ export const fundTestAccount = async function ({
     value: parseEther("10"),
   });
   await setStorageAt(testClient, {
-    address: usdc.address,
+    address: token.address,
     index: keccak256(
       encodePacked(
         ["bytes32", "bytes32"],
-        [pad(TEST_ADDRESS), pad(toHex(usdc.balanceSlot))],
+        [pad(TEST_ADDRESS), pad(toHex(token.balanceSlot))],
       ),
     ),
-    value: pad(toHex(parseUnits(amount, usdc.decimals))),
+    value: pad(toHex(parseUnits(amount, token.decimals))),
   });
 };
 
@@ -298,7 +310,7 @@ export const setMaxMint = async function ({
   return { maxMintAfter, maxMintBefore };
 };
 
-const confirmWrite = async function ({
+export const confirmWrite = async function ({
   client,
   hash,
 }: {
@@ -309,6 +321,36 @@ const confirmWrite = async function ({
   if (status !== "success") {
     throw new Error("write reverted");
   }
+};
+
+export const stake = async function ({
+  amount,
+  rpcUrl,
+  token,
+  vault,
+}: {
+  amount: bigint;
+  rpcUrl: string;
+  token: Address;
+  vault: Address;
+}) {
+  const { publicClient, walletClient } = createClients(rpcUrl);
+  await confirmWrite({
+    client: publicClient,
+    hash: await approve(walletClient, {
+      address: token,
+      amount,
+      spender: vault,
+    }),
+  });
+  await confirmWrite({
+    client: publicClient,
+    hash: await deposit(walletClient, {
+      address: vault,
+      assets: amount,
+      receiver: TEST_ADDRESS,
+    }),
+  });
 };
 
 const treasuryAbi = parseAbi([
@@ -545,6 +587,25 @@ const updateCooldownDurationAbi = parseAbi([
   "function updateCooldownDuration(uint256 duration_)",
 ]);
 
+const impersonateVaultOwner = async function ({
+  rpcUrl,
+  vault,
+}: {
+  rpcUrl: string;
+  vault: Address;
+}) {
+  const { publicClient, testClient } = createClients(rpcUrl);
+  const owner = await readContract(publicClient, {
+    abi: stakingVaultAbi,
+    address: vault,
+    functionName: "owner",
+  });
+
+  await impersonateAccount(testClient, { address: owner });
+  await setBalance(testClient, { address: owner, value: parseEther("1") });
+  return owner;
+};
+
 /** Turns the staking vault's unstake cooldown on or off, and sets its duration when given. */
 export const setStakingCooldown = async function ({
   duration,
@@ -558,14 +619,7 @@ export const setStakingCooldown = async function ({
   vault: Address;
 }) {
   const { publicClient, testClient } = createClients(rpcUrl);
-  const owner = await readContract(publicClient, {
-    abi: stakingVaultAbi,
-    address: vault,
-    functionName: "owner",
-  });
-
-  await impersonateAccount(testClient, { address: owner });
-  await setBalance(testClient, { address: owner, value: parseEther("1") });
+  const owner = await impersonateVaultOwner({ rpcUrl, vault });
   try {
     if (duration !== undefined) {
       await confirmWrite({
@@ -587,6 +641,35 @@ export const setStakingCooldown = async function ({
         address: vault,
         args: [enabled],
         functionName: "updateCooldownEnabled",
+      }),
+    });
+  } finally {
+    await stopImpersonatingAccount(testClient, { address: owner });
+  }
+};
+
+export const setInstantWithdrawWhitelisted = async function ({
+  account,
+  rpcUrl,
+  vault,
+  whitelisted,
+}: {
+  account: Address;
+  rpcUrl: string;
+  vault: Address;
+  whitelisted: boolean;
+}) {
+  const { publicClient, testClient } = createClients(rpcUrl);
+  const owner = await impersonateVaultOwner({ rpcUrl, vault });
+  try {
+    await confirmWrite({
+      client: publicClient,
+      hash: await writeContract(testClient, {
+        abi: stakingVaultAbi,
+        account: owner,
+        address: vault,
+        args: [account, whitelisted],
+        functionName: "updateInstantWithdrawWhitelist",
       }),
     });
   } finally {
