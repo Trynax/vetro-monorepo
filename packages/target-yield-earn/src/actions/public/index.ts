@@ -9,3 +9,4 @@ export * from "./getIsTerminated.ts";
 export * from "./getMaxRequestDeposit.ts";
 export * from "./getMaxRequestRedeem.ts";
 export * from "./getRate.ts";
+export * from "./maxMint.ts";

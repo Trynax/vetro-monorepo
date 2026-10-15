@@ -9,6 +9,7 @@ import {
   getMaxRequestDeposit,
   getMaxRequestRedeem,
   getRate,
+  maxMint,
   pendingDepositRequest,
 } from "./actions/public/index.ts";
 
@@ -37,6 +38,7 @@ export const targetYieldEarnPublicActions = () => (client: Client) => ({
   getMaxRequestRedeem: (params: Parameters<typeof getMaxRequestRedeem>[1]) =>
     getMaxRequestRedeem(client, params),
   getRate: (params: Parameters<typeof getRate>[1]) => getRate(client, params),
+  maxMint: (params: Parameters<typeof maxMint>[1]) => maxMint(client, params),
   pendingDepositRequest: (
     params: Parameters<typeof pendingDepositRequest>[1],
   ) => pendingDepositRequest(client, params),

@@ -69,6 +69,7 @@ const pendingAssets = await pendingDepositRequest(publicClient, {
   - `getMaxRequestDeposit(client, params)` — the assets the controller can still request for deposit, capped by the epoch's remaining deposit capacity. `0n` whenever a deposit request would revert — outside the entry window, while paused, shutdown or terminated, or when the controller has a pending request from an earlier epoch.
   - `getMaxRequestRedeem(client, params)` — the shares the owner can still request for redemption. `0n` whenever a redeem request would revert — outside the exit window, while shutdown, or when a redeem batch from an earlier epoch is still pending and the vault hasn't terminated.
   - `getRate(client, params)` — the fixed rate an epoch pays during its accrual interval, WAD-scaled per annum. It returns the same value at any time, so use it (or `getEpoch`) to show the rate.
+  - `maxMint(client, { address, controller })` — the shares the controller can mint from its fulfilled deposit request. It wraps `maxMint` from `viem-erc4626`, which calls this argument `receiver`. In this vault, that address is the controller of the request.
   - `pendingDepositRequest(client, params)` — assets in an unfulfilled deposit request, re-exported from `viem-erc7540`.
 - Wallet actions (writes), exported from `/actions` only. All of them return `{ emitter, promise }`:
   - `cancelDepositRequest(walletClient, { address, controller })` — cancels the controller's unfulfilled deposit request. The vault sends the assets back to the controller. Allowed at any time before fulfillment.
