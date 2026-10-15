@@ -29,7 +29,9 @@ const ChainName = function ({ chainId }: { chainId: number }) {
   const chain = getChainById(chainId);
   return (
     <span className="text-b-medium flex items-center gap-1.5 text-gray-900">
-      <ChainLogo chain={chain} size="large" />
+      <span aria-hidden="true">
+        <ChainLogo chain={chain} size="large" />
+      </span>
       {chain.name}
     </span>
   );
