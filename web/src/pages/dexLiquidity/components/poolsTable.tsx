@@ -150,7 +150,9 @@ export function PoolsTable() {
       {
         cell: ({ row }) => <RewardsList pool={row.original} />,
         header: () => (
-          <RewardsAprLabel className="text-b-medium py-3 text-gray-500" />
+          <Header>
+            <RewardsAprLabel />
+          </Header>
         ),
         id: "rewards-apr",
         meta: { className: "grow pl-10", width: "240px" },

@@ -2,11 +2,7 @@ import { InfoIcon } from "components/icons/infoIcon";
 import { Tooltip } from "components/tooltip";
 import { useTranslation } from "react-i18next";
 
-type Props = {
-  className?: string;
-};
-
-export function RewardsAprLabel({ className = "" }: Props) {
+export function RewardsAprLabel() {
   const { t } = useTranslation();
 
   const sources = [
@@ -25,7 +21,7 @@ export function RewardsAprLabel({ className = "" }: Props) {
   ];
 
   return (
-    <span className={`flex items-center gap-1 ${className}`}>
+    <span className="flex items-center gap-1">
       {t("pages.dex-liquidity.rewards-apr")}
       <Tooltip
         content={
