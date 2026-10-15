@@ -17,6 +17,7 @@ import {
 import { convertBigIntsToString } from "./convert-bigints-to-string.ts";
 import { addIncentives } from "./dex-liquidity/incentives.ts";
 import { venues } from "./dex-liquidity/index.ts";
+import { excludeLowTvlPools } from "./dex-liquidity/low-tvl.ts";
 import { getSubgraphUrl } from "./env.ts";
 import {
   validateAddress,
@@ -247,6 +248,8 @@ app.get(
   },
 );
 
+const includesLowTvl = (c: Context) => c.req.query("includeLowTvl") === "true";
+
 const includesRanges = (c: Context) => c.req.query("includeRanges") === "true";
 
 const readDexPools = async function (c: Context<{ Bindings: Env }>) {
@@ -277,18 +280,24 @@ const readDexPools = async function (c: Context<{ Bindings: Env }>) {
 
 app.get(
   "/dex-liquidity/pools",
-  validateQueryParams({ includeRanges: ["true", "false"] }),
+  validateQueryParams({
+    includeLowTvl: ["true", "false"],
+    includeRanges: ["true", "false"],
+  }),
   cache({
     cacheControl: "max-age=60",
     cacheName: "vetro-api",
     keyGenerator: (c) =>
-      `${new URL(c.req.url).origin}${c.req.path}?includeRanges=${includesRanges(c)}`,
+      `${new URL(c.req.url).origin}${c.req.path}?includeLowTvl=${includesLowTvl(c)}&includeRanges=${includesRanges(c)}`,
   }),
   async function (c) {
     try {
       const pools = await readDexPools(c);
+      const rangedPools = includesRanges(c)
+        ? pools
+        : pools.filter((pool) => !pool.range);
       return c.json(
-        includesRanges(c) ? pools : pools.filter((pool) => !pool.range),
+        includesLowTvl(c) ? rangedPools : excludeLowTvlPools(rangedPools),
       );
     } catch (error) {
       throw new Error(`Failed to get DEX pools: ${error.message}`);
