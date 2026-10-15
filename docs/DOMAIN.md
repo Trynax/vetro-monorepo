@@ -157,7 +157,7 @@ A read-only list of the DEX pools that hold a pegged token or a share token, wit
 
 Rewards come from three other sources: the Curve gauge (in the Curve API data), the StakeDAO strategies (shown only while a Votemarket campaign runs on the gauge), and the live Merkl campaigns.
 
-The page hides a pool that has no rewards and a TVL below $500 or an unknown TVL.
+The API leaves out each pool that has no rewards and a TVL below $500 or an unknown TVL, unless `includeLowTvl=true`. The page lists what the API returns.
 
 ## Where things live
 
