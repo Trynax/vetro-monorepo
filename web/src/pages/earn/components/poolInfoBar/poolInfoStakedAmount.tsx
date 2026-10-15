@@ -1,9 +1,8 @@
 import { RenderFiatValue } from "components/base/fiatValue";
+import { useStakedAmount } from "hooks/useStakedAmount";
 import { useTranslation } from "react-i18next";
 import type { Address } from "viem";
 import { useAccount } from "wagmi";
-
-import { usePoolStakedAmount } from "../../hooks/usePoolStakedAmount";
 
 import { PoolInfoItem } from "./poolInfoItem";
 
@@ -14,15 +13,11 @@ type Props = {
 export function PoolInfoStakedAmount({ stakingVaultAddress }: Props) {
   const { t } = useTranslation();
   const { address: account } = useAccount();
-  const {
-    data: stakedAmount,
-    isError,
-    isPending,
-  } = usePoolStakedAmount(stakingVaultAddress);
+  const { data, isError, isPending } = useStakedAmount(stakingVaultAddress);
 
   return (
     <PoolInfoItem
-      data={stakedAmount}
+      data={data}
       isError={isError}
       isPending={!!account && isPending}
       label={t("pages.earn.pool-info.staked-amount")}
