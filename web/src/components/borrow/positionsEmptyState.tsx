@@ -1,6 +1,7 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { gatewayAddresses } from "@vetro-protocol/gateway";
 import { Button } from "components/base/button";
+import { StatusMessage } from "components/base/statusMessage";
 import { InboxCircleIcon } from "components/icons/inboxCircleIcon";
 import { usePeggedToken } from "hooks/usePeggedToken";
 import { useTranslation } from "react-i18next";
@@ -42,24 +43,20 @@ export function PositionsDisconnectedState() {
 
   return (
     <div className="flex items-center justify-center border-b border-gray-200 bg-white px-8 py-12">
-      <div className="flex w-60 flex-col items-center gap-3">
-        <InboxCircleIcon />
-        <div className="flex flex-col gap-y-0.5 text-center">
-          <span className="text-h5 text-gray-900">
-            {t("pages.borrow.disconnected-title")}
-          </span>
-          <span className="text-b-regular text-gray-500">
-            {t("pages.borrow.disconnected-description")}
-          </span>
-        </div>
-        <Button
-          onClick={() => openConnectModal?.()}
-          size="xSmall"
-          type="button"
-        >
-          {t("pages.borrow.connect-button")}
-        </Button>
-      </div>
+      <StatusMessage
+        action={
+          <Button
+            onClick={() => openConnectModal?.()}
+            size="xSmall"
+            type="button"
+          >
+            {t("pages.borrow.connect-button")}
+          </Button>
+        }
+        description={t("pages.borrow.disconnected-description")}
+        icon={<InboxCircleIcon />}
+        title={t("pages.borrow.disconnected-title")}
+      />
     </div>
   );
 }
@@ -71,23 +68,19 @@ export function PositionsEmptyState() {
 
   return (
     <div className="flex items-center justify-center border-b border-gray-200 bg-white px-8 py-12">
-      <div className="flex w-60 flex-col items-center gap-3">
-        <WalletIcon />
-        <div className="text-xsm flex flex-col gap-0.5 text-center">
-          <span className="font-semibold text-gray-900">
-            {t("pages.borrow.no-positions-title")}
-          </span>
-          {peggedToken !== undefined ? (
-            <span className="font-normal text-gray-500">
-              {t("pages.borrow.no-positions-description", {
-                symbol: peggedToken.symbol,
-              })}
-            </span>
+      <StatusMessage
+        description={
+          peggedToken !== undefined ? (
+            t("pages.borrow.no-positions-description", {
+              symbol: peggedToken.symbol,
+            })
           ) : (
             <Skeleton count={2} width={200} />
-          )}
-        </div>
-      </div>
+          )
+        }
+        icon={<WalletIcon />}
+        title={t("pages.borrow.no-positions-title")}
+      />
     </div>
   );
 }
