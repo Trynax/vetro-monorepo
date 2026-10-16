@@ -11,9 +11,9 @@ import { convertBigIntsToString } from "./convert-bigints-to-string.ts";
 import {
   getGaugedStrategies,
   getMerklRewards,
-} from "./dex-liquidity/incentives.ts";
-import { getVenuePools, venues } from "./dex-liquidity/index.ts";
-import { getCampaignGauges } from "./dex-liquidity/stake-dao.ts";
+} from "./liquidity/incentives.ts";
+import { getVenuePools, venues } from "./liquidity/index.ts";
+import { getCampaignGauges } from "./liquidity/stake-dao.ts";
 import { withTimeout } from "./utils/promises.ts";
 import { getApy } from "./variable-stake.ts";
 import { globalWarmTask, keyedWarmTask } from "./warm-cache.ts";
@@ -82,10 +82,10 @@ export const apyTask = globalWarmTask({
 
 const nowSeconds = () => Math.floor(Date.now() / 1000);
 
-export const dexVenuePoolsTask = keyedWarmTask({
+export const liquidityVenuePoolsTask = keyedWarmTask({
   cron: "*/5 * * * *",
   items: venues,
-  key: (venue) => `dex-liquidity:pools:${venue}`,
+  key: (venue) => `liquidity:pools:${venue}`,
   produce: (env, venue) =>
     withTimeout(
       getVenuePools({
@@ -98,19 +98,19 @@ export const dexVenuePoolsTask = keyedWarmTask({
     ),
 });
 
-export const dexCampaignGaugesTask = globalWarmTask({
+export const liquidityCampaignGaugesTask = globalWarmTask({
   cron: "*/5 * * * *",
-  key: () => "dex-liquidity:campaign-gauges",
+  key: () => "liquidity:campaign-gauges",
   produce: () => withTimeout(getCampaignGauges(nowSeconds())),
 });
 
-export const dexMerklRewardsTask = globalWarmTask({
+export const liquidityMerklRewardsTask = globalWarmTask({
   cron: "*/5 * * * *",
-  key: () => "dex-liquidity:merkl-rewards",
+  key: () => "liquidity:merkl-rewards",
   async produce(env) {
     const cached = await Promise.all(
       venues.map((venue) =>
-        env.CACHE_KV.get<DexPool[]>(dexVenuePoolsTask.key(venue), "json"),
+        env.CACHE_KV.get<DexPool[]>(liquidityVenuePoolsTask.key(venue), "json"),
       ),
     );
     const pools = cached.filter((venuePools) => venuePools !== null).flat();
@@ -121,9 +121,9 @@ export const dexMerklRewardsTask = globalWarmTask({
   },
 });
 
-export const dexStrategiesTask = globalWarmTask({
+export const liquidityStrategiesTask = globalWarmTask({
   cron: "*/5 * * * *",
-  key: () => "dex-liquidity:strategies",
+  key: () => "liquidity:strategies",
   produce: () => withTimeout(getGaugedStrategies()),
 });
 
@@ -133,8 +133,8 @@ export const warmTasks = [
   tvlTask,
   stakedTask,
   apyTask,
-  dexVenuePoolsTask,
-  dexCampaignGaugesTask,
-  dexMerklRewardsTask,
-  dexStrategiesTask,
+  liquidityVenuePoolsTask,
+  liquidityCampaignGaugesTask,
+  liquidityMerklRewardsTask,
+  liquidityStrategiesTask,
 ];

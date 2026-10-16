@@ -46,7 +46,6 @@
     "analytics": "Analytics",
     "borrow": "Borrow",
     "bridge": "Bridge",
-    "dex-liquidity": "Dex liquidity",
     "earn": "Earn",
     "header-menu": {
       "company": "Company",
@@ -61,6 +60,7 @@
       "terms-of-use": "Terms of Use",
       "x": "X"
     },
+    "liquidity": "Liquidity",
     "open-menu": "Open navigation menu",
     "swap": "Swap"
   },
@@ -267,29 +267,6 @@
         "success-title": "Help is on the way"
       }
     },
-    "dex-liquidity": {
-      "add-liquidity": "Add liquidity",
-      "chain": "Chain",
-      "description": "Add liquidity to DEX pools that hold VETRO tokens. You earn trade fees and rewards.",
-      "empty-description": "There are no DEX pools with VETRO tokens at this time. Come back later.",
-      "empty-title": "No pools yet",
-      "error-description": "Pool data is not available now. Try again later.",
-      "error-title": "Cannot load pools",
-      "pool": "Pool",
-      "pool-apr": "Pool APR",
-      "pools": "Pools",
-      "rewards-apr": "Rewards APR",
-      "rewards-apr-info": {
-        "curve-gauge": "Stake LP tokens directly in the Curve gauge to earn CRV rewards (boost depends on your veCRV).",
-        "merkl": "Off-chain rewards based on pool rules and price ranges. Review terms and claim at Merkl.",
-        "stake-dao": "Deposit LP tokens on Stake DAO to earn boosted CRV and SDT rewards without needing veCRV."
-      },
-      "title": "Dex liquidity",
-      "total-tvl": "Total TVL",
-      "try-again": "Try again",
-      "tvl": "TVL",
-      "volume-24h": "24h volume"
-    },
     "earn": {
       "activity": {
         "cancel-withdraw-text": "{{amount}} {{symbol}} exit ticket deleted",
@@ -467,6 +444,29 @@
     },
     "faq": {
       "title": "Hello Faq"
+    },
+    "liquidity": {
+      "add-liquidity": "Add liquidity",
+      "chain": "Chain",
+      "description": "Add liquidity to DEX pools that hold VETRO tokens. You earn trading fees and rewards.",
+      "empty-description": "There are no DEX pools with VETRO tokens at this time. Come back later.",
+      "empty-title": "No pools yet",
+      "error-description": "Pool data is not available now. Try again later.",
+      "error-title": "Cannot load pools",
+      "pool": "Pool",
+      "pool-apr": "Pool APR",
+      "pools": "Pools",
+      "rewards-apr": "Rewards APR",
+      "rewards-apr-info": {
+        "curve-gauge": "Stake LP tokens directly in the Curve gauge to earn CRV rewards (boost depends on your veCRV).",
+        "merkl": "Off-chain rewards based on pool rules and price ranges. Review terms and claim at Merkl.",
+        "stake-dao": "Deposit LP tokens on Stake DAO to earn boosted CRV and SDT rewards without needing veCRV."
+      },
+      "title": "Liquidity",
+      "total-tvl": "Total TVL",
+      "try-again": "Try again",
+      "tvl": "TVL",
+      "volume-24h": "24h volume"
     },
     "not-found": {
       "back-to-swap": "Take me back to swap",

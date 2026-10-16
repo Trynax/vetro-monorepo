@@ -35,6 +35,6 @@ export const WithDescription: Story = {
   args: {
     description:
       "Add liquidity to DEX pools that hold VETRO tokens. You earn trading fees and rewards.",
-    value: "Dex liquidity",
+    value: "Liquidity",
   },
 };

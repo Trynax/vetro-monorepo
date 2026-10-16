@@ -15,10 +15,10 @@ import {
   verifyTurnstile,
 } from "./contact.ts";
 import { convertBigIntsToString } from "./convert-bigints-to-string.ts";
-import { addIncentives } from "./dex-liquidity/incentives.ts";
-import { venues } from "./dex-liquidity/index.ts";
-import { excludeLowTvlPools } from "./dex-liquidity/low-tvl.ts";
 import { getSubgraphUrl } from "./env.ts";
+import { addIncentives } from "./liquidity/incentives.ts";
+import { venues } from "./liquidity/index.ts";
+import { excludeLowTvlPools } from "./liquidity/low-tvl.ts";
 import {
   validateAddress,
   validateGatewayAddress,
@@ -42,10 +42,10 @@ import { readWarmedTask, warmScheduled } from "./warm-cache.ts";
 import {
   apyTask,
   collateralizationRatioTask,
-  dexCampaignGaugesTask,
-  dexMerklRewardsTask,
-  dexStrategiesTask,
-  dexVenuePoolsTask,
+  liquidityCampaignGaugesTask,
+  liquidityMerklRewardsTask,
+  liquidityStrategiesTask,
+  liquidityVenuePoolsTask,
   stakedTask,
   treasuryTask,
   tvlTask,
@@ -252,17 +252,17 @@ const includesLowTvl = (c: Context) => c.req.query("includeLowTvl") === "true";
 
 const includesRanges = (c: Context) => c.req.query("includeRanges") === "true";
 
-const readDexPools = async function (c: Context<{ Bindings: Env }>) {
+const readLiquidityPools = async function (c: Context<{ Bindings: Env }>) {
   const [venueResults, sourceResults] = await Promise.all([
     Promise.allSettled(
       venues.map((venue) =>
-        readWarmedTask({ c, item: venue, task: dexVenuePoolsTask }),
+        readWarmedTask({ c, item: venue, task: liquidityVenuePoolsTask }),
       ),
     ),
     Promise.allSettled([
-      readWarmedTask({ c, task: dexCampaignGaugesTask }),
-      readWarmedTask({ c, task: dexMerklRewardsTask }),
-      readWarmedTask({ c, task: dexStrategiesTask }),
+      readWarmedTask({ c, task: liquidityCampaignGaugesTask }),
+      readWarmedTask({ c, task: liquidityMerklRewardsTask }),
+      readWarmedTask({ c, task: liquidityStrategiesTask }),
     ]),
   ]);
   throwIfAllRejected(venueResults);
@@ -279,7 +279,7 @@ const readDexPools = async function (c: Context<{ Bindings: Env }>) {
 };
 
 app.get(
-  "/dex-liquidity/pools",
+  "/liquidity/pools",
   validateQueryParams({
     includeLowTvl: ["true", "false"],
     includeRanges: ["true", "false"],
@@ -292,7 +292,7 @@ app.get(
   }),
   async function (c) {
     try {
-      const pools = await readDexPools(c);
+      const pools = await readLiquidityPools(c);
       const poolRows = includesRanges(c)
         ? pools
         : pools.filter((pool) => !pool.range);

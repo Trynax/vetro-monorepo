@@ -16,9 +16,9 @@ export function EmptyState() {
   return (
     <TableState>
       <StatusMessage
-        description={t("pages.dex-liquidity.empty-description")}
+        description={t("pages.liquidity.empty-description")}
         icon={<InboxCircleIcon />}
-        title={t("pages.dex-liquidity.empty-title")}
+        title={t("pages.liquidity.empty-title")}
       />
     </TableState>
   );
@@ -42,12 +42,12 @@ export function ErrorState({ isRetrying, onRetry }: ErrorStateProps) {
             type="button"
             variant="secondary"
           >
-            {t("pages.dex-liquidity.try-again")}
+            {t("pages.liquidity.try-again")}
           </Button>
         }
-        description={t("pages.dex-liquidity.error-description")}
+        description={t("pages.liquidity.error-description")}
         icon={<WarningCircleIcon />}
-        title={t("pages.dex-liquidity.error-title")}
+        title={t("pages.liquidity.error-title")}
       />
     </TableState>
   );

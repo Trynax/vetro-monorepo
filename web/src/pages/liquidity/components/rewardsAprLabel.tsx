@@ -7,22 +7,22 @@ export function RewardsAprLabel() {
 
   const sources = [
     {
-      description: t("pages.dex-liquidity.rewards-apr-info.curve-gauge"),
+      description: t("pages.liquidity.rewards-apr-info.curve-gauge"),
       name: "Curve Gauge",
     },
     {
-      description: t("pages.dex-liquidity.rewards-apr-info.stake-dao"),
+      description: t("pages.liquidity.rewards-apr-info.stake-dao"),
       name: "Stake DAO",
     },
     {
-      description: t("pages.dex-liquidity.rewards-apr-info.merkl"),
+      description: t("pages.liquidity.rewards-apr-info.merkl"),
       name: "Merkl",
     },
   ];
 
   return (
     <span className="flex items-center gap-1">
-      {t("pages.dex-liquidity.rewards-apr")}
+      {t("pages.liquidity.rewards-apr")}
       <Tooltip
         content={
           <div className="flex flex-col gap-1.5 py-0.5">

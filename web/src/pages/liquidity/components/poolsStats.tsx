@@ -4,11 +4,11 @@ import { TrendingUpIcon } from "components/icons/trendingUpIcon";
 import { useTranslation } from "react-i18next";
 import { formatUsd } from "utils/currency";
 
-import { useDexPools } from "../hooks/useDexPools";
+import { useLiquidityPools } from "../hooks/useLiquidityPools";
 import { getPoolsTotals } from "../utils";
 
 export function PoolsStats() {
-  const { data, isLoading } = useDexPools();
+  const { data, isLoading } = useLiquidityPools();
   const { t } = useTranslation();
 
   const totals = data ? getPoolsTotals(data) : undefined;
@@ -19,14 +19,14 @@ export function PoolsStats() {
         data={totals?.tvlUsd}
         icon={<PieChartIcon className="text-blue-500" />}
         isLoading={isLoading}
-        label={t("pages.dex-liquidity.total-tvl")}
+        label={t("pages.liquidity.total-tvl")}
         render={formatUsd}
       />
       <InfoCard
         data={totals?.volumeUsd24h}
         icon={<TrendingUpIcon className="text-blue-500" />}
         isLoading={isLoading}
-        label={t("pages.dex-liquidity.volume-24h")}
+        label={t("pages.liquidity.volume-24h")}
         render={formatUsd}
       />
     </div>

@@ -65,4 +65,4 @@ Where the active instances come from:
 
 **Bridge / OFT** — Move a token across chains via LayerZero's Omnichain Fungible Token standard; the same token is native on many chains, with no wrapping.
 
-**Pages** — Swap (mint/redeem) · Earn (stake for yield) · Borrow (CDP) · Bridge (cross-chain) · Dex liquidity (DEX pools that hold VETRO tokens) · Analytics (proof-of-reserves dashboard).
+**Pages** — Swap (mint/redeem) · Earn (stake for yield) · Borrow (CDP) · Bridge (cross-chain) · Liquidity (DEX pools that hold VETRO tokens) · Analytics (proof-of-reserves dashboard).

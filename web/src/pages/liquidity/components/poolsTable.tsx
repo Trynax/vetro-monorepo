@@ -14,7 +14,7 @@ import { screenBreakpoints } from "styles/breakpoints";
 import { formatUsd } from "utils/currency";
 import { formatPercentage } from "utils/format";
 
-import { useDexPools } from "../hooks/useDexPools";
+import { useLiquidityPools } from "../hooks/useLiquidityPools";
 import { getDepositUrl, sortByTvl } from "../utils";
 
 import { PoolName } from "./poolName";
@@ -54,7 +54,7 @@ const AddLiquidityLink = function ({ pool }: { pool: DexPool }) {
   const { t } = useTranslation();
   return (
     <ButtonLink href={getDepositUrl(pool)} size="xSmall" variant="primary">
-      {t("pages.dex-liquidity.add-liquidity")}
+      {t("pages.liquidity.add-liquidity")}
       <ExternalLinkIcon />
     </ButtonLink>
   );
@@ -71,7 +71,7 @@ const PoolCard = function ({ pool }: { pool: DexPool }) {
       <dl className="grid grid-cols-2 gap-4">
         <div className="flex flex-col">
           <dt className="text-b-regular text-gray-500">
-            {t("pages.dex-liquidity.tvl")}
+            {t("pages.liquidity.tvl")}
           </dt>
           <dd>
             <Tvl pool={pool} />
@@ -79,7 +79,7 @@ const PoolCard = function ({ pool }: { pool: DexPool }) {
         </div>
         <div className="flex flex-col items-end">
           <dt className="text-b-regular text-gray-500">
-            {t("pages.dex-liquidity.pool-apr")}
+            {t("pages.liquidity.pool-apr")}
           </dt>
           <dd>
             <PoolApr pool={pool} />
@@ -116,7 +116,7 @@ export function PoolsTable() {
     isFetching,
     isLoading,
     refetch,
-  } = useDexPools();
+  } = useLiquidityPools();
   const { width } = useWindowSize();
 
   const pools = useMemo(() => sortByTvl(data), [data]);
@@ -125,25 +125,25 @@ export function PoolsTable() {
     (): TableColumnDef<DexPool>[] => [
       {
         cell: ({ row }) => <PoolName pool={row.original} />,
-        header: () => <Header text={t("pages.dex-liquidity.pool")} />,
+        header: () => <Header text={t("pages.liquidity.pool")} />,
         id: "pool",
         meta: { width: "220px" },
       },
       {
         cell: ({ row }) => <ChainName chainId={row.original.chainId} />,
-        header: () => <Header text={t("pages.dex-liquidity.chain")} />,
+        header: () => <Header text={t("pages.liquidity.chain")} />,
         id: "chain",
         meta: { width: "110px" },
       },
       {
         cell: ({ row }) => <Tvl pool={row.original} />,
-        header: () => <Header text={t("pages.dex-liquidity.tvl")} />,
+        header: () => <Header text={t("pages.liquidity.tvl")} />,
         id: "tvl",
         meta: { className: "justify-end", width: "96px" },
       },
       {
         cell: ({ row }) => <PoolApr pool={row.original} />,
-        header: () => <Header text={t("pages.dex-liquidity.pool-apr")} />,
+        header: () => <Header text={t("pages.liquidity.pool-apr")} />,
         id: "pool-apr",
         meta: { className: "justify-end", width: "96px" },
       },
@@ -174,7 +174,7 @@ export function PoolsTable() {
   );
   return (
     <div className="border-t border-gray-200">
-      <SectionHeader title={t("pages.dex-liquidity.pools")} />
+      <SectionHeader title={t("pages.liquidity.pools")} />
       {width >= screenBreakpoints.md ? (
         <Table
           columns={columns}
