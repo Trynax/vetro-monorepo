@@ -8,6 +8,7 @@ export async function getMaxRequestRedeem(
   client: Client,
   parameters: {
     address: Address;
+    controller: Address;
     owner: Address;
   },
 ) {
@@ -23,6 +24,10 @@ export async function getMaxRequestRedeem(
     throw new Error("Vault address is invalid");
   }
 
+  if (!isAddressValid(parameters.controller)) {
+    throw new Error("Controller address is invalid");
+  }
+
   if (!isAddressValid(parameters.owner)) {
     throw new Error("Owner address is invalid");
   }
@@ -30,7 +35,7 @@ export async function getMaxRequestRedeem(
   return readContract(client, {
     abi: targetYieldEarnVaultAbi,
     address: parameters.address,
-    args: [parameters.owner],
+    args: [parameters.controller, parameters.owner],
     functionName: "maxRequestRedeem",
   });
 }

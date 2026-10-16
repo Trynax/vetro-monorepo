@@ -39,15 +39,17 @@ const epochId = await getEpochId(publicClient, { address: vaultAddress });
 // Full epoch: rate, deposit cap and windows as absolute timestamps.
 const epoch = await getEpoch(publicClient, { address: vaultAddress, epochId });
 
-// Max amount of assets this controller can still request for deposit.
+// Max amount of assets this owner can still request for deposit.
 const maxAssets = await getMaxRequestDeposit(publicClient, {
   address: vaultAddress,
   controller: "0x...",
+  owner: "0x...",
 });
 
 // Max amount of shares this owner can still request for redemption.
 const maxShares = await getMaxRequestRedeem(publicClient, {
   address: vaultAddress,
+  controller: "0x...",
   owner: "0x...",
 });
 
@@ -74,8 +76,8 @@ const cancelableAssets = await getCancelableDepositRequest(publicClient, {
   - `getIsPaused(client, params)` — whether the keeper paused the vault. Pausing blocks new deposit requests only.
   - `getIsShutdown(client, params)` — whether the owner shut the vault down. Shutdown blocks every request and claim, but not cancellations. Reversible.
   - `getIsTerminated(client, params)` — whether the vault was permanently wound down. Once terminated, no new epochs or deposits, and withdrawal requests are claimable right away.
-  - `getMaxRequestDeposit(client, params)` — the assets the controller can still request for deposit, capped by the epoch's remaining deposit capacity. `0n` whenever a deposit request would revert — outside the entry window, while paused, shutdown or terminated, or when the controller has a pending request from an earlier epoch.
-  - `getMaxRequestRedeem(client, params)` — the shares the owner can still request for redemption. `0n` whenever a redeem request would revert — outside the exit window, while shutdown, or when a redeem batch from an earlier epoch is still pending and the vault hasn't terminated.
+  - `getMaxRequestDeposit(client, { address, controller, owner })` — the assets the owner can still request for deposit, capped by the epoch's remaining deposit capacity. `0n` whenever a deposit request would revert — outside the entry window, while paused, shutdown or terminated, when the owner has no entry access, or when the controller has a pending request from an earlier epoch.
+  - `getMaxRequestRedeem(client, { address, controller, owner })` — the shares the owner can still request for redemption. `0n` whenever a redeem request would revert — outside the exit window, while shutdown, or when a redeem batch from an earlier epoch is still pending and the vault hasn't terminated.
   - `getRate(client, params)` — the fixed rate an epoch pays during its accrual interval, WAD-scaled per annum. It returns the same value at any time, so use it (or `getEpoch`) to show the rate.
   - `maxMint(client, { address, controller })` — the shares the controller can mint from its fulfilled deposit request. It wraps `maxMint` from `viem-erc4626`, which calls this argument `receiver`. In this vault, that address is the controller of the request.
   - `pendingDepositRequest(client, params)` — assets in an unfulfilled deposit request, re-exported from `viem-erc7540`.
