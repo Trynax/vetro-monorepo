@@ -41,7 +41,9 @@ async function getPricesByDay({
 }
 
 export const getUsdPrices = (portalApiUrl: string) =>
-  fetchJson(`${portalApiUrl}/prices`).then((body) => (body as Prices).prices);
+  fetchJson(`${portalApiUrl}/prices`, {
+    signal: AbortSignal.timeout(5_000),
+  }).then((body) => (body as Prices).prices);
 
 async function getCurrentPrice({
   pegBaseSymbol,
