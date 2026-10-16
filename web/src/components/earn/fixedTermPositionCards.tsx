@@ -2,6 +2,7 @@ import type { Token } from "@vetro-protocol/core";
 import { InfoCard } from "components/base/infoCard";
 import { CardRow } from "components/earn/cardRow";
 import { PositionCard } from "components/earn/positionCard";
+import { Subtitle } from "components/earn/subtitle";
 import { InfoIcon } from "components/icons/infoIcon";
 import { RefreshIcon } from "components/icons/refreshIcon";
 import { TrendingUpIcon } from "components/icons/trendingUpIcon";
@@ -62,7 +63,11 @@ const RolloverStatusCard = function ({ stakingVaultAddress }: CardProps) {
       isLoading={isLoading}
       label={t("pages.earn.fixed-term.rollover-status")}
       render={(rolloverStatus) => t(rolloverStatusKeys[rolloverStatus].title)}
-      subtitle={status ? t(rolloverStatusKeys[status].description) : undefined}
+      subtitle={
+        status ? (
+          <Subtitle>{t(rolloverStatusKeys[status].description)}</Subtitle>
+        ) : undefined
+      }
     />
   );
 };

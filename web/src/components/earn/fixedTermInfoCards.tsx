@@ -1,6 +1,7 @@
 import { InfoCard } from "components/base/infoCard";
 import { CardRow } from "components/earn/cardRow";
 import { DepositsOverCapacity } from "components/earn/depositsOverCapacity";
+import { Subtitle } from "components/earn/subtitle";
 import { CalendarIcon } from "components/icons/calendarIcon";
 import { PieChartIcon } from "components/icons/pieChartIcon";
 import { PlayIcon } from "components/icons/playIcon";
@@ -27,11 +28,19 @@ const TargetFixedAprCard = function ({ stakingVaultAddress }: Props) {
 
   function renderFixedUntil() {
     if (epochEndDate.data) {
-      return t("pages.earn.fixed-term.fixed-until", {
-        date: epochEndDate.data,
-      });
+      return (
+        <Subtitle>
+          {t("pages.earn.fixed-term.fixed-until", {
+            date: epochEndDate.data,
+          })}
+        </Subtitle>
+      );
     }
-    return epochEndDate.isLoading ? <Skeleton width={140} /> : undefined;
+    return epochEndDate.isLoading ? (
+      <Subtitle>
+        <Skeleton width={140} />
+      </Subtitle>
+    ) : undefined;
   }
 
   return (
@@ -64,8 +73,7 @@ const PoolCapacityCard = function ({ stakingVaultAddress }: Props) {
       )}
       subtitle={
         deposits ? (
-          // Wrapped for better CSS styling.
-          <span>
+          <Subtitle>
             <Trans
               components={{ amount: <span className="text-gray-900" /> }}
               i18nKey="pages.earn.fixed-term.capacity-remaining"
@@ -78,7 +86,7 @@ const PoolCapacityCard = function ({ stakingVaultAddress }: Props) {
                 ),
               }}
             />
-          </span>
+          </Subtitle>
         ) : undefined
       }
     />
