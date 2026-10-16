@@ -30,7 +30,7 @@ export async function getPendingDepositRequest(
   return readContract(client, {
     abi: targetYieldEarnVaultAbi,
     address: parameters.address,
-    // Contract requires this parameter to be always 0n
+    // The vault returns 0n with no error for any request id other than 0
     args: [0n, parameters.controller],
     functionName: "pendingDepositRequest",
   });
