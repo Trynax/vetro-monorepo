@@ -94,8 +94,8 @@ const tokenPrice = function ({
   portalPrices: Record<string, string>;
   token: RawToken;
 }) {
-  const price = token.market?.price?.value;
-  if (price !== undefined && price > 0) {
+  const price = token.market?.price?.value ?? 0;
+  if (price > 0) {
     return price;
   }
   return portalUsdPrice({ address, prices: portalPrices }) ?? 0;
