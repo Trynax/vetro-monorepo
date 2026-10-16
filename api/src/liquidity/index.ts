@@ -23,8 +23,8 @@ const venuePools = {
       portalApiUrl,
       subgraphApiKey,
     }),
-  uniswap: ({ rpcUrl }: VenueArgs) =>
-    getUniswapPools(createMainnetClient(rpcUrl)),
+  uniswap: ({ portalApiUrl, rpcUrl }: VenueArgs) =>
+    getUniswapPools({ client: createMainnetClient(rpcUrl), portalApiUrl }),
 } satisfies Record<string, (args: VenueArgs) => Promise<DexPool[]>>;
 
 export const venues = Object.keys(venuePools) as (keyof typeof venuePools)[];

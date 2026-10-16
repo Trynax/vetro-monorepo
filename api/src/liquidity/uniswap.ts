@@ -3,9 +3,11 @@ import type { Address, Client } from "viem";
 import { mainnet } from "viem/chains";
 
 import { runQuery } from "../graphql.ts";
+import { getUsdPrices } from "../portal-prices.ts";
 import { fulfilledValues } from "../utils/promises.ts";
 
 import { feeApr, poolTvlUsd } from "./pool-metrics.ts";
+import { portalUsdPrice } from "./portal-usd-price.ts";
 import { findV3Pools, type V3Pool } from "./v3-factory.ts";
 
 const factoryAddress = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
@@ -82,7 +84,22 @@ const resolvePrices = function ({
   return prices;
 };
 
-const tokenPrice = (token: RawToken) => token.market?.price?.value ?? 0;
+// Uniswap sends 0 when it has no price, so we fall back to the portal prices API.
+const tokenPrice = function ({
+  address,
+  portalPrices,
+  token,
+}: {
+  address: Address;
+  portalPrices: Record<string, string>;
+  token: RawToken;
+}) {
+  const price = token.market?.price?.value;
+  if (price !== undefined && price > 0) {
+    return price;
+  }
+  return portalUsdPrice({ address, prices: portalPrices }) ?? 0;
+};
 
 const fetchPoolData = async function (address: Address) {
   const { v3Pool } = await runQuery<{ v3Pool: RawV3Pool | null }>({
@@ -97,11 +114,20 @@ const fetchPoolData = async function (address: Address) {
   return v3Pool;
 };
 
-const buildPool = async function (pool: V3Pool): Promise<DexPool> {
+const buildPool = async function ({
+  pool,
+  portalPrices,
+}: {
+  pool: V3Pool;
+  portalPrices: Record<string, string>;
+}): Promise<DexPool> {
   const data = await fetchPoolData(pool.address);
   const supplies = [data.token0Supply ?? 0, data.token1Supply ?? 0];
   const usdPrices = resolvePrices({
-    prices: [tokenPrice(data.token0), tokenPrice(data.token1)],
+    prices: [
+      tokenPrice({ address: pool.token0, portalPrices, token: data.token0 }),
+      tokenPrice({ address: pool.token1, portalPrices, token: data.token1 }),
+    ],
     rate: lastPoolRate(data.priceHistory),
   });
   const tvlUsd = poolTvlUsd(
@@ -128,9 +154,23 @@ const buildPool = async function (pool: V3Pool): Promise<DexPool> {
   };
 };
 
-export async function getUniswapPools(client: Client) {
-  const pools = await findV3Pools({ client, factoryAddress });
-  const results = await Promise.allSettled(pools.map(buildPool));
+export async function getUniswapPools({
+  client,
+  portalApiUrl,
+}: {
+  client: Client;
+  portalApiUrl: string;
+}) {
+  const [pools, portalPrices] = await Promise.all([
+    findV3Pools({ client, factoryAddress }),
+    getUsdPrices(portalApiUrl).catch(function (error) {
+      console.warn(`Failed to get USD prices: ${error.message}`);
+      return {};
+    }),
+  ]);
+  const results = await Promise.allSettled(
+    pools.map((pool) => buildPool({ pool, portalPrices })),
+  );
   results.forEach(function (result, index) {
     if (result.status === "rejected") {
       console.warn(
