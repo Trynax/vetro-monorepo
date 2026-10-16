@@ -65,10 +65,12 @@ const canCancelRedeemRequest = function ({
 
 const runCancelRedeemRequest = (
   walletClient: WalletClient,
-  { address, controller }: CancelRedeemRequestParams,
+  params: CancelRedeemRequestParams,
 ) =>
   async function (emitter: EventEmitter<CancelRedeemRequestEvents>) {
     try {
+      const { address, controller } = params;
+
       const { canCancelRedeemRequest: canCancelRedeemRequestFlag, reason } =
         canCancelRedeemRequest({
           address,

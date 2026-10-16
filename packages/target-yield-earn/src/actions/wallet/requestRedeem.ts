@@ -84,10 +84,12 @@ const canRequestRedeem = function ({
 
 const runRequestRedeem = (
   walletClient: WalletClient,
-  { address, controller, owner, shares }: RequestRedeemParams,
+  params: RequestRedeemParams,
 ) =>
   async function (emitter: EventEmitter<RequestRedeemEvents>) {
     try {
+      const { address, controller, owner, shares } = params;
+
       const { canRequestRedeem: canRequestRedeemFlag, reason } =
         canRequestRedeem({
           address,

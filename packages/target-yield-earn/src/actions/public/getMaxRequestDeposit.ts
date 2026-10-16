@@ -9,6 +9,7 @@ export async function getMaxRequestDeposit(
   parameters: {
     address: Address;
     controller: Address;
+    owner: Address;
   },
 ) {
   if (!client) {
@@ -27,10 +28,14 @@ export async function getMaxRequestDeposit(
     throw new Error("Controller address is invalid");
   }
 
+  if (!isAddressValid(parameters.owner)) {
+    throw new Error("Owner address is invalid");
+  }
+
   return readContract(client, {
     abi: targetYieldEarnVaultAbi,
     address: parameters.address,
-    args: [parameters.controller],
+    args: [parameters.controller, parameters.owner],
     functionName: "maxRequestDeposit",
   });
 }

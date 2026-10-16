@@ -106,10 +106,10 @@ const runRequestDeposit = (
   params: RequestDepositParams,
 ) =>
   async function (emitter: EventEmitter<RequestDepositEvents>) {
-    const { address, assets, controller } = params;
-    const approveAmount = params.approveAmount ?? assets;
-
     try {
+      const { address, assets, controller } = params;
+      const approveAmount = params.approveAmount ?? assets;
+
       const { canRequestDeposit: canRequestDepositFlag, reason } =
         canRequestDeposit({
           address,
