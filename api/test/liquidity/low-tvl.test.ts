@@ -2,7 +2,7 @@ import type { DexPool, DexPoolReward } from "@vetro-protocol/core";
 import type { Address } from "viem";
 import { describe, expect, it } from "vitest";
 
-import { excludeLowTvlPools } from "../../src/dex-liquidity/low-tvl.ts";
+import { excludeLowTvlPools } from "../../src/liquidity/low-tvl.ts";
 
 const crv = "0xD533a949740bb3306d119CC777fa900bA034cd52";
 const usdc = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
@@ -61,7 +61,7 @@ const buildPool = ({
   volumeUsd24h,
 });
 
-describe("dex-liquidity/excludeLowTvlPools", function () {
+describe("liquidity/excludeLowTvlPools", function () {
   it("keeps a pool with a TVL of exactly 500 and no rewards", function () {
     const pool = buildPool({ tvlUsd: 500 });
     expect(excludeLowTvlPools([pool])).toEqual([pool]);

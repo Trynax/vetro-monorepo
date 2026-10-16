@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { bandActivity } from "../../src/dex-liquidity/band-activity.ts";
+import { bandActivity } from "../../src/liquidity/band-activity.ts";
 
 const band = {
   lowerTick: -100,

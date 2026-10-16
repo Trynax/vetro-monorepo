@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   addIncentives,
   type IncentiveSources,
-} from "../../src/dex-liquidity/incentives.ts";
+} from "../../src/liquidity/incentives.ts";
 
 const nowSeconds = 1_000_000;
 const crv = "0xD533a949740bb3306d119CC777fa900bA034cd52";
@@ -72,7 +72,7 @@ const noSources: IncentiveSources = {
   strategies: [],
 };
 
-describe("dex-liquidity/addIncentives", function () {
+describe("liquidity/addIncentives", function () {
   it("keeps the pool and the venue rewards when there is nothing to add", function () {
     const pool = addIncentives({
       nowSeconds,

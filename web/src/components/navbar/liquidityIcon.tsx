@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 
-export const DexLiquidityIcon = (props: ComponentProps<"svg">) => (
+export const LiquidityIcon = (props: ComponentProps<"svg">) => (
   <svg
     fill="none"
     viewBox="0 0 16 16"

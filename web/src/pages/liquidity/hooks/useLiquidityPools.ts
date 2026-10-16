@@ -4,13 +4,13 @@ import fetch from "fetch-plus-plus";
 
 const apiUrl = import.meta.env.VITE_VETRO_API_URL;
 
-const dexPoolsOptions = () =>
+const liquidityPoolsOptions = () =>
   queryOptions({
     enabled: apiUrl !== undefined && URL.canParse(apiUrl),
-    queryFn: () => fetch(`${apiUrl}/dex-liquidity/pools`) as Promise<DexPool[]>,
-    queryKey: ["dex-liquidity-pools"],
+    queryFn: () => fetch(`${apiUrl}/liquidity/pools`) as Promise<DexPool[]>,
+    queryKey: ["liquidity-pools"],
     refetchInterval: 5 * 60 * 1000,
     staleTime: 60 * 1000,
   });
 
-export const useDexPools = () => useQuery(dexPoolsOptions());
+export const useLiquidityPools = () => useQuery(liquidityPoolsOptions());

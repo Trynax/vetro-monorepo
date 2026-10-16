@@ -39,9 +39,9 @@ export function RewardsList({ pool }: Props) {
   }
 
   const titles = {
-    curveGauge: `Curve Gauge: ${t("pages.dex-liquidity.rewards-apr-info.curve-gauge")}`,
-    merkl: `Merkl: ${t("pages.dex-liquidity.rewards-apr-info.merkl")}`,
-    stakeDao: `Stake DAO: ${t("pages.dex-liquidity.rewards-apr-info.stake-dao")}`,
+    curveGauge: `Curve Gauge: ${t("pages.liquidity.rewards-apr-info.curve-gauge")}`,
+    merkl: `Merkl: ${t("pages.liquidity.rewards-apr-info.merkl")}`,
+    stakeDao: `Stake DAO: ${t("pages.liquidity.rewards-apr-info.stake-dao")}`,
   };
 
   return (

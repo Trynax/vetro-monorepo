@@ -4,7 +4,7 @@ import {
   computeBandAmounts,
   priceToTick,
   type TickLiquidity,
-} from "../../src/dex-liquidity/v3-position-math.ts";
+} from "../../src/liquidity/v3-position-math.ts";
 
 const TWO_POW_96 = 2 ** 96;
 const priceToSqrtX96 = ({

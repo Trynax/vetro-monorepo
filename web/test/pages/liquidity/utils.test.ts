@@ -1,5 +1,5 @@
 import type { DexPool } from "@vetro-protocol/core";
-import { getPoolsTotals, sortByTvl } from "pages/dexLiquidity/utils";
+import { getPoolsTotals, sortByTvl } from "pages/liquidity/utils";
 import { describe, expect, it } from "vitest";
 
 const buildPool = (overrides: Partial<DexPool> = {}) =>

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { feeApr, poolTvlUsd } from "../../src/dex-liquidity/pool-metrics.ts";
+import { feeApr, poolTvlUsd } from "../../src/liquidity/pool-metrics.ts";
 
-describe("dex-liquidity/poolTvlUsd", function () {
+describe("liquidity/poolTvlUsd", function () {
   it("values every coin and adds them", function () {
     expect(
       poolTvlUsd([
@@ -22,7 +22,7 @@ describe("dex-liquidity/poolTvlUsd", function () {
   });
 });
 
-describe("dex-liquidity/feeApr", function () {
+describe("liquidity/feeApr", function () {
   it("annualizes the 24h fees over the TVL", function () {
     expect(feeApr({ feesUsd24h: 10, tvlUsd: 36_500 })).toBe(10);
   });
