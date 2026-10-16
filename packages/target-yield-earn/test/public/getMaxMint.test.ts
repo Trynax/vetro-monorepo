@@ -2,7 +2,7 @@ import { type Address, type Client, zeroAddress } from "viem";
 import { readContract } from "viem/actions";
 import { describe, expect, it, vi } from "vitest";
 
-import { pendingDepositRequest } from "../../src/actions/public/pendingDepositRequest.ts";
+import { getMaxMint } from "../../src/actions/public/getMaxMint.ts";
 
 vi.mock("viem/actions", () => ({
   readContract: vi.fn(),
@@ -16,18 +16,18 @@ const validParameters = {
 // @ts-expect-error - We only create an empty client for testing purposes
 const client: Client = {};
 
-describe("pendingDepositRequest", function () {
+describe("getMaxMint", function () {
   it("should throw an error if client is not defined", async function () {
     await expect(
       // @ts-expect-error - Testing invalid input
-      pendingDepositRequest(undefined, validParameters),
+      getMaxMint(undefined, validParameters),
     ).rejects.toThrow("Client is not defined");
   });
 
   it("should throw an error if parameters are not provided", async function () {
     await expect(
       // @ts-expect-error - Testing invalid input
-      pendingDepositRequest(client, undefined),
+      getMaxMint(client, undefined),
     ).rejects.toThrow("Parameters are required");
   });
 
@@ -38,7 +38,7 @@ describe("pendingDepositRequest", function () {
     };
     await expect(
       // @ts-expect-error - Testing invalid input
-      pendingDepositRequest(client, parameters),
+      getMaxMint(client, parameters),
     ).rejects.toThrow("Vault address is invalid");
   });
 
@@ -48,7 +48,7 @@ describe("pendingDepositRequest", function () {
     };
     await expect(
       // @ts-expect-error - Testing invalid input
-      pendingDepositRequest(client, parameters),
+      getMaxMint(client, parameters),
     ).rejects.toThrow("Vault address is invalid");
   });
 
@@ -58,7 +58,7 @@ describe("pendingDepositRequest", function () {
       address: zeroAddress,
     };
 
-    await expect(pendingDepositRequest(client, parameters)).rejects.toThrow(
+    await expect(getMaxMint(client, parameters)).rejects.toThrow(
       "Vault address is invalid",
     );
   });
@@ -70,7 +70,7 @@ describe("pendingDepositRequest", function () {
     };
     await expect(
       // @ts-expect-error - Testing invalid input
-      pendingDepositRequest(client, parameters),
+      getMaxMint(client, parameters),
     ).rejects.toThrow("Controller address is invalid");
   });
 
@@ -80,7 +80,7 @@ describe("pendingDepositRequest", function () {
     };
     await expect(
       // @ts-expect-error - Testing invalid input
-      pendingDepositRequest(client, parameters),
+      getMaxMint(client, parameters),
     ).rejects.toThrow("Controller address is invalid");
   });
 
@@ -90,19 +90,19 @@ describe("pendingDepositRequest", function () {
       controller: zeroAddress,
     };
 
-    await expect(pendingDepositRequest(client, parameters)).rejects.toThrow(
+    await expect(getMaxMint(client, parameters)).rejects.toThrow(
       "Controller address is invalid",
     );
   });
 
   it("should call readContract if all parameters are valid", async function () {
-    await pendingDepositRequest(client, validParameters);
+    await getMaxMint(client, validParameters);
 
     expect(readContract).toHaveBeenCalledWith(client, {
       abi: expect.anything(),
       address: validParameters.address,
-      args: [0n, validParameters.controller],
-      functionName: "pendingDepositRequest",
+      args: [validParameters.controller],
+      functionName: "maxMint",
     });
   });
 });

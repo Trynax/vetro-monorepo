@@ -4,7 +4,7 @@ import { readContract } from "viem/actions";
 
 import { targetYieldEarnVaultAbi } from "../../abi/targetYieldEarnVaultAbi.ts";
 
-export async function maxMint(
+export async function getPendingDepositRequest(
   client: Client,
   parameters: {
     address: Address;
@@ -30,7 +30,8 @@ export async function maxMint(
   return readContract(client, {
     abi: targetYieldEarnVaultAbi,
     address: parameters.address,
-    args: [parameters.controller],
-    functionName: "maxMint",
+    // Contract requires this parameter to be always 0n
+    args: [0n, parameters.controller],
+    functionName: "pendingDepositRequest",
   });
 }

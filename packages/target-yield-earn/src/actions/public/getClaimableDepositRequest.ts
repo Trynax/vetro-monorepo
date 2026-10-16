@@ -4,7 +4,7 @@ import { readContract } from "viem/actions";
 
 import { targetYieldEarnVaultAbi } from "../../abi/targetYieldEarnVaultAbi.ts";
 
-export async function claimableDepositRequest(
+export async function getClaimableDepositRequest(
   client: Client,
   parameters: {
     address: Address;

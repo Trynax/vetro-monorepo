@@ -2,7 +2,7 @@ import { type Address, type Client, zeroAddress } from "viem";
 import { readContract } from "viem/actions";
 import { describe, expect, it, vi } from "vitest";
 
-import { claimableDepositRequest } from "../../src/actions/public/claimableDepositRequest.ts";
+import { getClaimableDepositRequest } from "../../src/actions/public/getClaimableDepositRequest.ts";
 
 vi.mock("viem/actions", () => ({
   readContract: vi.fn(),
@@ -16,18 +16,18 @@ const validParameters = {
 // @ts-expect-error - We only create an empty client for testing purposes
 const client: Client = {};
 
-describe("claimableDepositRequest", function () {
+describe("getClaimableDepositRequest", function () {
   it("should throw an error if client is not defined", async function () {
     await expect(
       // @ts-expect-error - Testing invalid input
-      claimableDepositRequest(undefined, validParameters),
+      getClaimableDepositRequest(undefined, validParameters),
     ).rejects.toThrow("Client is not defined");
   });
 
   it("should throw an error if parameters are not provided", async function () {
     await expect(
       // @ts-expect-error - Testing invalid input
-      claimableDepositRequest(client, undefined),
+      getClaimableDepositRequest(client, undefined),
     ).rejects.toThrow("Parameters are required");
   });
 
@@ -38,7 +38,7 @@ describe("claimableDepositRequest", function () {
     };
     await expect(
       // @ts-expect-error - Testing invalid input
-      claimableDepositRequest(client, parameters),
+      getClaimableDepositRequest(client, parameters),
     ).rejects.toThrow("Vault address is invalid");
   });
 
@@ -48,7 +48,7 @@ describe("claimableDepositRequest", function () {
     };
     await expect(
       // @ts-expect-error - Testing invalid input
-      claimableDepositRequest(client, parameters),
+      getClaimableDepositRequest(client, parameters),
     ).rejects.toThrow("Vault address is invalid");
   });
 
@@ -58,9 +58,9 @@ describe("claimableDepositRequest", function () {
       address: zeroAddress,
     };
 
-    await expect(claimableDepositRequest(client, parameters)).rejects.toThrow(
-      "Vault address is invalid",
-    );
+    await expect(
+      getClaimableDepositRequest(client, parameters),
+    ).rejects.toThrow("Vault address is invalid");
   });
 
   it("should throw an error if the controller is not valid", async function () {
@@ -70,7 +70,7 @@ describe("claimableDepositRequest", function () {
     };
     await expect(
       // @ts-expect-error - Testing invalid input
-      claimableDepositRequest(client, parameters),
+      getClaimableDepositRequest(client, parameters),
     ).rejects.toThrow("Controller address is invalid");
   });
 
@@ -80,7 +80,7 @@ describe("claimableDepositRequest", function () {
     };
     await expect(
       // @ts-expect-error - Testing invalid input
-      claimableDepositRequest(client, parameters),
+      getClaimableDepositRequest(client, parameters),
     ).rejects.toThrow("Controller address is invalid");
   });
 
@@ -90,13 +90,13 @@ describe("claimableDepositRequest", function () {
       controller: zeroAddress,
     };
 
-    await expect(claimableDepositRequest(client, parameters)).rejects.toThrow(
-      "Controller address is invalid",
-    );
+    await expect(
+      getClaimableDepositRequest(client, parameters),
+    ).rejects.toThrow("Controller address is invalid");
   });
 
   it("should call readContract if all parameters are valid", async function () {
-    await claimableDepositRequest(client, validParameters);
+    await getClaimableDepositRequest(client, validParameters);
 
     expect(readContract).toHaveBeenCalledWith(client, {
       abi: expect.anything(),
