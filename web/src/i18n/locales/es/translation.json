@@ -348,7 +348,7 @@
         "deposit-claim-info-claimable": "Su depósito fue procesado. Reclame para recibir sus {{shareSymbol}} en su billetera.",
         "deposit-claim-info-claimable-shutdown": "Su depósito fue procesado, pero el fondo está cerrado. Podrá reclamar sus {{shareSymbol}} cuando el fondo se abra de nuevo.",
         "deposit-claim-info-empty": "Los depósitos se procesan en lotes. Cuando su depósito se procese, podrá reclamar sus {{shareSymbol}} aquí.",
-        "deposit-claim-info-pending": "Su depósito está esperando a ser procesado. Hasta entonces, puede cancelarlo y recuperar sus {{peggedSymbol}}. Cuando se procese, podrá reclamar sus {{shareSymbol}}.",
+        "deposit-claim-info-pending": "Su depósito está esperando a ser procesado. Actualmente, puede cancelarlo y recuperar sus {{peggedSymbol}}. Cuando se procese, podrá reclamar sus {{shareSymbol}}.",
         "deposit-claim-info-pending-not-cancelable": "Su depósito está esperando a ser procesado. La ventana de entrada está cerrada, por lo que no puede cancelarlo. Cuando se procese, podrá reclamar sus {{shareSymbol}}.",
         "deposit-review": "Resumen del depósito",
         "deposits-closed": "Depósitos cerrados",

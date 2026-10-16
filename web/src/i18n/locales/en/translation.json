@@ -345,7 +345,7 @@
         "deposit-claim-info-claimable": "Your deposit has been processed. Claim to receive your {{shareSymbol}} in your wallet.",
         "deposit-claim-info-claimable-shutdown": "Your deposit has been processed, but the pool is shut down. You can claim your {{shareSymbol}} after the pool opens again.",
         "deposit-claim-info-empty": "Deposits are processed in batches. After your deposit is processed, you can claim your {{shareSymbol}} here.",
-        "deposit-claim-info-pending": "Your deposit is waiting to be processed. Until then, you can cancel it and get your {{peggedSymbol}} back. After it is processed, you can claim your {{shareSymbol}}.",
+        "deposit-claim-info-pending": "Your deposit is waiting to be processed. You can currently cancel it and get your {{peggedSymbol}} back. After it is processed, you can claim your {{shareSymbol}}.",
         "deposit-claim-info-pending-not-cancelable": "Your deposit is waiting to be processed. The entry window is closed, so you cannot cancel it. After it is processed, you can claim your {{shareSymbol}}.",
         "deposit-review": "Deposit review",
         "deposits-closed": "Deposits closed",
