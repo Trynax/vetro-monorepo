@@ -22,6 +22,16 @@ export const targetYieldEarnVaultAbi = [
   },
   {
     inputs: [
+      { name: "requestId_", type: "uint256" },
+      { name: "controller_", type: "address" },
+    ],
+    name: "claimableDepositRequest",
+    outputs: [{ type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
       { name: "assets_", type: "uint256" },
       { name: "receiver_", type: "address" },
       { name: "controller_", type: "address" },
@@ -84,6 +94,13 @@ export const targetYieldEarnVaultAbi = [
     type: "function",
   },
   {
+    inputs: [{ name: "receiver_", type: "address" }],
+    name: "maxMint",
+    outputs: [{ type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       { name: "controller_", type: "address" },
       { name: "owner_", type: "address" },
@@ -107,6 +124,16 @@ export const targetYieldEarnVaultAbi = [
     inputs: [],
     name: "paused",
     outputs: [{ type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "requestId_", type: "uint256" },
+      { name: "controller_", type: "address" },
+    ],
+    name: "pendingDepositRequest",
+    outputs: [{ type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },

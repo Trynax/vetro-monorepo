@@ -1,11 +1,11 @@
-import { type Address, type Client } from "viem";
-import { maxMint as erc4626MaxMint } from "viem-erc4626/actions";
+import { type Address, type Client, zeroAddress } from "viem";
+import { readContract } from "viem/actions";
 import { describe, expect, it, vi } from "vitest";
 
 import { maxMint } from "../../src/actions/public/maxMint.ts";
 
-vi.mock("viem-erc4626/actions", () => ({
-  maxMint: vi.fn(),
+vi.mock("viem/actions", () => ({
+  readContract: vi.fn(),
 }));
 
 const validParameters = {
@@ -17,12 +17,92 @@ const validParameters = {
 const client: Client = {};
 
 describe("maxMint", function () {
-  it("should pass the controller as the erc-4626 receiver", async function () {
+  it("should throw an error if client is not defined", async function () {
+    await expect(
+      // @ts-expect-error - Testing invalid input
+      maxMint(undefined, validParameters),
+    ).rejects.toThrow("Client is not defined");
+  });
+
+  it("should throw an error if parameters are not provided", async function () {
+    await expect(
+      // @ts-expect-error - Testing invalid input
+      maxMint(client, undefined),
+    ).rejects.toThrow("Parameters are required");
+  });
+
+  it("should throw an error if the address is not valid", async function () {
+    const parameters = {
+      ...validParameters,
+      address: "invalid_address",
+    };
+    await expect(
+      // @ts-expect-error - Testing invalid input
+      maxMint(client, parameters),
+    ).rejects.toThrow("Vault address is invalid");
+  });
+
+  it("should throw an error if the address is not provided", async function () {
+    const parameters = {
+      controller: validParameters.controller,
+    };
+    await expect(
+      // @ts-expect-error - Testing invalid input
+      maxMint(client, parameters),
+    ).rejects.toThrow("Vault address is invalid");
+  });
+
+  it("should throw an error if the address is zero address", async function () {
+    const parameters = {
+      ...validParameters,
+      address: zeroAddress,
+    };
+
+    await expect(maxMint(client, parameters)).rejects.toThrow(
+      "Vault address is invalid",
+    );
+  });
+
+  it("should throw an error if the controller is not valid", async function () {
+    const parameters = {
+      ...validParameters,
+      controller: "invalid_address",
+    };
+    await expect(
+      // @ts-expect-error - Testing invalid input
+      maxMint(client, parameters),
+    ).rejects.toThrow("Controller address is invalid");
+  });
+
+  it("should throw an error if the controller is not provided", async function () {
+    const parameters = {
+      address: validParameters.address,
+    };
+    await expect(
+      // @ts-expect-error - Testing invalid input
+      maxMint(client, parameters),
+    ).rejects.toThrow("Controller address is invalid");
+  });
+
+  it("should throw an error if the controller is zero address", async function () {
+    const parameters = {
+      ...validParameters,
+      controller: zeroAddress,
+    };
+
+    await expect(maxMint(client, parameters)).rejects.toThrow(
+      "Controller address is invalid",
+    );
+  });
+
+  it("should call readContract if all parameters are valid", async function () {
     await maxMint(client, validParameters);
 
-    expect(erc4626MaxMint).toHaveBeenCalledWith(client, {
+    expect(readContract).toHaveBeenCalledWith(client, {
+      abi: expect.anything(),
       address: validParameters.address,
-      receiver: validParameters.controller,
+      args: [validParameters.controller],
+      functionName: "maxMint",
     });
   });
 });

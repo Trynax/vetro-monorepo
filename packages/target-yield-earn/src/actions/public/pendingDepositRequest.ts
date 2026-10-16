@@ -1,16 +1,37 @@
+import { isAddressValid } from "@vetro-protocol/core";
 import { type Address, type Client } from "viem";
-import { pendingDepositRequest as erc7540PendingDepositRequest } from "viem-erc7540/actions";
+import { readContract } from "viem/actions";
 
-export const pendingDepositRequest = (
+import { targetYieldEarnVaultAbi } from "../../abi/targetYieldEarnVaultAbi.ts";
+
+export async function pendingDepositRequest(
   client: Client,
   parameters: {
     address: Address;
     controller: Address;
   },
-) =>
-  erc7540PendingDepositRequest(client, {
-    address: parameters?.address,
-    controller: parameters?.controller,
+) {
+  if (!client) {
+    throw new Error("Client is not defined");
+  }
+
+  if (!parameters) {
+    throw new Error("Parameters are required");
+  }
+
+  if (!isAddressValid(parameters.address)) {
+    throw new Error("Vault address is invalid");
+  }
+
+  if (!isAddressValid(parameters.controller)) {
+    throw new Error("Controller address is invalid");
+  }
+
+  return readContract(client, {
+    abi: targetYieldEarnVaultAbi,
+    address: parameters.address,
     // Contract requires this parameter to be always 0n
-    requestId: 0n,
+    args: [0n, parameters.controller],
+    functionName: "pendingDepositRequest",
   });
+}
