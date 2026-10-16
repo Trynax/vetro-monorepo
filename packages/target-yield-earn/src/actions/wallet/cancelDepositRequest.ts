@@ -65,10 +65,12 @@ const canCancelDepositRequest = function ({
 
 const runCancelDepositRequest = (
   walletClient: WalletClient,
-  { address, controller }: CancelDepositRequestParams,
+  params: CancelDepositRequestParams,
 ) =>
   async function (emitter: EventEmitter<CancelDepositRequestEvents>) {
     try {
+      const { address, controller } = params;
+
       const { canCancelDepositRequest: canCancelDepositRequestFlag, reason } =
         canCancelDepositRequest({
           address,

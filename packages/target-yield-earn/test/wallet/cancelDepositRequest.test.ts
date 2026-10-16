@@ -274,4 +274,25 @@ describe("cancelDepositRequest", function () {
     expect(onTransactionSucceeded).not.toHaveBeenCalled();
     expect(onSettled).toHaveBeenCalledOnce();
   });
+
+  it("should emit 'unexpected-error' and settle when params is not defined", async function () {
+    const { emitter, promise } = cancelDepositRequest(
+      mockWalletClient,
+      // @ts-expect-error testing a missing params object
+      undefined,
+    );
+
+    const onUnexpectedError = vi.fn();
+    const onSettled = vi.fn();
+
+    emitter.on("unexpected-error", onUnexpectedError);
+    emitter.on("cancel-deposit-request-settled", onSettled);
+
+    await promise;
+
+    expect(onUnexpectedError).toHaveBeenCalledExactlyOnceWith(
+      expect.any(TypeError),
+    );
+    expect(onSettled).toHaveBeenCalledOnce();
+  });
 });
