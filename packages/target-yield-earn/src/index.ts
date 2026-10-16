@@ -1,6 +1,7 @@
 import type { Client } from "viem";
 
 import {
+  getCancelableDepositRequest,
   getEpoch,
   getEpochId,
   getIsPaused,
@@ -23,6 +24,9 @@ export {
 
 // Export factory functions for .extend() pattern
 export const targetYieldEarnPublicActions = () => (client: Client) => ({
+  getCancelableDepositRequest: (
+    params: Parameters<typeof getCancelableDepositRequest>[1],
+  ) => getCancelableDepositRequest(client, params),
   getEpoch: (params: Parameters<typeof getEpoch>[1]) =>
     getEpoch(client, params),
   getEpochId: (params: Parameters<typeof getEpochId>[1]) =>

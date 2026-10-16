@@ -19,6 +19,7 @@ npm add @vetro-protocol/target-yield-earn viem
 
 ```ts
 import {
+  getCancelableDepositRequest,
   getEpoch,
   getEpochId,
   getMaxRequestDeposit,
@@ -56,11 +57,18 @@ const pendingAssets = await pendingDepositRequest(publicClient, {
   controller: "0x...",
   requestId: 0n,
 });
+
+// Assets of a pending deposit request that the controller can cancel now.
+const cancelableAssets = await getCancelableDepositRequest(publicClient, {
+  address: vaultAddress,
+  controller: "0x...",
+});
 ```
 
 ## API
 
 - Public actions (reads):
+  - `getCancelableDepositRequest(client, { address, controller })` — assets in the controller's deposit request that `cancelDepositRequest` can refund now.
   - `getEpoch(client, params)` — an epoch's `start`, `end`, `rate`, `maxDeposits` (the deposit cap), `deposits` (the assets requested so far) and its `entryWindow`, `accrualInterval` and `exitWindow` as `{ end, start }` absolute timestamps.
   - `getEpochId(client, params)` — the current epoch id, `0n` when no epoch has started.
   - `getIsPaused(client, params)` — whether the keeper paused the vault. Pausing blocks new deposit requests only.
@@ -72,7 +80,7 @@ const pendingAssets = await pendingDepositRequest(publicClient, {
   - `maxMint(client, { address, controller })` — the shares the controller can mint from its fulfilled deposit request. It wraps `maxMint` from `viem-erc4626`, which calls this argument `receiver`. In this vault, that address is the controller of the request.
   - `pendingDepositRequest(client, params)` — assets in an unfulfilled deposit request, re-exported from `viem-erc7540`.
 - Wallet actions (writes), exported from `/actions` only. All of them return `{ emitter, promise }`:
-  - `cancelDepositRequest(walletClient, { address, controller })` — cancels the controller's unfulfilled deposit request. The vault sends the assets back to the controller. Allowed at any time before fulfillment.
+  - `cancelDepositRequest(walletClient, { address, controller })` — cancels the controller's unfulfilled deposit request. The vault sends the assets back to the controller. Allowed only while `getCancelableDepositRequest` is above `0n`.
   - `cancelRedeemRequest(walletClient, { address, controller })` — cancels the controller's unfulfilled redeem request. The vault sends the escrowed shares back to the controller. Allowed only during the exit window of the epoch of the request.
   - Both cancel actions are specific to VUSDx. ERC-8416 does not define them.
   - `encodeCancelDepositRequest(params)` and `encodeCancelRedeemRequest(params)` — return the calldata for the cancel call without sending anything. Useful for gas estimation or for batching into a multicall.
