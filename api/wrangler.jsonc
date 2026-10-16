@@ -53,7 +53,7 @@
       "vars": {
         "CONTACT_FORM_RECIPIENT": "gonzalo@hemi.xyz",
         "CONTACT_FORM_SENDER": "noreply@forms.vetro.org",
-        "CUSTOM_RPC_URL_MAINNET": "https://eth.drpc.org",
+        "CUSTOM_RPC_URL_MAINNET": "https://eth.drpc.org+https://ethereum-rpc.publicnode.com+https://1rpc.io/eth",
         "ORIGINS": "https://*.letshamsterdance.xyz,https://*-vetro-web-staging.hemilabs.workers.dev",
         "PORTAL_API_URL": "https://portal-api.hemi.xyz",
         "SUBGRAPH_ID": "7vnTMFYNE6Nv7RTeoaog4QgqQ3bwZTFoPUGv2gcmTxJ6",
