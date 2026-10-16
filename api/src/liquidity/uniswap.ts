@@ -130,6 +130,13 @@ const buildPool = async function ({
     ],
     rate: lastPoolRate(data.priceHistory),
   });
+  [pool.token0, pool.token1].forEach(function (address, index) {
+    if (usdPrices[index] <= 0) {
+      console.warn(
+        `No USD price for ${address}, so Uniswap pool ${pool.address} has no TVL`,
+      );
+    }
+  });
   const tvlUsd = poolTvlUsd(
     supplies.map((amount, index) => ({
       amount,
