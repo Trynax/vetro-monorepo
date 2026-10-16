@@ -107,6 +107,7 @@ const FixedTermEarnDetailsContent = function ({
           <FixedTermInfoCards stakingVaultAddress={stakingVaultAddress} />
           <StripedDivider variant="small" />
           <FixedTermPositionCards
+            peggedToken={peggedToken}
             shareToken={shareToken}
             stakingVaultAddress={stakingVaultAddress}
           />

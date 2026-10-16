@@ -1,7 +1,7 @@
 import { type Token } from "@vetro-protocol/core";
 import { TokenLogo } from "components/tokenLogo";
 import { Tooltip } from "components/tooltip";
-import { type ComponentType, Fragment, type ReactNode } from "react";
+import { type ComponentType, type ReactNode } from "react";
 import { formatNumber } from "utils/format";
 import { formatUnits, parseUnits } from "viem/utils";
 
@@ -26,7 +26,7 @@ type Props = {
 export const DisplayAmount = function ({
   amount,
   amountContainer: AmountContainer = DefaultTextContainer,
-  container: Container = Fragment,
+  container: Container = DefaultTextContainer,
   showSymbol = true,
   showTokenLogo = true,
   symbolContainer: SymbolContainer = DefaultTextContainer,

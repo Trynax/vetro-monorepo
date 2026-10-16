@@ -36,7 +36,7 @@ export const Tooltip = ({
     trigger={["hover"]}
     visible={visible}
   >
-    <div className={`cursor-pointer ${stretch ? "size-full" : "w-fit"}`}>
+    <div className={`flex cursor-pointer ${stretch ? "size-full" : "w-fit"}`}>
       {children}
     </div>
   </RcTooltip>

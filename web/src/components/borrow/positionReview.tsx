@@ -97,14 +97,14 @@ export function PositionReview({
   }: {
     children?: React.ReactNode;
   }) => (
-    <span className="flex items-center justify-end gap-2">
+    <span className="flex w-full items-center justify-end gap-2">
       <TokenLogo {...collateralToken} />
       {children}
     </span>
   );
 
   const LoanContainer = ({ children }: { children?: React.ReactNode }) => (
-    <span className="flex items-center justify-end gap-2">
+    <span className="flex w-full items-center justify-end gap-2">
       <TokenLogo {...loanToken} />
       {children}
     </span>

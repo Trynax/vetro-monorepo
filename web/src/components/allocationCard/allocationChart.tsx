@@ -27,7 +27,7 @@ export const AllocationChart = ({
         items
           .filter(({ amount }) => amount > 0)
           .map(function ({ amount, color, label, logoURI, tooltip }) {
-            const barClass = `h-full cursor-pointer rounded-sm transition-opacity ${color} ${hoveredLabel && hoveredLabel !== label ? "opacity-20" : ""}`;
+            const barClass = `size-full cursor-pointer rounded-sm transition-opacity ${color} ${hoveredLabel && hoveredLabel !== label ? "opacity-20" : ""}`;
             const bar = (
               <div
                 className={barClass}
