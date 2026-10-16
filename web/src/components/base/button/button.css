@@ -1,23 +1,24 @@
 @reference "../../../index.css";
 
 .button--base {
-  @apply relative box-border inline-flex cursor-pointer items-center justify-center overflow-hidden rounded-full font-medium transition-colors duration-150 ease-in-out focus-visible:outline-0 disabled:opacity-65;
+  @apply relative box-border inline-flex cursor-pointer items-center justify-center overflow-hidden rounded-full font-medium transition-colors duration-150 ease-in-out focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-65;
 }
 
 /* Button Variants */
+/* not-disabled: rather than enabled: because ButtonLink renders <a>, which never matches :enabled */
 .button-primary {
-  @apply bg-blue-100 text-blue-500 hover:bg-blue-200;
+  @apply bg-blue-100 text-blue-500 not-disabled:hover:bg-blue-200;
 }
 
-.button-primary:focus-visible {
+.button-primary:not(:disabled):focus-visible {
   box-shadow: 0 0 0 4px var(--color-blue-500);
 }
 
 .button-secondary {
-  @apply bg-white text-gray-900 shadow-sm hover:bg-gray-50 aria-expanded:bg-gray-50;
+  @apply bg-white text-gray-900 shadow-sm not-disabled:hover:bg-gray-50 aria-expanded:bg-gray-50;
 }
 
-.button-secondary:focus-visible {
+.button-secondary:not(:disabled):focus-visible {
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.04),
     0 1px 2px 0 rgba(0, 0, 0, 0.08),
@@ -26,27 +27,27 @@
 }
 
 .button-tertiary {
-  @apply hover:shadow-bs bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus-visible:bg-gray-100;
+  @apply not-disabled:hover:shadow-bs bg-transparent text-gray-700 not-disabled:hover:bg-gray-100 not-disabled:hover:text-gray-900 not-disabled:focus-visible:bg-gray-100;
 }
 
-.button-tertiary:focus-visible {
+.button-tertiary:not(:disabled):focus-visible {
   box-shadow: 0 0 0 4px var(--color-gray-300);
 }
 
 .button-danger {
-  @apply bg-rose-50 text-rose-500 hover:bg-rose-100;
+  @apply bg-rose-50 text-rose-500 not-disabled:hover:bg-rose-100;
 }
 
-.button-danger:focus-visible {
+.button-danger:not(:disabled):focus-visible {
   box-shadow: 0 0 0 4px var(--color-rose-500);
 }
 
 /* Navbar link variants - color/state only */
 .button-nav-secondary {
-  @apply bg-transparent text-gray-500 hover:text-gray-900;
+  @apply bg-transparent text-gray-500 not-disabled:hover:text-gray-900;
 }
 
-.button-nav-secondary:focus-visible {
+.button-nav-secondary:not(:disabled):focus-visible {
   box-shadow: 0 0 0 4px var(--color-gray-300);
 }
 
