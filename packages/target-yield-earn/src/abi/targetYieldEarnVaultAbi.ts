@@ -21,6 +21,17 @@ export const targetYieldEarnVaultAbi = [
     type: "function",
   },
   {
+    inputs: [
+      { name: "assets_", type: "uint256" },
+      { name: "receiver_", type: "address" },
+      { name: "controller_", type: "address" },
+    ],
+    name: "deposit",
+    outputs: [{ type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "epochId",
     outputs: [{ type: "uint256" }],
@@ -45,6 +56,16 @@ export const targetYieldEarnVaultAbi = [
         type: "tuple",
       },
     ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "owner_", type: "address" },
+      { name: "spender_", type: "address" },
+    ],
+    name: "isOperator",
+    outputs: [{ type: "bool" }],
     stateMutability: "view",
     type: "function",
   },
