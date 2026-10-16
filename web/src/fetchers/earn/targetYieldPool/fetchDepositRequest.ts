@@ -8,9 +8,10 @@ export type DepositRequest = {
   pendingAssets: bigint;
 };
 
-// TODO: read with `pendingDepositRequest`, `claimableDepositRequest`,
-// `maxDeposit`, `maxMint` and `getCancelableDepositRequest` from
-// `@vetro-protocol/target-yield-earn` once VUSDx is deployed.
+// TODO: read with `getPendingDepositRequest`, `getClaimableDepositRequest`,
+// `getMaxMint` and `getCancelableDepositRequest` from
+// `@vetro-protocol/target-yield-earn`, and `maxDeposit` from
+// `viem-erc7540/actions`, once VUSDx is deployed.
 // See https://github.com/vetro-protocol/vetro-monorepo/issues/646
 export const fetchDepositRequest = async (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
