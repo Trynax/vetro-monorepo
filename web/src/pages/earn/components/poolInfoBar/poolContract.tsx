@@ -16,7 +16,7 @@ export function PoolContract({ address }: Props) {
   const explorerBaseUrl = mainnet.blockExplorers!.default.url;
 
   return (
-    <div className="contents md:*:w-32">
+    <div className="contents md:*:min-w-28">
       <PoolInfoItem
         data={address}
         label={t("pages.earn.pool-info.pool-contract")}
