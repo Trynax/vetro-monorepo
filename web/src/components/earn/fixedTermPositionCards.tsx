@@ -2,6 +2,7 @@ import type { Token } from "@vetro-protocol/core";
 import { InfoCard } from "components/base/infoCard";
 import { CardRow } from "components/earn/cardRow";
 import { DepositClaimCard } from "components/earn/depositClaimCard";
+import { ExitClaimCard } from "components/earn/exitClaimCard";
 import { PositionCard } from "components/earn/positionCard";
 import { Subtitle } from "components/earn/subtitle";
 import { InfoIcon } from "components/icons/infoIcon";
@@ -97,8 +98,13 @@ export const FixedTermPositionCards = ({
           stakingVaultAddress={stakingVaultAddress}
         />
       }
-      // TODO implement exit card here
-      right={null}
+      right={
+        <ExitClaimCard
+          peggedToken={peggedToken}
+          shareToken={shareToken}
+          stakingVaultAddress={stakingVaultAddress}
+        />
+      }
     />
     <div className="xl:px-14 xl:*:border-0">
       <RolloverStatusCard stakingVaultAddress={stakingVaultAddress} />
