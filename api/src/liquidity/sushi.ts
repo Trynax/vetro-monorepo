@@ -1,8 +1,4 @@
-import {
-  knownTokens,
-  type DexPool,
-  type DexPoolRange,
-} from "@vetro-protocol/core";
+import type { DexPool, DexPoolRange } from "@vetro-protocol/core";
 import {
   type Address,
   type Client,
@@ -20,6 +16,7 @@ import { fulfilledValues } from "../utils/promises.ts";
 
 import { bandActivity } from "./band-activity.ts";
 import { feeApr, poolTvlUsd } from "./pool-metrics.ts";
+import { portalUsdPrice } from "./portal-usd-price.ts";
 import { isTrackedToken } from "./tracked-tokens.ts";
 import { findV3Pools } from "./v3-factory.ts";
 import { fetchV3PoolState } from "./v3-pool-state.ts";
@@ -205,30 +202,6 @@ const splitOpeningSwap = function ({
   return { opening: { tick: currentTick, timestamp: sinceSeconds }, swaps };
 };
 
-const referenceUsdPrice = function ({
-  address,
-  prices,
-}: {
-  address: Address;
-  prices: Record<string, string>;
-}) {
-  const token = knownTokens.find(
-    (known) =>
-      known.chainId === mainnet.id && isAddressEqual(known.address, address),
-  );
-  const priceSymbol = (
-    token?.extensions?.priceSymbol ?? token?.symbol
-  )?.toUpperCase();
-  const price = priceSymbol === undefined ? undefined : prices[priceSymbol];
-  if (price === undefined) {
-    console.warn(
-      `No USD price for ${address}, so its Sushi ranges have no TVL`,
-    );
-    return undefined;
-  }
-  return Number(price);
-};
-
 const getSushiPool = async function ({
   address,
   client,
@@ -336,10 +309,13 @@ const getSushiPool = async function ({
   }
 
   const token1IsReference = !isTrackedToken(tokens[1].address);
-  const referencePrice = referenceUsdPrice({
-    address: tokens[token1IsReference ? 1 : 0].address,
-    prices,
-  });
+  const referenceAddress = tokens[token1IsReference ? 1 : 0].address;
+  const referencePrice = portalUsdPrice({ address: referenceAddress, prices });
+  if (referencePrice === undefined) {
+    console.warn(
+      `No USD price for ${referenceAddress}, so its Sushi ranges have no TVL`,
+    );
+  }
   const usdPrices =
     referencePrice === undefined
       ? [undefined, undefined]
