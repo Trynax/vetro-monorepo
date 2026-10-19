@@ -29,6 +29,5 @@ export const useVariableStakeExitQueue = (
     },
     queryKey: ["variable-stake-exit-queue", mainnet.id, gatewayAddress],
     refetchInterval: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

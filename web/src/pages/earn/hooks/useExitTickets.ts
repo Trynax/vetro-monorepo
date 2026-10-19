@@ -21,6 +21,5 @@ export function useExitTickets() {
       >,
     queryKey: exitTicketsQueryKey(address),
     refetchInterval: 5 * 60 * 1000,
-    retry: 2,
   });
 }
