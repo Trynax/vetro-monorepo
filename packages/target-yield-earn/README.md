@@ -14,6 +14,7 @@ npm add @vetro-protocol/target-yield-earn viem
 - The vault runs in epochs. Each epoch is a term with its own target APR, a max deposit cap, and an exit window at its end during which redeem requests are accepted. `getEpochId` returns the current epoch (`0n` when none has started yet).
 - The APR is a target, not a promise. It's set per epoch before that epoch starts and applies only to that term — nothing commits the vault to it beyond the current epoch — and the owner can terminate the vault once an epoch ends, after which yield stops accruing for good.
 - A request is either pending (`getPendingDepositRequest`) or claimable (`getClaimableDepositRequest`), never both. A new deposit request or a redeem request claims a claimable one first.
+- Targets the whitelisted target-yield vaults, exported as `vusdxAddress` and the combined `targetYieldVaultAddresses` list (also from the `/addresses` subpath).
 - `minEpochDurationSeconds`, `minExitWindowSeconds` and `maxExitWindowSeconds` mirror the vault's hardcoded values. They're exported as seconds.
 
 ## Usage
@@ -106,4 +107,4 @@ const claimableShares = await getMaxMint(publicClient, {
   - `requestRedeem(walletClient, { address, controller, owner, shares })` — requests a redemption.
 - `targetYieldEarnPublicActions()` — viem extension factory that wires the public actions onto a client via `.extend()`.
 - `targetYieldEarnVaultAbi` — the minimal ABI subset used by the package.
-- Constants: `maxExitWindowSeconds`, `minEpochDurationSeconds`, `minExitWindowSeconds`.
+- Constants: `maxExitWindowSeconds`, `minEpochDurationSeconds`, `minExitWindowSeconds`, `targetYieldVaultAddresses`, `vusdxAddress`.

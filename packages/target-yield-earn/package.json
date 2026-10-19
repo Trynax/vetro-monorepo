@@ -59,6 +59,10 @@
         "default": "./_esm/actions/index.js",
         "types": "./_types/actions/index.d.ts"
       },
+      "./addresses": {
+        "default": "./_esm/targetYieldVaultAddresses.js",
+        "types": "./_types/targetYieldVaultAddresses.d.ts"
+      },
       "./package.json": "./package.json"
     },
     "main": "./_esm/index.js",
@@ -74,6 +78,10 @@
     "./actions": {
       "types": "./src/actions/index.ts",
       "default": "./src/actions/index.ts"
+    },
+    "./addresses": {
+      "types": "./src/targetYieldVaultAddresses.ts",
+      "default": "./src/targetYieldVaultAddresses.ts"
     },
     "./package.json": "./package.json"
   },

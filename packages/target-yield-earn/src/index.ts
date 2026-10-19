@@ -23,6 +23,11 @@ export {
   minExitWindowSeconds,
 } from "./constants.ts";
 
+export {
+  targetYieldVaultAddresses,
+  vusdxAddress,
+} from "./targetYieldVaultAddresses.ts";
+
 // Export factory functions for .extend() pattern
 export const targetYieldEarnPublicActions = () => (client: Client) => ({
   getCancelableDepositRequest: (

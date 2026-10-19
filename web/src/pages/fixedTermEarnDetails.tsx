@@ -1,3 +1,4 @@
+import { targetYieldVaultAddresses } from "@vetro-protocol/target-yield-earn/addresses";
 import { Breadcrumb } from "components/base/breadcrumb";
 import { BreadcrumbSelector } from "components/base/breadcrumb/breadcrumbSelector";
 import { ButtonLink } from "components/base/button";
@@ -10,7 +11,6 @@ import { TokenLogo } from "components/tokenLogo";
 import { useShareToken } from "hooks/useShareToken";
 import { useVaultPeggedToken } from "hooks/useVaultPeggedToken";
 import { TargetYieldForm } from "pages/earn/components/targetYieldForm";
-import { targetYieldVaultAddresses } from "pages/earn/targetYieldVaults";
 import { ErrorPage } from "pages/errorPage";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
