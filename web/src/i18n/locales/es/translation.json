@@ -6,7 +6,7 @@
     "approve-10x-tooltip": "Apruebe hasta 10× el monto de su transacción, reduciendo futuros pasos de aprobación. Puede revocarlo en cualquier momento.",
     "balance": "Saldo",
     "charts": {
-      "apy-label": "TEA",
+      "apy-label": "TEA de {{shareSymbol}}",
       "period-1-month": "1 mes",
       "period-1-week": "1 semana",
       "period-1-year": "1 año",
