@@ -10,6 +10,7 @@ type Props<T> = {
 };
 
 const valueClassName = "text-xsm font-semibold text-gray-900";
+const emptyValue = <span className={valueClassName}>-</span>;
 
 export function PoolInfoItem<T>({
   data,
@@ -22,7 +23,7 @@ export function PoolInfoItem<T>({
 }: Props<T>) {
   function renderData() {
     if (data === null) {
-      return <span className={valueClassName}>-</span>;
+      return emptyValue;
     }
     if (data !== undefined) {
       return render(data);
@@ -30,7 +31,7 @@ export function PoolInfoItem<T>({
     if (!isError && isPending) {
       return <Skeleton height={20} width={80} />;
     }
-    return <span className={valueClassName}>-</span>;
+    return emptyValue;
   }
 
   return (
