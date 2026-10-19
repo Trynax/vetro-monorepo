@@ -473,7 +473,7 @@
         "stake-dao": "Deposit LP tokens on Stake DAO to earn boosted CRV and SDT rewards without needing veCRV."
       },
       "title": "Liquidity",
-      "total-tvl": "Total TVL",
+      "total-tvl": "Total DEX TVL",
       "try-again": "Try again",
       "tvl": "TVL",
       "volume-24h": "24h volume"
