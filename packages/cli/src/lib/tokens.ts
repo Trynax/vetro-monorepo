@@ -181,6 +181,9 @@ function withStakingVault<T extends { gatewayAddress: Address }>({
   return { ...token, stakingVault };
 }
 
+/**
+ * Resolves a pegged token by symbol or address, along with its staking vault.
+ */
 export async function resolveStakablePeggedToken({
   client,
   value,
