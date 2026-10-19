@@ -46,7 +46,9 @@ export const config = getDefaultConfig({
   ],
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1 } },
+});
 
 const disclaimerLinkClassName =
   "font-medium text-blue-500 transition-colors hover:text-blue-600";

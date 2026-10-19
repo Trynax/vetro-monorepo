@@ -27,7 +27,6 @@ const analyticsTvlOptions = (gatewayAddress: Address | undefined) =>
       ).then(({ minted }) => ({ minted: BigInt(minted) })),
     queryKey: analyticsTvlQueryKey(gatewayAddress),
     refetchInterval: 60 * 1000, // 1 minute
-    retry: 2,
     staleTime: 60 * 1000, // 1 minute
   });
 

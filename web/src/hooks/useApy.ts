@@ -13,7 +13,6 @@ export const useApy = (stakingVaultAddress: Address) =>
       fetch(`${apiUrl}/variable-stake/apy`) as Promise<ApyResponse>,
     queryKey: ["variable-stake-apy"],
     refetchInterval: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
     // A vault whose reads failed is omitted from the response, so this can be
     // undefined; callers render "-" in that case.
     select: (data) => data[stakingVaultAddress]?.apy,

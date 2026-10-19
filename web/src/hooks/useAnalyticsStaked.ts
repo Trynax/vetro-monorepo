@@ -27,7 +27,6 @@ const analyticsStakedOptions = (gatewayAddress: Address | undefined) =>
       ).then(({ staked }) => ({ staked: BigInt(staked) })),
     queryKey: analyticsStakedQueryKey(gatewayAddress),
     refetchInterval: 60 * 1000, // 1 minute
-    retry: 2,
     staleTime: 60 * 1000, // 1 minute
   });
 

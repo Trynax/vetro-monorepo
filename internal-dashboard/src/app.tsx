@@ -7,7 +7,9 @@ import { DexPage } from "./pages/dex";
 import { DexPoolPage } from "./pages/dexPool";
 import { EarnAgentPage } from "./pages/earnAgent";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1 } },
+});
 
 export const App = () => (
   <div className="lg:px-4 xl:px-8 2xl:px-28">
