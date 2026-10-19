@@ -3,6 +3,7 @@ import { ChartPlaceholder } from "components/chartPlaceholders";
 import { ClockRevertedIcon } from "components/icons/clockRevertedIcon";
 import { useApyHistory } from "hooks/useApyHistory";
 import { useElementWidth } from "hooks/useElementWidth";
+import { useShareTokenForPeggedToken } from "hooks/useShareTokenForPeggedToken";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
@@ -29,10 +30,25 @@ import {
   VictoryTooltip,
   VictoryVoronoiContainer,
 } from "victory";
+
 type Props = {
   peggedToken: TokenWithGateway | undefined;
   peggedTokenError?: boolean;
 };
+
+function ApyLabel({ peggedToken, peggedTokenError = false }: Props) {
+  const { t } = useTranslation();
+  const { data: shareToken, isError: isShareTokenError } =
+    useShareTokenForPeggedToken({ peggedToken });
+
+  if (shareToken) {
+    return t("common.charts.apy-label", { shareSymbol: shareToken.symbol });
+  }
+  if (peggedTokenError || isShareTokenError) {
+    return "-";
+  }
+  return <Skeleton width={96} />;
+}
 
 export function ApyHistoryCard({
   peggedToken,
@@ -58,7 +74,10 @@ export function ApyHistoryCard({
       <div className="flex flex-col gap-3">
         <div className="flex w-full items-center justify-between">
           <span className="text-b-medium text-gray-900">
-            {t("common.charts.apy-label")}
+            <ApyLabel
+              peggedToken={peggedToken}
+              peggedTokenError={peggedTokenError}
+            />
           </span>
           <ClockRevertedIcon className="text-blue-500" />
         </div>

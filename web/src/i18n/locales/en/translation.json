@@ -6,7 +6,7 @@
     "approve-10x-tooltip": "Approves up to 10× your transaction amount, reducing future approval steps. You can revoke it anytime.",
     "balance": "Balance",
     "charts": {
-      "apy-label": "APY",
+      "apy-label": "{{shareSymbol}} APY",
       "period-1-month": "1 month",
       "period-1-week": "1 week",
       "period-1-year": "1 year",
