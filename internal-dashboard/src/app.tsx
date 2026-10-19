@@ -7,7 +7,6 @@ import { DexPage } from "./pages/dex";
 import { DexPoolPage } from "./pages/dexPool";
 import { EarnAgentPage } from "./pages/earnAgent";
 
-// Match the web app: React Query's default of 3 retries delays error states.
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
 });
