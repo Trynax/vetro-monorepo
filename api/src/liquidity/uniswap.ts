@@ -84,17 +84,17 @@ const resolvePrices = function ({
   return prices;
 };
 
-// Uniswap sends 0 when it has no price, so we fall back to the portal prices API.
-const tokenPrice = function ({
+const uniswapPrice = (token: RawToken) => token.market?.price?.value ?? 0;
+
+const portalFallback = function ({
   address,
   portalPrices,
-  token,
+  price,
 }: {
   address: Address;
   portalPrices: Record<string, string>;
-  token: RawToken;
+  price: number;
 }) {
-  const price = token.market?.price?.value ?? 0;
   if (price > 0) {
     return price;
   }
@@ -123,12 +123,25 @@ const buildPool = async function ({
 }): Promise<DexPool> {
   const data = await fetchPoolData(pool.address);
   const supplies = [data.token0Supply ?? 0, data.token1Supply ?? 0];
+  const rate = lastPoolRate(data.priceHistory);
+  const [uniswapPrice0, uniswapPrice1] = resolvePrices({
+    prices: [uniswapPrice(data.token0), uniswapPrice(data.token1)],
+    rate,
+  });
   const usdPrices = resolvePrices({
     prices: [
-      tokenPrice({ address: pool.token0, portalPrices, token: data.token0 }),
-      tokenPrice({ address: pool.token1, portalPrices, token: data.token1 }),
+      portalFallback({
+        address: pool.token0,
+        portalPrices,
+        price: uniswapPrice0,
+      }),
+      portalFallback({
+        address: pool.token1,
+        portalPrices,
+        price: uniswapPrice1,
+      }),
     ],
-    rate: lastPoolRate(data.priceHistory),
+    rate,
   });
   [pool.token0, pool.token1].forEach(function (address, index) {
     if (usdPrices[index] <= 0) {
