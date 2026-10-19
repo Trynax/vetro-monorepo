@@ -11,12 +11,14 @@ describe("help", function () {
     ["swap", "mint"],
     ["variable-yield"],
     ["variable-yield", "allowance"],
+    ["variable-yield", "approve"],
     ["variable-yield", "cooldown"],
     ["variable-yield", "exit-tickets"],
     ["variable-yield", "is-instant-withdraw"],
     ["variable-yield", "position"],
     ["variable-yield", "preview-stake"],
     ["variable-yield", "total-assets"],
+    ["variable-yield", "unstake"],
   ])("lists --rpc-url in the help of %s", async function (command) {
     const { exitCode, stdout } = await runCliRaw([...command, "--help"]);
     expect(exitCode).toBe(0);

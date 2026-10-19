@@ -174,7 +174,7 @@ export const claimWithdrawBatch = (
 export const encodeClaimWithdrawBatch = ({
   receiver,
   requestIds,
-}: ClaimWithdrawBatchParams) =>
+}: Omit<ClaimWithdrawBatchParams, "vaultAddress">) =>
   encodeFunctionData({
     abi: stakingVaultAbi,
     args: [requestIds, receiver],

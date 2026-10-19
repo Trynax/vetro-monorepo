@@ -5,7 +5,7 @@ import {
   getWithdrawalDelay,
 } from "@vetro-protocol/gateway/actions";
 import { decodeFunctionData, isAddressEqual, parseUnits } from "viem";
-import { getBlock, increaseTime, mine, revert, snapshot } from "viem/actions";
+import { getBlock } from "viem/actions";
 import { balanceOf } from "viem-erc20/actions";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 
@@ -16,6 +16,7 @@ import {
   cancelRedeemArgs,
   createClients,
   depositAbi,
+  fastForward,
   fundTestAccount,
   mintArgs,
   redeemAbi,
@@ -28,10 +29,11 @@ import {
   slippage,
   usdc,
   vusd,
+  withSnapshot,
 } from "./helpers.ts";
 
 const rpcUrl = inject("anvilUrl");
-const { publicClient, testClient } = createClients(rpcUrl);
+const { publicClient } = createClients(rpcUrl);
 
 const onFork = (args: string[]) => [...args, "--rpc-url", rpcUrl];
 
@@ -147,98 +149,100 @@ describe("swap out in two steps (VUSD → queue → USDC) and swap request", fun
   });
 
   it("reports the queued request as ready once the cooldown ends", async function () {
-    const id = await snapshot(testClient);
-    try {
-      const delay = await getWithdrawalDelay(publicClient, {
-        address: gateway,
-      });
-      await increaseTime(testClient, { seconds: Number(delay) });
-      await mine(testClient, { blocks: 1 });
+    await withSnapshot({
+      rpcUrl,
+      async run() {
+        const delay = await getWithdrawalDelay(publicClient, {
+          address: gateway,
+        });
+        await fastForward({ rpcUrl, seconds: delay });
 
-      const request = await runCli<RedeemRequest>(requestOnFork());
+        const request = await runCli<RedeemRequest>(requestOnFork());
 
-      expect(request.status).toBe("ready");
-    } finally {
-      await revert(testClient, { id });
-    }
+        expect(request.status).toBe("ready");
+      },
+    });
   });
 
   it("returns the locked amount to the wallet once the cancel-redeem calldata is broadcast", async function () {
-    const id = await snapshot(testClient);
-    try {
-      const [cancelRequest, [amountLocked], vusdBefore] = await Promise.all([
-        runCli<TransactionRequest>(onFork(cancelRedeemArgs(accountArgs))),
-        getRedeemRequest(publicClient, {
-          address: gateway,
-          user: TEST_ADDRESS,
-        }),
-        readVusdBalance(),
-      ]);
-      expect(isAddressEqual(cancelRequest.to, gateway)).toBe(true);
-
-      const receipt = await sendTransactionRequest({
-        request: cancelRequest,
-        rpcUrl,
-      });
-      expect(receipt.status).toBe("success");
-
-      const [request, vusdAfter] = await Promise.all([
-        runCli<RedeemRequest>(requestOnFork()),
-        readVusdBalance(),
-      ]);
-      expect(request.status).toBe("none");
-      expect(vusdAfter - vusdBefore).toBe(amountLocked);
-    } finally {
-      await revert(testClient, { id });
-    }
-  });
-
-  it("pays out at least minAmountOut from the locked amount once the redeem calldata is broadcast after the cooldown", async function () {
-    const id = await snapshot(testClient);
-    try {
-      const delay = await getWithdrawalDelay(publicClient, {
-        address: gateway,
-      });
-      await increaseTime(testClient, { seconds: Number(delay) });
-      await mine(testClient, { blocks: 1 });
-
-      const redeemRequest = await runCli<TransactionRequest>(
-        onFork(redeemArgs(["--amount", queuedAmount, "--slippage", slippage])),
-      );
-      const { args } = decodeFunctionData({
-        abi: redeemAbi,
-        data: redeemRequest.data,
-      });
-      const [[amountLockedBefore], [usdcBefore, vusdBefore]] =
-        await Promise.all([
+    await withSnapshot({
+      rpcUrl,
+      async run() {
+        const [cancelRequest, [amountLocked], vusdBefore] = await Promise.all([
+          runCli<TransactionRequest>(onFork(cancelRedeemArgs(accountArgs))),
           getRedeemRequest(publicClient, {
             address: gateway,
             user: TEST_ADDRESS,
           }),
-          readBalances(),
+          readVusdBalance(),
         ]);
+        expect(isAddressEqual(cancelRequest.to, gateway)).toBe(true);
 
-      const receipt = await sendTransactionRequest({
-        request: redeemRequest,
-        rpcUrl,
-      });
-      expect(receipt.status).toBe("success");
+        const receipt = await sendTransactionRequest({
+          request: cancelRequest,
+          rpcUrl,
+        });
+        expect(receipt.status).toBe("success");
 
-      const [[amountLockedAfter], [usdcAfter, vusdAfter]] = await Promise.all([
-        getRedeemRequest(publicClient, {
+        const [request, vusdAfter] = await Promise.all([
+          runCli<RedeemRequest>(requestOnFork()),
+          readVusdBalance(),
+        ]);
+        expect(request.status).toBe("none");
+        expect(vusdAfter - vusdBefore).toBe(amountLocked);
+      },
+    });
+  });
+
+  it("pays out at least minAmountOut from the locked amount once the redeem calldata is broadcast after the cooldown", async function () {
+    await withSnapshot({
+      rpcUrl,
+      async run() {
+        const delay = await getWithdrawalDelay(publicClient, {
           address: gateway,
-          user: TEST_ADDRESS,
-        }),
-        readBalances(),
-      ]);
-      expect(amountLockedBefore - amountLockedAfter).toBe(
-        parseUnits(queuedAmount, vusd.decimals),
-      );
-      expect(usdcAfter - usdcBefore).toBeGreaterThanOrEqual(args[2]);
-      expect(vusdAfter).toBe(vusdBefore);
-    } finally {
-      await revert(testClient, { id });
-    }
+        });
+        await fastForward({ rpcUrl, seconds: delay });
+
+        const redeemRequest = await runCli<TransactionRequest>(
+          onFork(
+            redeemArgs(["--amount", queuedAmount, "--slippage", slippage]),
+          ),
+        );
+        const { args } = decodeFunctionData({
+          abi: redeemAbi,
+          data: redeemRequest.data,
+        });
+        const [[amountLockedBefore], [usdcBefore, vusdBefore]] =
+          await Promise.all([
+            getRedeemRequest(publicClient, {
+              address: gateway,
+              user: TEST_ADDRESS,
+            }),
+            readBalances(),
+          ]);
+
+        const receipt = await sendTransactionRequest({
+          request: redeemRequest,
+          rpcUrl,
+        });
+        expect(receipt.status).toBe("success");
+
+        const [[amountLockedAfter], [usdcAfter, vusdAfter]] = await Promise.all(
+          [
+            getRedeemRequest(publicClient, {
+              address: gateway,
+              user: TEST_ADDRESS,
+            }),
+            readBalances(),
+          ],
+        );
+        expect(amountLockedBefore - amountLockedAfter).toBe(
+          parseUnits(queuedAmount, vusd.decimals),
+        );
+        expect(usdcAfter - usdcBefore).toBeGreaterThanOrEqual(args[2]);
+        expect(vusdAfter).toBe(vusdBefore);
+      },
+    });
   });
 });
 

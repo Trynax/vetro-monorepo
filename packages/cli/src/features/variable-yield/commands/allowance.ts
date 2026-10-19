@@ -5,7 +5,7 @@ import { allowance } from "viem-erc20/actions";
 import { parseAddress } from "../../../lib/args.ts";
 import { type GlobalOptions, createVetroClient } from "../../../lib/client.ts";
 import { printResult } from "../../../lib/output.ts";
-import { getStakingVault, resolvePeggedToken } from "../../../lib/tokens.ts";
+import { resolveStakablePeggedToken } from "../../../lib/tokens.ts";
 
 export function register(variableYield: Command) {
   variableYield
@@ -25,20 +25,15 @@ export function register(variableYield: Command) {
       const { client } = await createVetroClient(
         command.optsWithGlobals<GlobalOptions>(),
       );
-      const peggedToken = await resolvePeggedToken({
+      const peggedToken = await resolveStakablePeggedToken({
         client,
         value: options.token,
-      });
-
-      const stakingVault = getStakingVault({
-        gatewayAddress: peggedToken.gatewayAddress,
-        token: options.token,
       });
 
       const approved = await allowance(client, {
         address: peggedToken.address,
         owner: options.account,
-        spender: stakingVault,
+        spender: peggedToken.stakingVault,
       });
       printResult(approved);
     });

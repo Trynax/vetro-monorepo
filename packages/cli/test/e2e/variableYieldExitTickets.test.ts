@@ -4,8 +4,6 @@ import { stakingVaultAbi } from "@vetro-protocol/earn";
 import { type Address, type Hex, parseEventLogs, parseUnits } from "viem";
 import { generatePrivateKey, privateKeyToAddress } from "viem/accounts";
 import {
-  increaseTime,
-  mine,
   revert,
   snapshot,
   waitForTransactionReceipt,
@@ -16,6 +14,7 @@ import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 
 import {
   createClients,
+  fastForward,
   fundTestAccount,
   runCli,
   runCliRaw,
@@ -23,6 +22,7 @@ import {
   stake,
   usdc,
   vusd,
+  withSnapshot,
 } from "./helpers.ts";
 
 type ExitTicket = {
@@ -71,20 +71,6 @@ describe("variable-yield exit-tickets", function () {
     rpcUrl,
   ];
 
-  const fastForward = async function (seconds: bigint) {
-    await increaseTime(testClient, { seconds: Number(seconds) });
-    await mine(testClient, { blocks: 1 });
-  };
-
-  const withSnapshot = async function (run: () => Promise<void>) {
-    const id = await snapshot(testClient);
-    try {
-      await run();
-    } finally {
-      await revert(testClient, { id });
-    }
-  };
-
   const requestWithdraw = async function ({
     assets,
     vault,
@@ -92,7 +78,7 @@ describe("variable-yield exit-tickets", function () {
     assets: bigint;
     vault: Address;
   }) {
-    await fastForward(60n);
+    await fastForward({ rpcUrl, seconds: 60n });
     const hash = await writeContract(walletClient, {
       abi: stakingVaultAbi,
       address: vault,
@@ -118,7 +104,7 @@ describe("variable-yield exit-tickets", function () {
     requestId: bigint;
     vault: Address;
   }) {
-    await fastForward(60n);
+    await fastForward({ rpcUrl, seconds: 60n });
     const hash = await writeContract(walletClient, {
       abi: stakingVaultAbi,
       address: vault,
@@ -164,62 +150,78 @@ describe("variable-yield exit-tickets", function () {
   });
 
   it("prints ready tickets and tickets in cooldown by requestId, by pegged or share token, by symbol or address", async function () {
-    await withSnapshot(async function () {
-      const ready = await requestWithdraw({
-        assets: parseUnits("10", vusd.decimals),
-        vault: sVusdAddress,
-      });
-      await fastForward(cooldownDuration);
-      const pending = await requestWithdraw({
-        assets: parseUnits("20", vusd.decimals),
-        vault: sVusdAddress,
-      });
-      const shareSymbol = await symbol(publicClient, { address: sVusdAddress });
+    await withSnapshot({
+      rpcUrl,
+      async run() {
+        const ready = await requestWithdraw({
+          assets: parseUnits("10", vusd.decimals),
+          vault: sVusdAddress,
+        });
+        await fastForward({ rpcUrl, seconds: cooldownDuration });
+        const pending = await requestWithdraw({
+          assets: parseUnits("20", vusd.decimals),
+          vault: sVusdAddress,
+        });
+        const shareSymbol = await symbol(publicClient, {
+          address: sVusdAddress,
+        });
 
-      const results: ExitTicket[][] = [];
-      for (const token of [
-        vusd.symbol,
-        vusd.address,
-        shareSymbol,
-        sVusdAddress,
-      ]) {
-        results.push(
-          await runCli<ExitTicket[]>(
-            exitTicketsOnFork(["--token", token, "--account", TEST_ADDRESS]),
-          ),
+        const results: ExitTicket[][] = [];
+        for (const token of [
+          vusd.symbol,
+          vusd.address,
+          shareSymbol,
+          sVusdAddress,
+        ]) {
+          results.push(
+            await runCli<ExitTicket[]>(
+              exitTicketsOnFork(["--token", token, "--account", TEST_ADDRESS]),
+            ),
+          );
+        }
+
+        expect(results).toEqual(
+          Array(4).fill([readyTicket(ready), cooldownTicket(pending)]),
         );
-      }
-
-      expect(results).toEqual(
-        Array(4).fill([readyTicket(ready), cooldownTicket(pending)]),
-      );
+      },
     });
   });
 
   it("skips a cancelled ticket and keeps the others by requestId", async function () {
-    await withSnapshot(async function () {
-      const cancelled = await requestWithdraw({
-        assets: parseUnits("10", vusd.decimals),
-        vault: sVusdAddress,
-      });
-      const second = await requestWithdraw({
-        assets: parseUnits("20", vusd.decimals),
-        vault: sVusdAddress,
-      });
-      const third = await requestWithdraw({
-        assets: parseUnits("30", vusd.decimals),
-        vault: sVusdAddress,
-      });
-      await cancelWithdraw({
-        requestId: cancelled.requestId,
-        vault: sVusdAddress,
-      });
+    await withSnapshot({
+      rpcUrl,
+      async run() {
+        const cancelled = await requestWithdraw({
+          assets: parseUnits("10", vusd.decimals),
+          vault: sVusdAddress,
+        });
+        const second = await requestWithdraw({
+          assets: parseUnits("20", vusd.decimals),
+          vault: sVusdAddress,
+        });
+        const third = await requestWithdraw({
+          assets: parseUnits("30", vusd.decimals),
+          vault: sVusdAddress,
+        });
+        await cancelWithdraw({
+          requestId: cancelled.requestId,
+          vault: sVusdAddress,
+        });
 
-      const tickets = await runCli<ExitTicket[]>(
-        exitTicketsOnFork(["--token", vusd.symbol, "--account", TEST_ADDRESS]),
-      );
+        const tickets = await runCli<ExitTicket[]>(
+          exitTicketsOnFork([
+            "--token",
+            vusd.symbol,
+            "--account",
+            TEST_ADDRESS,
+          ]),
+        );
 
-      expect(tickets).toEqual([cooldownTicket(second), cooldownTicket(third)]);
+        expect(tickets).toEqual([
+          cooldownTicket(second),
+          cooldownTicket(third),
+        ]);
+      },
     });
   });
 

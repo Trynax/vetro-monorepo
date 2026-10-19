@@ -166,7 +166,7 @@ export const requestWithdraw = (
 export const encodeRequestWithdraw = ({
   assets,
   owner,
-}: RequestWithdrawParams) =>
+}: Omit<RequestWithdrawParams, "vaultAddress">) =>
   encodeFunctionData({
     abi: stakingVaultAbi,
     args: [assets, owner],

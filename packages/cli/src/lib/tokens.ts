@@ -150,6 +150,20 @@ export async function resolveSwapToken({
   });
 }
 
+export async function readToken({
+  address,
+  client,
+}: {
+  address: Address;
+  client: Client;
+}) {
+  const [tokenDecimals, tokenSymbol] = await Promise.all([
+    decimals(client, { address }),
+    symbol(client, { address }),
+  ]);
+  return { address, decimals: tokenDecimals, symbol: tokenSymbol };
+}
+
 export async function getGatewayPeggedToken({
   client,
   gatewayAddress,
@@ -158,27 +172,37 @@ export async function getGatewayPeggedToken({
   gatewayAddress: Address;
 }) {
   const address = await getPeggedToken(client, { address: gatewayAddress });
-  const [tokenDecimals, tokenSymbol] = await Promise.all([
-    decimals(client, { address }),
-    symbol(client, { address }),
-  ]);
-  return { address, decimals: tokenDecimals, symbol: tokenSymbol };
+  return readToken({ address, client });
 }
 
-export function getStakingVault({
-  gatewayAddress,
+function withStakingVault<T extends { gatewayAddress: Address }>({
   token,
+  value,
 }: {
-  gatewayAddress: Address;
-  token: string;
+  token: T;
+  value: string;
 }) {
   const stakingVault = gateways.find((gateway) =>
-    isAddressEqual(gateway.address, gatewayAddress),
+    isAddressEqual(gateway.address, token.gatewayAddress),
   )?.stakingVault;
   if (!stakingVault) {
-    throw new Error(`No staking vault for pegged token: "${token}"`);
+    throw new Error(`No staking vault for pegged token: "${value}"`);
   }
-  return stakingVault;
+  return { ...token, stakingVault };
+}
+
+/**
+ * Resolves a pegged token by symbol or address, along with its staking vault.
+ */
+export async function resolveStakablePeggedToken({
+  client,
+  value,
+}: {
+  client: Client;
+  value: string;
+}) {
+  const token = await resolvePeggedToken({ client, value });
+  return withStakingVault({ token, value });
 }
 
 const getShareCandidates = () =>
@@ -207,11 +231,5 @@ export async function resolveStakingToken({
     kind: "pegged or share",
     value,
   });
-  return {
-    ...token,
-    stakingVault: getStakingVault({
-      gatewayAddress: token.gatewayAddress,
-      token: value,
-    }),
-  };
+  return withStakingVault({ token, value });
 }
