@@ -46,8 +46,6 @@ export const config = getDefaultConfig({
   ],
 });
 
-// React Query's default of 3 retries delays error states. RPC reads also get
-// viem's own retries (and URL fallback when a chain has several RPC URLs).
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
 });
