@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Skeleton from "react-loading-skeleton";
 
 type Props<T> = {
-  data: T | undefined;
+  data: T | null | undefined;
   icon: ReactNode;
   isLoading?: boolean;
   label: ReactNode;
@@ -19,6 +19,9 @@ export function InfoCard<T>({
   subtitle,
 }: Props<T>) {
   const renderData = function () {
+    if (data === null) {
+      return "-";
+    }
     if (data !== undefined) {
       return render(data);
     }

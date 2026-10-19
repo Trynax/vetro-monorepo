@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Skeleton from "react-loading-skeleton";
 
 type Props<T> = {
-  data: T | undefined;
+  data: T | null | undefined;
   isError?: boolean;
   isPending?: boolean;
   label: string;
@@ -21,6 +21,9 @@ export function PoolInfoItem<T>({
   ),
 }: Props<T>) {
   function renderData() {
+    if (data === null) {
+      return <span className={valueClassName}>-</span>;
+    }
     if (data !== undefined) {
       return render(data);
     }

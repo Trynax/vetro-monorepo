@@ -99,3 +99,12 @@ export const NoData: Story = {
     subtitle: <Badge>From 1 pool</Badge>,
   },
 };
+
+export const NullData: Story = {
+  args: {
+    data: null,
+    icon: <SparkleIcon />,
+    label: "Target fixed APR",
+    render: (data) => data,
+  },
+};
