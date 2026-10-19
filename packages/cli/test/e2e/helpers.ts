@@ -32,10 +32,14 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import {
   impersonateAccount,
+  increaseTime,
+  mine,
   readContract,
+  revert,
   sendTransaction,
   setBalance,
   setStorageAt,
+  snapshot,
   stopImpersonatingAccount,
   waitForTransactionReceipt,
   writeContract,
@@ -236,6 +240,34 @@ export const createClients = function (rpcUrl: string) {
       transport,
     }),
   };
+};
+
+export const fastForward = async function ({
+  rpcUrl,
+  seconds,
+}: {
+  rpcUrl: string;
+  seconds: bigint;
+}) {
+  const { testClient } = createClients(rpcUrl);
+  await increaseTime(testClient, { seconds: Number(seconds) });
+  await mine(testClient, { blocks: 1 });
+};
+
+export const withSnapshot = async function ({
+  rpcUrl,
+  run,
+}: {
+  rpcUrl: string;
+  run: () => Promise<void>;
+}) {
+  const { testClient } = createClients(rpcUrl);
+  const id = await snapshot(testClient);
+  try {
+    await run();
+  } finally {
+    await revert(testClient, { id });
+  }
 };
 
 export const fundTestAccount = async function ({

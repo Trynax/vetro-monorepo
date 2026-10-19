@@ -15,8 +15,6 @@ import {
 import {
   getBlock,
   getChainId,
-  increaseTime,
-  mine,
   revert,
   setNextBlockTimestamp,
   snapshot,
@@ -28,6 +26,7 @@ import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 import {
   type TransactionRequest,
   createClients,
+  fastForward,
   fundTestAccount,
   runCli,
   runCliRaw,
@@ -37,6 +36,7 @@ import {
   usdc,
   vetBtc,
   vusd,
+  withSnapshot,
 } from "./helpers.ts";
 
 describe("variable-yield unstake", function () {
@@ -79,22 +79,8 @@ describe("variable-yield unstake", function () {
   const readShares = () =>
     balanceOf(publicClient, { account: TEST_ADDRESS, address: sVusdAddress });
 
-  const fastForward = async function (seconds: bigint) {
-    await increaseTime(testClient, { seconds: Number(seconds) });
-    await mine(testClient, { blocks: 1 });
-  };
-
-  const withSnapshot = async function (run: () => Promise<void>) {
-    const id = await snapshot(testClient);
-    try {
-      await run();
-    } finally {
-      await revert(testClient, { id });
-    }
-  };
-
   const broadcast = async function (args: string[]) {
-    await fastForward(60n);
+    await fastForward({ rpcUrl, seconds: 60n });
     const [previewedAssets, previewedShares] = await Promise.all([
       previewRedeem(publicClient, {
         address: sVusdAddress,
@@ -225,58 +211,67 @@ describe("variable-yield unstake", function () {
   });
 
   it("opens an exit ticket for the amount once the calldata is broadcast", async function () {
-    await withSnapshot(async function () {
-      const sharesBefore = await readShares();
+    await withSnapshot({
+      rpcUrl,
+      async run() {
+        const sharesBefore = await readShares();
 
-      const { event, previewedShares, timestamp } = await broadcast(
-        unstakeVusd(["--amount", amount]),
-      );
+        const { event, previewedShares, timestamp } = await broadcast(
+          unstakeVusd(["--amount", amount]),
+        );
 
-      const ticket = await getRequestDetails(publicClient, {
-        address: sVusdAddress,
-        requestId: event.requestId,
-      });
-      expect(isAddressEqual(ticket.owner, TEST_ADDRESS)).toBe(true);
-      expect(ticket.assets).toBe(parseUnits(amount, vusd.decimals));
-      expect(ticket.claimableAt).toBe(timestamp + cooldownDuration);
-      expect(event.shares).toBe(previewedShares);
-      expect(sharesBefore - (await readShares())).toBe(event.shares);
+        const ticket = await getRequestDetails(publicClient, {
+          address: sVusdAddress,
+          requestId: event.requestId,
+        });
+        expect(isAddressEqual(ticket.owner, TEST_ADDRESS)).toBe(true);
+        expect(ticket.assets).toBe(parseUnits(amount, vusd.decimals));
+        expect(ticket.claimableAt).toBe(timestamp + cooldownDuration);
+        expect(event.shares).toBe(previewedShares);
+        expect(sharesBefore - (await readShares())).toBe(event.shares);
+      },
     });
   });
 
   it("burns exactly the shares once the calldata is broadcast", async function () {
-    await withSnapshot(async function () {
-      const shares = parseUnits(amount, shareDecimals);
-      const sharesBefore = await readShares();
+    await withSnapshot({
+      rpcUrl,
+      async run() {
+        const shares = parseUnits(amount, shareDecimals);
+        const sharesBefore = await readShares();
 
-      const { event, previewedAssets, timestamp } = await broadcast(
-        unstakeVusd(["--shares", amount]),
-      );
+        const { event, previewedAssets, timestamp } = await broadcast(
+          unstakeVusd(["--shares", amount]),
+        );
 
-      expect(sharesBefore - (await readShares())).toBe(shares);
-      expect(event.shares).toBe(shares);
-      const ticket = await getRequestDetails(publicClient, {
-        address: sVusdAddress,
-        requestId: event.requestId,
-      });
-      expect(isAddressEqual(ticket.owner, TEST_ADDRESS)).toBe(true);
-      expect(ticket.assets).toBe(event.assets);
-      expect(ticket.assets).toBe(previewedAssets);
-      expect(ticket.claimableAt).toBe(timestamp + cooldownDuration);
+        expect(sharesBefore - (await readShares())).toBe(shares);
+        expect(event.shares).toBe(shares);
+        const ticket = await getRequestDetails(publicClient, {
+          address: sVusdAddress,
+          requestId: event.requestId,
+        });
+        expect(isAddressEqual(ticket.owner, TEST_ADDRESS)).toBe(true);
+        expect(ticket.assets).toBe(event.assets);
+        expect(ticket.assets).toBe(previewedAssets);
+        expect(ticket.claimableAt).toBe(timestamp + cooldownDuration);
+      },
     });
   });
 
   it("unstakes the whole balance with no dust when given all the shares", async function () {
-    await withSnapshot(async function () {
-      const sharesBefore = await readShares();
-      expect(sharesBefore).toBeGreaterThan(0n);
+    await withSnapshot({
+      rpcUrl,
+      async run() {
+        const sharesBefore = await readShares();
+        expect(sharesBefore).toBeGreaterThan(0n);
 
-      const { event } = await broadcast(
-        unstakeVusd(["--shares", formatUnits(sharesBefore, shareDecimals)]),
-      );
+        const { event } = await broadcast(
+          unstakeVusd(["--shares", formatUnits(sharesBefore, shareDecimals)]),
+        );
 
-      expect(event.shares).toBe(sharesBefore);
-      expect(await readShares()).toBe(0n);
+        expect(event.shares).toBe(sharesBefore);
+        expect(await readShares()).toBe(0n);
+      },
     });
   });
 
