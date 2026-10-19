@@ -107,7 +107,7 @@ export const ExitClaimCard = function ({
             token={peggedToken}
             value={amount}
           />
-          {state === "pending" ? (
+          {state === "pending" || (state === "claimable" && amount === 0n) ? (
             <TokenAmountCaption amount={shares} token={shareToken} />
           ) : null}
           {state === "claimable" && amount > 0n ? (
