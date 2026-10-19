@@ -1,7 +1,6 @@
+import { targetYieldVaultAddresses } from "@vetro-protocol/target-yield-earn/addresses";
 import { SectionHeader } from "components/base/sectionHeader";
 import { useTranslation } from "react-i18next";
-
-import { targetYieldVaultAddresses } from "../../targetYieldVaults";
 
 import { PoolInfoBar } from "./poolInfoBar";
 

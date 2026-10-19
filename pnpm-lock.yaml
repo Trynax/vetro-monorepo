@@ -529,6 +529,9 @@ importers:
       '@vetro-protocol/morpho-blue-market':
         specifier: workspace:*
         version: link:../packages/morpho-blue-market
+      '@vetro-protocol/target-yield-earn':
+        specifier: workspace:*
+        version: link:../packages/target-yield-earn
       '@vetro-protocol/treasury':
         specifier: workspace:*
         version: link:../packages/treasury
