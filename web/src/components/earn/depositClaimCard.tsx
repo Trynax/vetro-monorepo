@@ -110,7 +110,7 @@ export const DepositClaimCard = function ({
           {shares > 0n ? (
             <TokenAmountCaption amount={shares} token={shareToken} />
           ) : null}
-          {state === "pending" ? (
+          {state === "pending" || (state === "claimable" && shares === 0n) ? (
             <TokenAmountCaption amount={amount} token={peggedToken} />
           ) : null}
         </span>
