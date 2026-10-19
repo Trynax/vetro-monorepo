@@ -276,18 +276,23 @@ describe("variable-yield unstake", function () {
   });
 
   it("rejects the unstake when the cooldown is disabled", async function () {
-    await setStakingCooldown({ enabled: false, rpcUrl, vault: sVusdAddress });
-    try {
-      const { exitCode, stderr } = await runCliRaw(
-        unstakeVusd(["--amount", amount]),
-      );
-      expect(exitCode).toBe(1);
-      expect(JSON.parse(stderr).error).toBe(
-        `The cooldown is disabled: the vault takes a one-step withdraw for "${vusd.symbol}", which the CLI does not encode yet`,
-      );
-    } finally {
-      await setStakingCooldown({ enabled: true, rpcUrl, vault: sVusdAddress });
-    }
+    await withSnapshot({
+      rpcUrl,
+      async run() {
+        await setStakingCooldown({
+          enabled: false,
+          rpcUrl,
+          vault: sVusdAddress,
+        });
+        const { exitCode, stderr } = await runCliRaw(
+          unstakeVusd(["--amount", amount]),
+        );
+        expect(exitCode).toBe(1);
+        expect(JSON.parse(stderr).error).toBe(
+          `The cooldown is disabled: the vault takes a one-step withdraw for "${vusd.symbol}", which the CLI does not encode yet`,
+        );
+      },
+    });
   });
 
   it("rejects --amount and --shares together", async function () {
