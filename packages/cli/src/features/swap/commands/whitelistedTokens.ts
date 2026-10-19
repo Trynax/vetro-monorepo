@@ -23,17 +23,12 @@ export function register(swap: Command) {
 
       const whitelistedTokens = await Promise.all(
         tokens.map(async function (address) {
-          const [token, { depositActive, withdrawActive }] = await Promise.all([
-            readToken({ address, client }),
-            readTokenConfig({ client, token: address, treasury }),
-          ]);
-          return {
-            address,
-            decimals: token.decimals,
-            depositActive,
-            symbol: token.symbol,
-            withdrawActive,
-          };
+          const [{ decimals, symbol }, { depositActive, withdrawActive }] =
+            await Promise.all([
+              readToken({ address, client }),
+              readTokenConfig({ client, token: address, treasury }),
+            ]);
+          return { address, decimals, depositActive, symbol, withdrawActive };
         }),
       );
       printResult(whitelistedTokens);
