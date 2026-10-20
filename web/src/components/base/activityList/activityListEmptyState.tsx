@@ -1,10 +1,9 @@
 import { Button } from "components/base/button";
 import { StatusMessage } from "components/base/statusMessage";
+import { InboxCircleIcon } from "components/icons/inboxCircleIcon";
 import { useWalletDrawer } from "components/walletDrawer/walletDrawerContext";
 import { useI18nNavigate } from "hooks/useI18nNavigate";
 import { useTranslation } from "react-i18next";
-
-import { ActivityEmptyIcon } from "./icons/activityEmptyIcon";
 
 type Props = {
   hasTransactions: boolean;
@@ -32,7 +31,7 @@ export function ActivityListEmptyState({
             ? "pages.wallet.activity-empty-description-filtered"
             : "pages.wallet.activity-empty-description-no-transactions",
         )}
-        icon={<ActivityEmptyIcon />}
+        icon={<InboxCircleIcon />}
         title={t("pages.wallet.activity-empty-title")}
       />
       <div className="flex items-center gap-3">

@@ -23,6 +23,7 @@ export const ErrorPage = function () {
                 {t("pages.server-error.refresh", defaultTexts.refresh)}
               </Button>
             }
+            className="w-max max-w-full"
             description={t(
               "pages.server-error.description",
               defaultTexts.description,
