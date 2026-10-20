@@ -4,13 +4,13 @@ import { tokenBalanceQueryKey } from "@hemilabs/react-hooks/useTokenBalance";
 import { useUpdateNativeBalanceAfterReceipt } from "@hemilabs/react-hooks/useUpdateNativeBalanceAfterReceipt";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { claimWithdraw } from "@vetro-protocol/earn/actions";
+import { mainnet } from "networks/mainnet";
 import { exitTicketsQueryKey } from "pages/earn/hooks/useExitTickets";
 import type { ExitTicket } from "pages/earn/types";
 import { type Address, isAddressEqual } from "viem";
 import { useAccount } from "wagmi";
 
 import { useEthereumWalletClient } from "./useEthereumWalletClient";
-import { useMainnet } from "./useMainnet";
 import { stakedBalanceQueryKey } from "./useStakedBalance";
 
 type ClaimWithdrawStatus = "claiming" | "completed" | "failed";
@@ -29,24 +29,23 @@ export const useClaimWithdraw = function ({
   stakingVaultAddress,
 }: Params) {
   const { address: account } = useAccount();
-  const chain = useMainnet();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
   const queryClient = useQueryClient();
 
-  const { queryKey: nativeBalanceKey } = useNativeBalance(chain.id);
+  const { queryKey: nativeBalanceKey } = useNativeBalance(mainnet.id);
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    chain.id,
+    mainnet.id,
   );
 
   const sharesBalanceKey = tokenBalanceQueryKey(
-    { address: stakingVaultAddress, chainId: chain.id },
+    { address: stakingVaultAddress, chainId: mainnet.id },
     account,
   );
 
   const stakedKey = stakedBalanceQueryKey({
     account: account!,
-    chainId: chain.id,
+    chainId: mainnet.id,
     stakingVaultAddress,
   });
 
@@ -56,7 +55,7 @@ export const useClaimWithdraw = function ({
         throw new Error("No account connected");
       }
 
-      await ensureConnectedTo(chain.id);
+      await ensureConnectedTo(mainnet.id);
 
       const { emitter, promise } = claimWithdraw(walletClient!, {
         receiver: account,

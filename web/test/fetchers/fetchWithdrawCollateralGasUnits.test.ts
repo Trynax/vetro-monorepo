@@ -8,7 +8,7 @@ import { positionInfoQueryKey } from "../../src/hooks/borrow/usePositionInfo";
 import { createTestQueryClient } from "../utils";
 
 vi.mock("@morpho-org/blue-sdk", () => ({
-  getChainAddresses: vi.fn().mockReturnValue({ morpho: zeroAddress }),
+  getChainAddresses: vi.fn().mockReturnValue({ blue: zeroAddress }),
 }));
 
 vi.mock("@vetro-protocol/morpho-blue-market/actions", () => ({

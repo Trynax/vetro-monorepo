@@ -1,4 +1,4 @@
-import { gatewayAbi, gatewayAddresses } from "@vetro-protocol/gateway";
+import { gatewayAddresses } from "@vetro-protocol/gateway";
 import { getTreasury } from "@vetro-protocol/gateway/actions";
 import {
   getKeeperRole,
@@ -15,36 +15,16 @@ import {
 } from "viem";
 import {
   impersonateAccount,
-  readContract,
   setBalance,
   stopImpersonatingAccount,
   writeContract,
 } from "viem/actions";
 import { mainnet } from "viem/chains";
+import { defaultAdmin } from "viem-oz-access-control/actions";
 
-import { confirmTransaction } from "./utils.ts";
+import { confirmTransaction, ensureRole } from "./utils.ts";
 
 const treasuryWriteAbi = [
-  {
-    inputs: [
-      { name: "role", type: "bytes32" },
-      { name: "account", type: "address" },
-    ],
-    name: "grantRole",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { name: "role", type: "bytes32" },
-      { name: "account", type: "address" },
-    ],
-    name: "hasRole",
-    outputs: [{ type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
   {
     inputs: [
       { name: "token", type: "address" },
@@ -97,14 +77,7 @@ export async function setTokenActive({
     transport,
   });
 
-  const [owner, treasury] = await Promise.all([
-    readContract(publicClient, {
-      abi: gatewayAbi,
-      address: gateway,
-      functionName: "owner",
-    }),
-    getTreasury(publicClient, { address: gateway }),
-  ]);
+  const treasury = await getTreasury(publicClient, { address: gateway });
 
   const readActive = async function () {
     const [, , , depositActive, withdrawActive] = await getTokenConfig(
@@ -120,39 +93,31 @@ export async function setTokenActive({
     return { activeAfter: activeBefore, activeBefore };
   }
 
-  await impersonateAccount(testClient, { address: owner });
-  await setBalance(testClient, { address: owner, value: parseEther("1") });
+  const admin = await defaultAdmin(publicClient, { address: treasury });
+
+  await impersonateAccount(testClient, { address: admin });
+  await setBalance(testClient, { address: admin, value: parseEther("1") });
 
   try {
     const keeperRole = await getKeeperRole(publicClient, { address: treasury });
-    const ownerHasRole = await readContract(publicClient, {
-      abi: treasuryWriteAbi,
-      address: treasury,
-      args: [keeperRole, owner],
-      functionName: "hasRole",
+    await ensureRole({
+      account: admin,
+      client: publicClient,
+      role: keeperRole,
+      transport,
+      treasury,
     });
-
-    if (!ownerHasRole) {
-      const grantHash = await writeContract(testClient, {
-        abi: treasuryWriteAbi,
-        account: owner,
-        address: treasury,
-        args: [keeperRole, owner],
-        functionName: "grantRole",
-      });
-      await confirmTransaction({ client: publicClient, hash: grantHash });
-    }
 
     const hash = await writeContract(testClient, {
       abi: treasuryWriteAbi,
-      account: owner,
+      account: admin,
       address: treasury,
       args: [token, active],
       functionName: setterNames[flag],
     });
     await confirmTransaction({ client: publicClient, hash });
   } finally {
-    await stopImpersonatingAccount(testClient, { address: owner });
+    await stopImpersonatingAccount(testClient, { address: admin });
   }
 
   return { activeAfter: await readActive(), activeBefore };

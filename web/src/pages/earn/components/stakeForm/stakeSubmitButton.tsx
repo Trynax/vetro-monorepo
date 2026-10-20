@@ -1,33 +1,25 @@
 import { Button } from "components/base/button";
+import { Spinner } from "components/base/spinner";
 import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIcon";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { useTranslation } from "react-i18next";
 import { isGeoRestricted } from "utils/geoRestriction";
 
 type Props = {
   actionText: string;
-  balancesLoaded: boolean;
-  connectWalletText?: string;
-  enterAmountText?: string;
+  blockingText?: string;
   inputError: string | undefined;
-  insufficientBalanceText?: string;
-  insufficientGasText?: string;
-  isConnected: boolean;
+  isLoading: boolean;
   isPending: boolean;
-  onConnectWallet?: VoidFunction;
   pendingText: string;
 };
 
 export function StakeSubmitButton({
   actionText,
-  balancesLoaded,
-  connectWalletText,
-  enterAmountText,
+  blockingText,
   inputError,
-  insufficientBalanceText,
-  insufficientGasText,
-  isConnected,
+  isLoading,
   isPending,
-  onConnectWallet,
   pendingText,
 }: Props) {
   const { t } = useTranslation();
@@ -41,43 +33,43 @@ export function StakeSubmitButton({
     );
   }
 
-  if (!isConnected) {
-    return (
-      <Button
-        onClick={onConnectWallet}
-        size="small"
-        type="button"
-        variant="primary"
-      >
-        {connectWalletText ?? t("common.connect-wallet")}
-      </Button>
-    );
-  }
-
   function getButtonText() {
     if (isPending) {
       return pendingText;
     }
-    if (!balancesLoaded) {
-      return actionText;
+    if (isLoading) {
+      return <Spinner />;
+    }
+    if (blockingText) {
+      return blockingText;
     }
     if (inputError === "enter-amount") {
-      return enterAmountText ?? t("common.enter-amount");
+      return t("common.enter-amount");
+    }
+    if (inputError === "exceeds-max-request") {
+      return t("common.exceeds-max-request");
     }
     if (inputError === "insufficient-balance") {
-      return insufficientBalanceText ?? t("common.insufficient-balance");
+      return t("common.insufficient-balance");
     }
     if (inputError === "insufficient-gas") {
-      return insufficientGasText ?? t("common.insufficient-gas");
+      return t("common.insufficient-gas");
     }
     return actionText;
   }
 
-  const isDisabled = !balancesLoaded || !!inputError || isPending;
+  const isDisabled = isLoading || !!blockingText || !!inputError || isPending;
 
   return (
-    <Button disabled={isDisabled} size="small" type="submit" variant="primary">
-      {getButtonText()}
-    </Button>
+    <RequireWalletConnected size="small">
+      <Button
+        disabled={isDisabled}
+        size="small"
+        type="submit"
+        variant="primary"
+      >
+        {getButtonText()}
+      </Button>
+    </RequireWalletConnected>
   );
 }

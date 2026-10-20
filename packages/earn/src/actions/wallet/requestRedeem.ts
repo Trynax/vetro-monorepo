@@ -162,7 +162,10 @@ const runRequestRedeem = (
 export const requestRedeem = (...args: Parameters<typeof runRequestRedeem>) =>
   toPromiseEvent<RequestRedeemEvents>(runRequestRedeem(...args));
 
-export const encodeRequestRedeem = ({ owner, shares }: RequestRedeemParams) =>
+export const encodeRequestRedeem = ({
+  owner,
+  shares,
+}: Omit<RequestRedeemParams, "vaultAddress">) =>
   encodeFunctionData({
     abi: stakingVaultAbi,
     args: [shares, owner],

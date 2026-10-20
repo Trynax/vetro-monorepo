@@ -5,7 +5,7 @@ lives on its own tab, mapped to a URL.
 
 - **DEX** (`/dex`) — liquidity of the tracked Vetro pools on Curve, Sushi and
   Uniswap (Ethereum) and BrownFi (Hemi). Each pool also has a detail view at
-  `/dex/:poolId`.
+  `/dex/:poolId` and the page shows the total TVL in USD.
 - **Hemi Earn** (`/hemi-earn`) — status of the Hemi Earn agent: keepers,
   ownership, proxy implementation and its pending vault cooldowns.
 
@@ -29,7 +29,7 @@ For the deployed dashboard, set the production values as Cloudflare Workers Buil
 
 ### Worker secrets
 
-`THEGRAPH_API_KEY` is a The Graph gateway key, used to read the BrownFi subgraph.
+`THEGRAPH_API_KEY` is a The Graph gateway key, used to read the BrownFi and Sushi subgraphs.
 For development, put it in `internal-dashboard/.dev.vars` (gitignored):
 
 ```ini

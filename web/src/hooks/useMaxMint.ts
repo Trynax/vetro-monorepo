@@ -1,9 +1,9 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { getMaxMint } from "@vetro-protocol/gateway/actions";
+import { mainnet } from "networks/mainnet";
 import type { Address, Chain, Client } from "viem";
 
 import { useEthereumClient } from "./useEthereumClient";
-import { useMainnet } from "./useMainnet";
 
 export const maxMintQueryKey = ({
   chainId,
@@ -37,11 +37,10 @@ export const useMaxMint = function ({
   gatewayAddress: Address;
 }) {
   const client = useEthereumClient();
-  const ethereumChain = useMainnet();
 
   return useQuery(
     maxMintOptions({
-      chainId: ethereumChain.id,
+      chainId: mainnet.id,
       client,
       gatewayAddress,
     }),

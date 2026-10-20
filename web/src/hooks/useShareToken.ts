@@ -1,7 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { fetchTokenInfo } from "fetchers/fetchTokenInfo";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import type { Address, Client } from "viem";
 
 const shareTokenQueryOptions = ({
@@ -24,10 +24,13 @@ const shareTokenQueryOptions = ({
   });
 
 export function useShareToken(stakingVaultAddress: Address) {
-  const chain = useMainnet();
   const client = useEthereumClient();
 
   return useQuery(
-    shareTokenQueryOptions({ chainId: chain.id, client, stakingVaultAddress }),
+    shareTokenQueryOptions({
+      chainId: mainnet.id,
+      client,
+      stakingVaultAddress,
+    }),
   );
 }

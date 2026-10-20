@@ -41,6 +41,7 @@ type BaseProps<T> = {
   items?: readonly T[];
   matchTriggerWidth?: boolean;
   menuLabel?: string;
+  renderFooter?: (onClose: VoidFunction) => ReactNode;
   renderItem: (item: T, isSelected: boolean) => ReactNode;
   renderItemWrapper?: (
     props: ItemWrapperProps<T>,
@@ -91,6 +92,7 @@ export function Dropdown<T>(props: DropdownProps<T>) {
     items: itemsProp,
     matchTriggerWidth = false,
     menuLabel,
+    renderFooter,
     renderItem,
     renderItemWrapper,
     renderTrigger,
@@ -182,10 +184,14 @@ export function Dropdown<T>(props: DropdownProps<T>) {
     }
   }
 
+  function closeMenu() {
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  }
+
   function handleItemClick(item: T) {
     if (isNavigation(props)) {
-      setIsOpen(false);
-      triggerRef.current?.focus();
+      closeMenu();
       return;
     }
     if (isMultiSelect(props)) {
@@ -195,8 +201,7 @@ export function Dropdown<T>(props: DropdownProps<T>) {
       return;
     }
     props.onChange(item);
-    setIsOpen(false);
-    triggerRef.current?.focus();
+    closeMenu();
   }
 
   function activateFocused(event: KeyboardEvent) {
@@ -239,8 +244,7 @@ export function Dropdown<T>(props: DropdownProps<T>) {
         break;
       case "Escape":
         event.preventDefault();
-        setIsOpen(false);
-        triggerRef.current?.focus();
+        closeMenu();
         break;
     }
   }
@@ -363,6 +367,7 @@ export function Dropdown<T>(props: DropdownProps<T>) {
                   </div>
                 ))
               : items.map((item, index) => renderItemNode(item, index))}
+            <div className="w-0 min-w-full">{renderFooter?.(closeMenu)}</div>
           </div>,
           document.body,
         )}

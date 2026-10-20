@@ -7,32 +7,19 @@ import {
   createTestClient,
   http,
   isAddress,
-  keccak256,
   parseEther,
-  toHex,
 } from "viem";
 import {
   impersonateAccount,
-  readContract,
   setBalance,
+  stopImpersonatingAccount,
   writeContract,
 } from "viem/actions";
 import { mainnet } from "viem/chains";
+import { roleId } from "viem-oz-access-control";
+import { defaultAdmin } from "viem-oz-access-control/actions";
 
-import { confirmTransaction } from "./utils.ts";
-
-const grantRoleAbi = [
-  {
-    inputs: [
-      { name: "role", type: "bytes32" },
-      { name: "account", type: "address" },
-    ],
-    name: "grantRole",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
+import { confirmTransaction, ensureRole } from "./utils.ts";
 
 const { values } = parseArgs({
   options: {
@@ -75,50 +62,47 @@ const testClient = createTestClient({
   transport,
 });
 
-const [admin, treasury] = await Promise.all([
-  readContract(publicClient, {
-    abi: gatewayAbi,
-    address: gateway,
-    functionName: "owner",
-  }),
-  getTreasury(publicClient, { address: gateway }),
-]);
+const treasury = await getTreasury(publicClient, { address: gateway });
+const admin = await defaultAdmin(publicClient, { address: treasury });
 
 await impersonateAccount(testClient, { address: admin });
 await setBalance(testClient, { address: admin, value: parseEther("1") });
 
-const MAINTAINER_ROLE = keccak256(toHex("MAINTAINER_ROLE"));
+try {
+  await ensureRole({
+    account: admin,
+    client: publicClient,
+    role: roleId("MAINTAINER_ROLE"),
+    transport,
+    treasury,
+  });
 
-const grantRoleHash = await writeContract(testClient, {
-  abi: grantRoleAbi,
-  account: admin,
-  address: treasury,
-  args: [MAINTAINER_ROLE, admin],
-  functionName: "grantRole",
-});
+  console.log(`Admin: ${admin}`);
+  console.log(`Gateway: ${gateway}`);
+  console.log(`Token: ${token}`);
 
-await confirmTransaction({ client: publicClient, hash: grantRoleHash });
+  const currentFee = await getMintFee(publicClient, {
+    address: gateway,
+    token,
+  });
 
-console.log(`Admin: ${admin}`);
-console.log(`Gateway: ${gateway}`);
-console.log(`Token: ${token}`);
+  console.log(`Current mint fee: ${currentFee} BPS`);
+  console.log(`New mint fee: ${fee} BPS`);
 
-const currentFee = await getMintFee(publicClient, { address: gateway, token });
+  const hash = await writeContract(testClient, {
+    abi: gatewayAbi,
+    account: admin,
+    address: gateway,
+    args: [token, BigInt(fee)],
+    functionName: "updateMintFee",
+  });
 
-console.log(`Current mint fee: ${currentFee} BPS`);
-console.log(`New mint fee: ${fee} BPS`);
+  console.log(`Transaction hash: ${hash}`);
 
-const hash = await writeContract(testClient, {
-  abi: gatewayAbi,
-  account: admin,
-  address: gateway,
-  args: [token, BigInt(fee)],
-  functionName: "updateMintFee",
-});
+  const receipt = await confirmTransaction({ client: publicClient, hash });
 
-console.log(`Transaction hash: ${hash}`);
-
-const receipt = await confirmTransaction({ client: publicClient, hash });
-
-console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
-console.log(`Mint fee updated: ${currentFee} -> ${fee} BPS`);
+  console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+  console.log(`Mint fee updated: ${currentFee} -> ${fee} BPS`);
+} finally {
+  await stopImpersonatingAccount(testClient, { address: admin });
+}

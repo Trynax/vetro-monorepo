@@ -50,7 +50,7 @@ export async function getCostBasis({
       stakingVaultAddress: `0x${string}`;
       totalCostBasis: string;
     }[];
-  }>(url, query, variables);
+  }>({ query, url, variables });
   if (!Array.isArray(userStakingPositions)) {
     throw new Error(
       `Invalid subgraph response for staking positions of ${address}`,
@@ -267,7 +267,7 @@ export async function getUserExitTickets({
   };
   const { exitTickets } = await graphql.runQuery<{
     exitTickets: ExitTicket[];
-  }>(url, query, variables);
+  }>({ query, url, variables });
   if (!Array.isArray(exitTickets)) {
     throw new Error(`Invalid subgraph response for exit tickets of ${address}`);
   }
@@ -323,7 +323,7 @@ export async function getExitTicketQueueSize({
   const variables = { stakingVault: stakingVaultAddress.toLowerCase() };
   const { exitTickets } = await graphql.runQuery<{
     exitTickets: { shares: string }[];
-  }>(subgraphUrl, query, variables);
+  }>({ query, url: subgraphUrl, variables });
   if (!Array.isArray(exitTickets)) {
     throw new Error(
       `Invalid subgraph response for exit tickets of vault ${stakingVaultAddress}`,

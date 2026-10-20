@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { gatewayAbi, type RequestRedeemEvents } from "@vetro-protocol/gateway";
 import { requestRedeem } from "@vetro-protocol/gateway/actions";
 import type { EventEmitter } from "events";
+import { mainnet } from "networks/mainnet";
 import type { TokenWithGateway } from "types";
 import { type Address, parseEventLogs } from "viem";
 import { useAccount } from "wagmi";
@@ -13,7 +14,6 @@ import { useAccount } from "wagmi";
 import { useEthereumWalletClient } from "./useEthereumWalletClient";
 import { redeemRequestQueryKey } from "./useGetRedeemRequest";
 import { redeemRequestsQueryKey } from "./useGetRedeemRequests";
-import { useMainnet } from "./useMainnet";
 
 export const useRequestRedeem = function ({
   approveAmount,
@@ -31,14 +31,13 @@ export const useRequestRedeem = function ({
   const { address } = useAccount();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
-  const ethereumChain = useMainnet();
-  const { queryKey: nativeBalanceKey } = useNativeBalance(ethereumChain.id);
+  const { queryKey: nativeBalanceKey } = useNativeBalance(mainnet.id);
   const queryClient = useQueryClient();
 
   const peggedTokenBalanceQueryKey = tokenBalanceQueryKey(peggedToken, address);
 
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    ethereumChain.id,
+    mainnet.id,
   );
 
   return useMutation({
@@ -47,7 +46,7 @@ export const useRequestRedeem = function ({
         throw new Error("No account connected");
       }
 
-      await ensureConnectedTo(ethereumChain.id);
+      await ensureConnectedTo(mainnet.id);
 
       const { emitter, promise } = requestRedeem(walletClient!, {
         approveAmount,
@@ -75,7 +74,7 @@ export const useRequestRedeem = function ({
           queryClient.setQueryData(
             redeemRequestQueryKey({
               address,
-              chainId: ethereumChain.id,
+              chainId: mainnet.id,
               gatewayAddress,
             }),
             // event includes the updated amount and claimableAt
@@ -95,14 +94,14 @@ export const useRequestRedeem = function ({
       queryClient.invalidateQueries({
         queryKey: redeemRequestQueryKey({
           address,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
           gatewayAddress,
         }),
       });
       queryClient.invalidateQueries({
         queryKey: redeemRequestsQueryKey({
           address,
-          chainId: ethereumChain.id,
+          chainId: mainnet.id,
         }),
       });
       queryClient.invalidateQueries({

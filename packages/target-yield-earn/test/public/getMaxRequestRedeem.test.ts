@@ -10,6 +10,7 @@ vi.mock("viem/actions", () => ({
 
 const validParameters = {
   address: "0x1234567890123456789012345678901234567890" as Address,
+  controller: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd" as Address,
   owner: "0x0987654321098765432109876543210987654321" as Address,
 };
 
@@ -44,6 +45,7 @@ describe("getMaxRequestRedeem", function () {
 
   it("should throw an error if the address is not provided", async function () {
     const parameters = {
+      controller: validParameters.controller,
       owner: validParameters.owner,
     };
     // @ts-expect-error - Testing invalid input
@@ -63,6 +65,39 @@ describe("getMaxRequestRedeem", function () {
     );
   });
 
+  it("should throw an error if the controller is not valid", async function () {
+    const parameters = {
+      ...validParameters,
+      controller: "invalid_address",
+    };
+    // @ts-expect-error - Testing invalid input
+    await expect(getMaxRequestRedeem(client, parameters)).rejects.toThrow(
+      "Controller address is invalid",
+    );
+  });
+
+  it("should throw an error if the controller is not provided", async function () {
+    const parameters = {
+      address: validParameters.address,
+      owner: validParameters.owner,
+    };
+    // @ts-expect-error - Testing invalid input
+    await expect(getMaxRequestRedeem(client, parameters)).rejects.toThrow(
+      "Controller address is invalid",
+    );
+  });
+
+  it("should throw an error if the controller is zero address", async function () {
+    const parameters = {
+      ...validParameters,
+      controller: zeroAddress,
+    };
+
+    await expect(getMaxRequestRedeem(client, parameters)).rejects.toThrow(
+      "Controller address is invalid",
+    );
+  });
+
   it("should throw an error if the owner is not valid", async function () {
     const parameters = {
       ...validParameters,
@@ -77,6 +112,7 @@ describe("getMaxRequestRedeem", function () {
   it("should throw an error if the owner is not provided", async function () {
     const parameters = {
       address: validParameters.address,
+      controller: validParameters.controller,
     };
     // @ts-expect-error - Testing invalid input
     await expect(getMaxRequestRedeem(client, parameters)).rejects.toThrow(
@@ -101,7 +137,7 @@ describe("getMaxRequestRedeem", function () {
     expect(readContract).toHaveBeenCalledWith(client, {
       abi: expect.anything(),
       address: validParameters.address,
-      args: [validParameters.owner],
+      args: [validParameters.controller, validParameters.owner],
       functionName: "maxRequestRedeem",
     });
   });

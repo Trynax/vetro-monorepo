@@ -11,50 +11,26 @@ import {
   createTestClient,
   http,
   isAddress,
-  keccak256,
   parseEther,
-  stringToBytes,
 } from "viem";
 import {
   impersonateAccount,
-  readContract,
   setBalance,
   stopImpersonatingAccount,
   writeContract,
 } from "viem/actions";
 import { mainnet } from "viem/chains";
+import { roleId } from "viem-oz-access-control";
+import { defaultAdmin } from "viem-oz-access-control/actions";
 
-import { confirmTransaction } from "./utils.ts";
+import { confirmTransaction, ensureRole } from "./utils.ts";
 
 // Whitelisting for instant redeem is `onlyRole(MAINTAINER_ROLE)`, and the
 // gateway delegates role checks to its Treasury (`Treasury.hasRole`). The
-// treasury owner holds DEFAULT_ADMIN_ROLE, which administers MAINTAINER_ROLE,
-// so we impersonate the owner, grant it MAINTAINER_ROLE on the treasury, then
-// whitelist the account on the gateway.
-const MAINTAINER_ROLE = keccak256(stringToBytes("MAINTAINER_ROLE"));
-
-const accessControlAbi = [
-  {
-    inputs: [
-      { name: "role", type: "bytes32" },
-      { name: "account", type: "address" },
-    ],
-    name: "grantRole",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { name: "role", type: "bytes32" },
-      { name: "account", type: "address" },
-    ],
-    name: "hasRole",
-    outputs: [{ type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const;
+// treasury default admin holds DEFAULT_ADMIN_ROLE, which administers
+// MAINTAINER_ROLE, so we impersonate the admin, grant it MAINTAINER_ROLE on
+// the treasury, then whitelist the account on the gateway.
+const MAINTAINER_ROLE = roleId("MAINTAINER_ROLE");
 
 export async function whitelistInstantRedeem({
   address,
@@ -74,12 +50,7 @@ export async function whitelistInstantRedeem({
     transport,
   });
 
-  const [owner, treasury, isWhitelisted] = await Promise.all([
-    readContract(publicClient, {
-      abi: gatewayAbi,
-      address: gateway,
-      functionName: "owner",
-    }),
+  const [treasury, isWhitelisted] = await Promise.all([
     getTreasury(publicClient, { address: gateway }),
     isInstantRedeemWhitelisted(publicClient, {
       account: address,
@@ -92,38 +63,30 @@ export async function whitelistInstantRedeem({
     return;
   }
 
-  await impersonateAccount(testClient, { address: owner });
-  await setBalance(testClient, { address: owner, value: parseEther("1") });
+  const admin = await defaultAdmin(publicClient, { address: treasury });
+
+  await impersonateAccount(testClient, { address: admin });
+  await setBalance(testClient, { address: admin, value: parseEther("1") });
 
   try {
-    const ownerHasRole = await readContract(publicClient, {
-      abi: accessControlAbi,
-      address: treasury,
-      args: [MAINTAINER_ROLE, owner],
-      functionName: "hasRole",
+    await ensureRole({
+      account: admin,
+      client: publicClient,
+      role: MAINTAINER_ROLE,
+      transport,
+      treasury,
     });
-
-    if (!ownerHasRole) {
-      const grantHash = await writeContract(testClient, {
-        abi: accessControlAbi,
-        account: owner,
-        address: treasury,
-        args: [MAINTAINER_ROLE, owner],
-        functionName: "grantRole",
-      });
-      await confirmTransaction({ client: publicClient, hash: grantHash });
-    }
 
     const whitelistHash = await writeContract(testClient, {
       abi: gatewayAbi,
-      account: owner,
+      account: admin,
       address: gateway,
       args: [address],
       functionName: "addToInstantRedeemWhitelist",
     });
     await confirmTransaction({ client: publicClient, hash: whitelistHash });
   } finally {
-    await stopImpersonatingAccount(testClient, { address: owner });
+    await stopImpersonatingAccount(testClient, { address: admin });
   }
 
   console.log(

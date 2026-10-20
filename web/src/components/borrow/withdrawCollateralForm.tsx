@@ -15,6 +15,7 @@ import { CollapsibleSection } from "components/collapsibleSection";
 import { DrawerFeesContainer } from "components/feesContainer";
 import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIcon";
 import { NetworkFees } from "components/networkFees";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { TokenInput } from "components/tokenInput";
 import { Balance } from "components/tokenInput/balance";
 import type { InputError } from "components/tokenInput/utils";
@@ -24,10 +25,11 @@ import { usePositionInfo } from "hooks/borrow/usePositionInfo";
 import { useWithdrawCollateral } from "hooks/borrow/useWithdrawCollateral";
 import { useTotalWithdrawCollateralFees } from "hooks/borrow/useWithdrawCollateralFees";
 import { useWithdrawCollateralReview } from "hooks/borrow/useWithdrawCollateralReview";
+import { useActivityTracking } from "hooks/useActivityTracking";
 import { useAmount } from "hooks/useAmount";
 import { useAnimatedVisibility } from "hooks/useAnimatedVisibility";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatLtvAsPercentage } from "utils/borrowReview";
@@ -35,7 +37,6 @@ import { formatNumber } from "utils/format";
 import { isGeoRestricted } from "utils/geoRestriction";
 import { parseTokenUnits } from "utils/token";
 import { formatUnits } from "viem";
-import { useAccount } from "wagmi";
 
 import { PositionReview } from "./positionReview";
 
@@ -60,14 +61,12 @@ const getWithdrawStepStatus = function (
 };
 
 type SubmitButtonProps = {
-  address: string | undefined;
   balancesLoaded: boolean;
   inputError: InputError | undefined;
   sufficientGas: boolean;
 };
 
 function SubmitButton({
-  address,
   balancesLoaded,
   inputError,
   sufficientGas,
@@ -83,31 +82,37 @@ function SubmitButton({
     );
   }
 
-  if (!address) {
+  function renderButton() {
+    if (balancesLoaded && !sufficientGas) {
+      return (
+        <Button disabled size="small" type="button" variant="primary">
+          {t("common.insufficient-gas")}
+        </Button>
+      );
+    }
+    if (balancesLoaded && inputError) {
+      return (
+        <Button disabled size="small" type="button" variant="primary">
+          {t(`common.${inputError}`)}
+        </Button>
+      );
+    }
     return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t("common.connect-wallet")}
+      <Button
+        disabled={!balancesLoaded}
+        size="small"
+        type="submit"
+        variant="primary"
+      >
+        {t("pages.borrow.withdraw-collateral-progress.submit")}
       </Button>
     );
   }
-  if (balancesLoaded && !sufficientGas) {
-    return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t("common.insufficient-gas")}
-      </Button>
-    );
-  }
-  if (balancesLoaded && inputError) {
-    return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t(`common.${inputError}`)}
-      </Button>
-    );
-  }
+
   return (
-    <Button size="small" type="submit" variant="primary">
-      {t("pages.borrow.withdraw-collateral-progress.submit")}
-    </Button>
+    <RequireWalletConnected size="small">
+      {renderButton()}
+    </RequireWalletConnected>
   );
 }
 
@@ -195,8 +200,6 @@ type Props = {
 
 export function WithdrawCollateralForm({ market, onClose }: Props) {
   const { t } = useTranslation();
-  const ethereumChain = useMainnet();
-  const { address } = useAccount();
 
   const [collateralInput, onCollateralChange] = useAmount();
   const [flowStatus, setFlowStatus] =
@@ -219,7 +222,7 @@ export function WithdrawCollateralForm({ market, onClose }: Props) {
     collateralToken,
   );
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
 
   const { data: positionInfo, status: positionInfoStatus } =
     usePositionInfo(marketId);
@@ -231,6 +234,16 @@ export function WithdrawCollateralForm({ market, onClose }: Props) {
     marketId,
   });
 
+  const { onCompleted, onFailed, onPending, onTransactionHash } =
+    useActivityTracking({
+      page: "borrow",
+      text: t("pages.borrow.withdraw-collateral-progress.toast-description", {
+        amount: collateralInput,
+        symbol: collateralToken.symbol,
+      }),
+      title: `${t("nav.borrow")} · ${t("pages.borrow.withdraw-collateral-progress.withdraw-title")}`,
+    });
+
   const withdrawMutation = useWithdrawCollateral({
     collateralAmount: collateralAmountBigInt,
     marketId,
@@ -238,26 +251,36 @@ export function WithdrawCollateralForm({ market, onClose }: Props) {
       emitter.on("pre-withdraw-collateral", () =>
         setFlowStatus("withdraw-ready"),
       );
-      emitter.on("user-signed-withdraw-collateral", () =>
-        setFlowStatus("withdrawing"),
-      );
+      emitter.on("user-signed-withdraw-collateral", function (hash) {
+        onTransactionHash(hash);
+        onPending();
+        setFlowStatus("withdrawing");
+      });
       emitter.on("withdraw-collateral-transaction-succeeded", function () {
+        onCompleted();
         setFlowStatus("withdrawn");
         setShowToast(true);
       });
-      emitter.on("withdraw-collateral-transaction-reverted", () =>
-        setFlowStatus("withdraw-error"),
-      );
-      emitter.on("withdraw-collateral-failed", () =>
-        setFlowStatus("withdraw-error"),
-      );
-      emitter.on("withdraw-collateral-failed-validation", () =>
-        setFlowStatus("withdraw-error"),
-      );
-      emitter.on("user-signing-withdraw-collateral-error", () =>
-        setFlowStatus("withdraw-error"),
-      );
-      emitter.on("unexpected-error", () => setFlowStatus("withdraw-error"));
+      emitter.on("withdraw-collateral-transaction-reverted", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
+      emitter.on("withdraw-collateral-failed", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
+      emitter.on("withdraw-collateral-failed-validation", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
+      emitter.on("user-signing-withdraw-collateral-error", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
+      emitter.on("unexpected-error", function () {
+        onFailed();
+        setFlowStatus("withdraw-error");
+      });
     },
   });
 
@@ -346,7 +369,6 @@ export function WithdrawCollateralForm({ market, onClose }: Props) {
         </div>
         <div className="border-y border-gray-200 bg-gray-50 px-6 py-3 *:w-full">
           <SubmitButton
-            address={address}
             balancesLoaded={nativeBalance !== undefined}
             inputError={inputError}
             sufficientGas={sufficientGas}

@@ -5,6 +5,7 @@ import { ButtonIcon } from "./base/button";
 import { Dropdown } from "./base/dropdown";
 import { ExternalLink } from "./base/externalLink";
 import { I18nLink } from "./base/i18nLink";
+import { BuildInfo } from "./buildInfo";
 import { DocumentIcon } from "./icons/documentIcon";
 import { ExternalLinkIcon } from "./icons/externalLinkIcon";
 import { HomeIcon } from "./icons/homeIcon";
@@ -93,6 +94,7 @@ export function HeaderMenu() {
   return (
     <Dropdown
       getItemKey={(item) => item.href ?? item.to}
+      renderFooter={(onClose) => <BuildInfo onClose={onClose} />}
       renderItem={(item) => (
         <>
           {item.icon}

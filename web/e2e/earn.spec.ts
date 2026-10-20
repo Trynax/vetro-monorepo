@@ -1,7 +1,4 @@
-import {
-  TEST_ADDRESS,
-  TEST_PRIVATE_KEY,
-} from "@hemilabs/anvil-fork-setup/utils";
+import { TEST_ADDRESS } from "@hemilabs/anvil-fork-setup/utils";
 import { type Page, expect } from "@playwright/test";
 import {
   stakingVaultAbi,
@@ -15,23 +12,19 @@ import {
 import {
   type Address,
   type TransactionReceipt,
-  createWalletClient,
   erc20Abi,
   formatUnits,
-  http,
   isAddressEqual,
   parseAbiItem,
   parseEventLogs,
   parseUnits,
 } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import {
   getBlock,
   getTransactionReceipt,
   waitForTransactionReceipt,
   writeContract,
 } from "viem/actions";
-import { mainnet } from "viem/chains";
 import { approve, balanceOf } from "viem-erc20/actions";
 
 import { fastForwardTime } from "../scripts/fastForwardTime.ts";
@@ -40,7 +33,11 @@ import { whitelistInstantWithdraw } from "../scripts/whitelistInstantWithdraw.ts
 import type { ExitTicket } from "../src/pages/earn/types.ts";
 import { formatNumber } from "../src/utils/format.ts";
 
-import { ANVIL_URL, createEthereumClient } from "./anvil";
+import {
+  ANVIL_URL,
+  createEthereumClient,
+  createTestWalletClient,
+} from "./anvil";
 import { test } from "./fixtures/wallet";
 import { getMainnetToken, waitForBalance } from "./helpers";
 
@@ -241,11 +238,7 @@ async function stake({
   token: Address;
   vaultAddress: Address;
 }) {
-  const walletClient = createWalletClient({
-    account: privateKeyToAccount(TEST_PRIVATE_KEY),
-    chain: mainnet,
-    transport: http(ANVIL_URL),
-  });
+  const walletClient = createTestWalletClient();
 
   const approvalHash = await approve(walletClient, {
     address: token,
@@ -556,11 +549,7 @@ async function requestWithdraw({
   assets: bigint;
   vaultAddress: Address;
 }) {
-  const walletClient = createWalletClient({
-    account: privateKeyToAccount(TEST_PRIVATE_KEY),
-    chain: mainnet,
-    transport: http(ANVIL_URL),
-  });
+  const walletClient = createTestWalletClient();
 
   // One block after the deposit, the gas estimate still sees a zero yield drip
   // while the mined tx sees a non-zero one — the request then runs out of gas.

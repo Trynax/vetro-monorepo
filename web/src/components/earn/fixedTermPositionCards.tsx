@@ -1,7 +1,10 @@
 import type { Token } from "@vetro-protocol/core";
 import { InfoCard } from "components/base/infoCard";
 import { CardRow } from "components/earn/cardRow";
+import { DepositClaimCard } from "components/earn/depositClaimCard";
+import { ExitClaimCard } from "components/earn/exitClaimCard";
 import { PositionCard } from "components/earn/positionCard";
+import { Subtitle } from "components/earn/subtitle";
 import { InfoIcon } from "components/icons/infoIcon";
 import { RefreshIcon } from "components/icons/refreshIcon";
 import { TrendingUpIcon } from "components/icons/trendingUpIcon";
@@ -17,6 +20,7 @@ type CardProps = {
 };
 
 type Props = CardProps & {
+  peggedToken: Token;
   shareToken: Token;
 };
 
@@ -62,12 +66,17 @@ const RolloverStatusCard = function ({ stakingVaultAddress }: CardProps) {
       isLoading={isLoading}
       label={t("pages.earn.fixed-term.rollover-status")}
       render={(rolloverStatus) => t(rolloverStatusKeys[rolloverStatus].title)}
-      subtitle={status ? t(rolloverStatusKeys[status].description) : undefined}
+      subtitle={
+        status ? (
+          <Subtitle>{t(rolloverStatusKeys[status].description)}</Subtitle>
+        ) : undefined
+      }
     />
   );
 };
 
 export const FixedTermPositionCards = ({
+  peggedToken,
   shareToken,
   stakingVaultAddress,
 }: Props) => (
@@ -80,6 +89,22 @@ export const FixedTermPositionCards = ({
         />
       }
       right={<EarnedThisTermCard stakingVaultAddress={stakingVaultAddress} />}
+    />
+    <CardRow
+      left={
+        <DepositClaimCard
+          peggedToken={peggedToken}
+          shareToken={shareToken}
+          stakingVaultAddress={stakingVaultAddress}
+        />
+      }
+      right={
+        <ExitClaimCard
+          peggedToken={peggedToken}
+          shareToken={shareToken}
+          stakingVaultAddress={stakingVaultAddress}
+        />
+      }
     />
     <div className="xl:px-14 xl:*:border-0">
       <RolloverStatusCard stakingVaultAddress={stakingVaultAddress} />

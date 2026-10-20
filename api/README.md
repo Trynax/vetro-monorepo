@@ -89,6 +89,41 @@ Get the composition of the treasury by whitelisted token for a given gateway.
 ]
 ```
 
+### `GET /analytics/tvl-history/:gatewayAddress/:period`
+
+Returns the daily TVL history for a gateway's pegged token: the circulating supply, plus the Treasury's withdrawable holdings per whitelisted token. One record per UTC day, plus a live point for today.
+Valid periods are: `"1w"`, `"1m"`, `"3m"` and `"1y"`.
+`:gatewayAddress` must be a known gateway address. Returns `400` if malformed or the period is invalid, and `404` if the address is not a whitelisted gateway.
+
+#### Sample response
+
+For the VUSD gateway, whose peg unit is USD:
+
+```jsonc
+[
+  {
+    "pegBaseUsdPrice": 1,
+    "peggedTokenAddress": "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3",
+    "timestamp": 1788998400000,
+    "tokens": [
+      {
+        "price": "99991000",
+        "tokenAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "unitPrice": "100000000",
+        "withdrawable": "258609609875",
+      },
+      // ...one entry per whitelisted token...
+    ],
+    "totalSupply": "443736408129313428461563",
+  },
+  // ...one record per day...
+]
+```
+
+The vetBTC gateway returns the same shape with that day's BTC price, e.g. `"pegBaseUsdPrice": 77248.73`.
+
+`pegBaseUsdPrice` is `null` when the Portal price API fails for a gateway whose peg unit is not USD. A token's `price` and `unitPrice` are `null` for a day on which the oracle read failed.
+
 ### `GET /borrow/:marketId/apr-history/:period`
 
 Returns the historical borrow APR for a given market and period.
@@ -126,6 +161,141 @@ Gets the amount of collateral assets in a given Morpho market.
 {
   "collateralAssets": 219819281899
 }
+```
+
+### `GET /liquidity/pools`
+
+Returns the DEX pools that hold a VETRO token (a pegged token or its share token), on Curve, Uniswap and Sushi (Ethereum) and BrownFi (Hemi).
+
+- `apr` is the pool APR from trading fees, as a percentage number (e.g. `1.8` means 1.8%). It is `null` when `tvlUsd` is `null`.
+- `coins` lists each coin of the pool, with its `amount` in the pool in token units (not in raw units). On a range row, `amount` is the part of the pool's liquidity inside the range.
+- `tvlUsd` is `null` when a coin of the pool has no USD price.
+- `dexMetadata` is only on the Curve and BrownFi pools. On Curve, it has the `poolId`, the `gaugeAddress` (when the pool has a gauge) and the `lpTokenAddress`. Reward campaigns can target the pool, its gauge or its LP token. On BrownFi, it has `fee` and `overrideFee` as the subgraph gives them, in hundredths of a basis point (`3000` is 0.3%). An `overrideFee` of `0` means that the pool uses `fee`.
+- `rewards` includes rewards from Curve gauges, StakeDAO strategies and Merkl campaigns.
+
+By default, the response leaves out each pool with no `rewards` and a `tvlUsd` below 500 or `null`. A pool with any reward (Curve gauge, StakeDAO or Merkl) is always returned. With `includeRanges=true`, the range rows of a pool are returned only if its full-range row is.
+
+Query params:
+
+| Param           | Default | Description                                                                                                                                                                                                                                                 |
+| --------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `includeLowTvl` | `false` | When `true`, the response has every pool, including the pools with no rewards and a `tvlUsd` below 500 or `null`. Returns `400` if it is not `true` or `false`.                                                                                             |
+| `includeRanges` | `false` | When `true`, the response also has one row for each configured price range of a concentrated-liquidity pool (Sushi today). These rows have the same `address` as the full-range row, and they have a `range`. Returns `400` if it is not `true` or `false`. |
+
+#### Sample Response
+
+```jsonc
+[
+  {
+    "address": "0xC4C5e8edB69100108C428E88329039b715E3AAd1",
+    "apr": 5.28,
+    "chainId": 1,
+    "coins": [
+      {
+        "address": "0x476310E34D2810f7d79C43A74E4D79405bd7a925", // sVUSD
+        "amount": 36894.62,
+      },
+      {
+        "address": "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3", // VUSD
+        "amount": 38189.11,
+      },
+    ],
+    "dex": "curve",
+    "dexMetadata": {
+      "gaugeAddress": "0x737e7700e03A8c451C9B72103554a40760F1B57A",
+      "lpTokenAddress": "0xC4C5e8edB69100108C428E88329039b715E3AAd1",
+      "poolId": "factory-stable-ng-123",
+    },
+    "rewards": [
+      {
+        "apr": 19.07,
+        "aprMax": 47.67,
+        "source": "curveGauge",
+        "sourceMetadata": {
+          "gaugeAddress": "0x737e7700e03A8c451C9B72103554a40760F1B57A",
+        },
+        "tokens": [
+          {
+            "address": "0xD533a949740bb3306d119CC777fa900bA034cd52", // CRV
+            "chainId": 1,
+          },
+        ],
+      },
+      {
+        "apr": 21.62,
+        "source": "stakeDao",
+        "sourceMetadata": {
+          "strategyKey": "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
+        },
+        "tokens": [
+          {
+            "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+            "chainId": 1,
+          },
+        ],
+      },
+    ],
+    "tvlUsd": 73456.18,
+    "volumeUsd24h": 0,
+  },
+  {
+    "address": "0x6C2bd2F9711f204E595D334c6B7B672851b7d699",
+    "apr": 0.07,
+    "chainId": 1,
+    "coins": [
+      {
+        "address": "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3", // VUSD
+        "amount": 62755.39,
+      },
+      {
+        "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
+        "amount": 40883.95,
+      },
+    ],
+    "dex": "sushi",
+    "rewards": [
+      {
+        "apr": 25.61,
+        "source": "merkl",
+        "sourceMetadata": {
+          "campaignId": "0x4b4af9d20d2e20b9bcf7c85ef6d338b1ff25978b7fda9e77df0fd6f887696c3d",
+          "opportunityId": "6762395071463233736",
+        },
+        "tokens": [
+          {
+            "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+            "chainId": 1,
+          },
+        ],
+      },
+    ],
+    "tvlUsd": 110726.31,
+    "volumeUsd24h": 442.56,
+  },
+  // Only with `includeRanges=true`
+  {
+    "address": "0x6C2bd2F9711f204E595D334c6B7B672851b7d699",
+    "apr": 0.11,
+    "chainId": 1,
+    "coins": [
+      {
+        "address": "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3",
+        "amount": 35104.2,
+      },
+      {
+        "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "amount": 35106.2,
+      },
+    ],
+    "dex": "sushi",
+    "range": { "lowerPrice": 0.96, "upperPrice": 1.04 },
+    "rewards": [
+      // The same rewards as the full-range row
+    ],
+    "tvlUsd": 70210.4,
+    "volumeUsd24h": 442.56,
+  },
+]
 ```
 
 ### `GET /variable-stake/cost-basis/:address`
@@ -337,25 +507,25 @@ fail-closed), and `500` if sending the support email fails.
 Environment variables are configured in `wrangler.jsonc`.
 Secrets are set separately using the Wrangler CLI.
 
-| Variable                    | Description                                                                                                                                                                     | Default                   |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| CONTACT_FORM_RECIPIENT      | Destination address for contact form emails. Must be a verified Email Routing destination.                                                                                      | `support@vetro.org`       |
-| CONTACT_FORM_SENDER         | `from` address for contact form emails. Its domain must be a verified Email Routing sending domain.                                                                             | `noreply@forms.vetro.org` |
-| CUSTOM_RPC_URL_MAINNET      | Ethereum RPC node URL(s). Overrides `viem`'s default. Several URLs joined by `+` become a fallback transport.                                                                   |                           |
-| MERKL_OPPORTUNITY_SVETBTC   | Merkl opportunity id for the sVetBTC staking vault. Optional; if unset, that vault yields no rewards.                                                                           |                           |
-| MERKL_OPPORTUNITY_SVUSD     | Merkl opportunity id for the sVUSD staking vault. Optional; if unset, that vault yields no rewards.                                                                             |                           |
-| ORIGINS                     | Comma-separated list of allowed origins. (1)                                                                                                                                    | `http://localhost:5173`   |
-| SENTRY_DSN                  | Sentry DSN. When unset, Sentry is disabled.                                                                                                                                     |                           |
-| SUBGRAPH_API_KEY            | The subgraph API key.                                                                                                                                                           |                           |
-| SUBGRAPH_ID                 | The subgraph id.                                                                                                                                                                |                           |
-| SUBGRAPH_URL_TEMPLATE       | The subgraph URL template. (2)                                                                                                                                                  | (localhost)               |
-| TURNSTILE_ALLOWED_HOSTNAMES | Optional comma-separated hostname allowlist. When set, a Turnstile token whose siteverify `hostname` is not listed is rejected (`403`). Unset (local/staging) skips this check. |                           |
-| TURNSTILE_SECRET_KEY        | Cloudflare Turnstile secret key for verifying `POST /contact` tokens. When unset, verification is skipped. (3)                                                                  |                           |
-| WEBSITE_URL                 | Public URL of the web app, referenced in the contact form confirmation email.                                                                                                   | `http://localhost:5173/`  |
+| Variable                    | Description                                                                                                                                                                                                                     | Default                   |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| CONTACT_FORM_RECIPIENT      | Destination address for contact form emails. Must be a verified Email Routing destination.                                                                                                                                      | `support@vetro.org`       |
+| CONTACT_FORM_SENDER         | `from` address for contact form emails. Its domain must be a verified Email Routing sending domain.                                                                                                                             | `noreply@forms.vetro.org` |
+| CUSTOM_RPC_URL_MAINNET      | Ethereum RPC node URL(s). Overrides `viem`'s default. Several URLs joined by `+` become a fallback transport.                                                                                                                   |                           |
+| MERKL_OPPORTUNITY_SVETBTC   | Merkl opportunity id for the sVetBTC staking vault. Optional; if unset, that vault yields no rewards.                                                                                                                           |                           |
+| MERKL_OPPORTUNITY_SVUSD     | Merkl opportunity id for the sVUSD staking vault. Optional; if unset, that vault yields no rewards.                                                                                                                             |                           |
+| ORIGINS                     | Comma-separated list of allowed origins. (1)                                                                                                                                                                                    | `http://localhost:5173`   |
+| PORTAL_API_URL              | Base URL of the portal API. `GET /analytics/tvl-history` reads the daily and current USD price of a non-USD peg unit (BTC) from it. `GET /liquidity/pools` reads USD prices from it to compute the TVL of the Sushi range rows. | `http://localhost:3006`   |
+| SENTRY_DSN                  | Sentry DSN. When unset, Sentry is disabled.                                                                                                                                                                                     |                           |
+| SUBGRAPH_API_KEY            | The Graph API key. Also used for the BrownFi and Sushi subgraphs of `GET /liquidity/pools`.                                                                                                                                     |                           |
+| SUBGRAPH_ID                 | The subgraph id.                                                                                                                                                                                                                |                           |
+| SUBGRAPH_URL                | The VETRO subgraph URL. Use it for a local subgraph. When unset, the API uses The Graph gateway with `SUBGRAPH_API_KEY` and `SUBGRAPH_ID`.                                                                                      | (localhost)               |
+| TURNSTILE_ALLOWED_HOSTNAMES | Optional comma-separated hostname allowlist. When set, a Turnstile token whose siteverify `hostname` is not listed is rejected (`403`). Unset (local/staging) skips this check.                                                 |                           |
+| TURNSTILE_SECRET_KEY        | Cloudflare Turnstile secret key for verifying `POST /contact` tokens. When unset, verification is skipped. (2)                                                                                                                  |                           |
+| WEBSITE_URL                 | Public URL of the web app, referenced in the contact form confirmation email.                                                                                                                                                   | `http://localhost:5173/`  |
 
 (1) Globs with stars (`*`) are supported. I.e. `https://*.hemi.xyz` will match any subdomain or subdomain chain.
-(2) API key and id are replaced in the template at the `$API_KEY` and `$ID` positions.
-(3) Per environment: local (`.dev.vars`) and staging (`env.staging.vars`) use Cloudflare's always-passes [test secret](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) `1x0000000000000000000000000000000AA`, since it is public and non-sensitive. Production sets the real key as a Wrangler secret — it is intentionally absent from `env.production.vars` in `wrangler.jsonc`:
+(2) Per environment: local (`.dev.vars`) and staging (`env.staging.vars`) use Cloudflare's always-passes [test secret](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) `1x0000000000000000000000000000000AA`, since it is public and non-sensitive. Production sets the real key as a Wrangler secret — it is intentionally absent from `env.production.vars` in `wrangler.jsonc`:
 
 ```sh
 pnpm wrangler secret put TURNSTILE_SECRET_KEY --env production

@@ -15,6 +15,7 @@ import { Contact } from "pages/contact";
 import { Earn } from "pages/earn";
 import { ErrorPage } from "pages/errorPage";
 import { Faq } from "pages/faq";
+import { Liquidity } from "pages/liquidity";
 import { NotFound } from "pages/notFound";
 import { Swap } from "pages/swap";
 import { Suspense, lazy } from "react";
@@ -120,6 +121,7 @@ function LanguageRoutes() {
             <Route element={<Borrow />} path="borrow" />
             <Route element={<BorrowMarketDetails />} path="borrow/:marketId" />
             <Route element={<Bridge />} path="bridge" />
+            <Route element={<Liquidity />} path="liquidity" />
             <Route element={<Analytics />} path="analytics" />
             <Route element={<Faq />} path="faq" />
             <Route element={<Contact />} path="contact" />

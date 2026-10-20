@@ -1,7 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { fetchCanInstantWithdraw } from "fetchers/fetchCanInstantWithdraw";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type Address, type Chain, type Client } from "viem";
 import { useAccount } from "wagmi";
 
@@ -25,6 +25,7 @@ export const canInstantWithdrawOptions = ({
         stakingVaultAddress,
       }),
     queryKey: ["can-instant-withdraw", chainId, account, stakingVaultAddress],
+    staleTime: Infinity,
   });
 
 export function useCanInstantWithdraw({
@@ -33,13 +34,12 @@ export function useCanInstantWithdraw({
   stakingVaultAddress: Address;
 }) {
   const { address: account } = useAccount();
-  const chain = useMainnet();
   const client = useEthereumClient();
 
   return useQuery(
     canInstantWithdrawOptions({
       account,
-      chainId: chain.id,
+      chainId: mainnet.id,
       client,
       stakingVaultAddress,
     }),

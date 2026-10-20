@@ -49,15 +49,23 @@ describe("paginate-subgraph-query/paginateSubgraphQuery", function () {
     expect(result[0].id).toBe("0");
     expect(result[136].id).toBe("136");
     expect(graphql.runQuery).toHaveBeenCalledTimes(2);
-    expect(graphql.runQuery).toHaveBeenNthCalledWith(1, url, query, {
-      first: 100,
-      owner: "0xabc",
-      skip: 0,
+    expect(graphql.runQuery).toHaveBeenNthCalledWith(1, {
+      query,
+      url,
+      variables: {
+        first: 100,
+        owner: "0xabc",
+        skip: 0,
+      },
     });
-    expect(graphql.runQuery).toHaveBeenNthCalledWith(2, url, query, {
-      first: 100,
-      owner: "0xabc",
-      skip: 100,
+    expect(graphql.runQuery).toHaveBeenNthCalledWith(2, {
+      query,
+      url,
+      variables: {
+        first: 100,
+        owner: "0xabc",
+        skip: 100,
+      },
     });
   });
 
@@ -67,9 +75,13 @@ describe("paginate-subgraph-query/paginateSubgraphQuery", function () {
     const result = await paginate({ pageSize: 2 });
 
     expect(result).toHaveLength(1);
-    expect(graphql.runQuery).toHaveBeenNthCalledWith(1, url, query, {
-      first: 2,
-      skip: 0,
+    expect(graphql.runQuery).toHaveBeenNthCalledWith(1, {
+      query,
+      url,
+      variables: {
+        first: 2,
+        skip: 0,
+      },
     });
   });
 
@@ -107,10 +119,14 @@ describe("paginate-subgraph-query/paginateSubgraphQuery", function () {
     expect(result).toHaveLength(449);
     expect(result.filter((row) => row.id === "299")).toHaveLength(1);
     // The page after the reset advances `start` to the last seen id and skips 0.
-    expect(graphql.runQuery).toHaveBeenNthCalledWith(4, url, query, {
-      first: 100,
-      skip: 0,
-      start: "299",
+    expect(graphql.runQuery).toHaveBeenNthCalledWith(4, {
+      query,
+      url,
+      variables: {
+        first: 100,
+        skip: 0,
+        start: "299",
+      },
     });
   });
 

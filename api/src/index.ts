@@ -16,15 +16,25 @@ import {
 } from "./contact.ts";
 import { convertBigIntsToString } from "./convert-bigints-to-string.ts";
 import { getSubgraphUrl } from "./env.ts";
+import { addIncentives } from "./liquidity/incentives.ts";
+import { venues } from "./liquidity/index.ts";
+import { excludeLowTvlPools } from "./liquidity/low-tvl.ts";
 import {
   validateAddress,
   validateGatewayAddress,
   validateParam,
+  validateQueryParams,
   validateStakingVaultAddress,
 } from "./param-validators.ts";
 import { securityHeaders } from "./security-headers.ts";
 import { getShareValueHistory } from "./share-value-history.ts";
 import { getTotalDepositsHistory } from "./total-deposits-history.ts";
+import { getTvlHistory } from "./tvl-history.ts";
+import {
+  fulfilledValues,
+  throwIfAllRejected,
+  valueOrEmpty,
+} from "./utils/promises.ts";
 import { createOriginFn, parseOrigins } from "./validate-origin.ts";
 import * as variableStake from "./variable-stake.ts";
 import { validPeriods as vaultHistoryValidPeriods } from "./vault-history-period.ts";
@@ -32,6 +42,10 @@ import { readWarmedTask, warmScheduled } from "./warm-cache.ts";
 import {
   apyTask,
   collateralizationRatioTask,
+  liquidityCampaignGaugesTask,
+  liquidityMerklRewardsTask,
+  liquidityStrategiesTask,
+  liquidityVenuePoolsTask,
   stakedTask,
   treasuryTask,
   tvlTask,
@@ -138,6 +152,33 @@ app.get(
   },
 );
 
+app.get(
+  "/analytics/tvl-history/:gatewayAddress/:period",
+  validateGatewayAddress,
+  validateParam("period", vaultHistoryValidPeriods),
+  cache({
+    cacheControl: "max-age=300",
+    cacheName: "vetro-api",
+  }),
+  async function (c) {
+    try {
+      const gatewayAddress = c.get("gatewayAddress");
+      const period = c.req.param("period");
+      const url = getSubgraphUrl(c.env);
+      const data = await getTvlHistory({
+        c,
+        gatewayAddress,
+        period,
+        portalApiUrl: c.env.PORTAL_API_URL,
+        url,
+      });
+      return c.json(data);
+    } catch (error) {
+      throw new Error(`Failed to get TVL history: ${error.message}`);
+    }
+  },
+);
+
 // Cheap, local check on the market id shape. Kept ahead of `cache()` so
 // malformed ids are rejected without a cache lookup or a network call.
 function validateMarketIdFormat(c: Context, next: Next) {
@@ -203,6 +244,63 @@ app.get(
       return c.json(collateralAssets);
     } catch (error) {
       throw new Error(`Failed to get collateral assets: ${error.message}`);
+    }
+  },
+);
+
+const includesLowTvl = (c: Context) => c.req.query("includeLowTvl") === "true";
+
+const includesRanges = (c: Context) => c.req.query("includeRanges") === "true";
+
+const readLiquidityPools = async function (c: Context<{ Bindings: Env }>) {
+  const [venueResults, sourceResults] = await Promise.all([
+    Promise.allSettled(
+      venues.map((venue) =>
+        readWarmedTask({ c, item: venue, task: liquidityVenuePoolsTask }),
+      ),
+    ),
+    Promise.allSettled([
+      readWarmedTask({ c, task: liquidityCampaignGaugesTask }),
+      readWarmedTask({ c, task: liquidityMerklRewardsTask }),
+      readWarmedTask({ c, task: liquidityStrategiesTask }),
+    ]),
+  ]);
+  throwIfAllRejected(venueResults);
+  const [campaignGauges, merklRewards, strategies] = sourceResults;
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const sources = {
+    campaignGauges: valueOrEmpty(campaignGauges),
+    merklRewards: valueOrEmpty(merklRewards),
+    strategies: valueOrEmpty(strategies),
+  };
+  return fulfilledValues(venueResults)
+    .flat()
+    .map((pool) => addIncentives({ nowSeconds, pool, sources }));
+};
+
+app.get(
+  "/liquidity/pools",
+  validateQueryParams({
+    includeLowTvl: ["true", "false"],
+    includeRanges: ["true", "false"],
+  }),
+  cache({
+    cacheControl: "max-age=60",
+    cacheName: "vetro-api",
+    keyGenerator: (c) =>
+      `${new URL(c.req.url).origin}${c.req.path}?includeLowTvl=${includesLowTvl(c)}&includeRanges=${includesRanges(c)}`,
+  }),
+  async function (c) {
+    try {
+      const pools = await readLiquidityPools(c);
+      const poolRows = includesRanges(c)
+        ? pools
+        : pools.filter((pool) => !pool.range);
+      return c.json(
+        includesLowTvl(c) ? poolRows : excludeLowTvlPools(poolRows),
+      );
+    } catch (error) {
+      throw new Error(`Failed to get DEX pools: ${error.message}`);
     }
   },
 );

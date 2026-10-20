@@ -19,3 +19,19 @@ export type TreasuryToken = {
   totalDebt: string;
   withdrawable: string;
 };
+
+// Raw response shape from GET /analytics/tvl-history.
+type TvlHistoryToken = {
+  price: string | null;
+  tokenAddress: Address;
+  unitPrice: string | null;
+  withdrawable: string;
+};
+
+export type TvlHistoryEntry = {
+  pegBaseUsdPrice: number | null;
+  peggedTokenAddress: Address;
+  timestamp: number;
+  tokens: TvlHistoryToken[];
+  totalSupply: string;
+};

@@ -14,14 +14,14 @@
     "better-sort-github-actions": "1.0.0",
     "better-sort-package-json": "1.1.1",
     "commitlint-config-bloq": "1.1.0",
-    "esbuild": "0.27.3",
+    "esbuild": "0.28.2",
     "eslint": "8.57.0",
     "eslint-config-bloq": "4.8.2",
     "husky": "9.1.7",
     "knip": "6.9.0",
     "lint-staged": "17.0.2",
     "prettier": "3.8.3",
-    "prettier-plugin-tailwindcss": "0.8.0"
+    "prettier-plugin-tailwindcss": "0.8.1"
   },
   "private": true,
   "packageManager": "pnpm@10.28.1",

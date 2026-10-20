@@ -1,8 +1,9 @@
-import { Button } from "components/base/button";
 import { SegmentedControl } from "components/base/segmentedControl";
+import { ChartPlaceholder } from "components/chartPlaceholders";
 import { ClockRevertedIcon } from "components/icons/clockRevertedIcon";
 import { useApyHistory } from "hooks/useApyHistory";
 import { useElementWidth } from "hooks/useElementWidth";
+import { useShareTokenForPeggedToken } from "hooks/useShareTokenForPeggedToken";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
@@ -29,17 +30,32 @@ import {
   VictoryTooltip,
   VictoryVoronoiContainer,
 } from "victory";
+
 type Props = {
   peggedToken: TokenWithGateway | undefined;
   peggedTokenError?: boolean;
 };
+
+function ApyLabel({ peggedToken, peggedTokenError = false }: Props) {
+  const { t } = useTranslation();
+  const { data: shareToken, isError: isShareTokenError } =
+    useShareTokenForPeggedToken({ peggedToken });
+
+  if (shareToken) {
+    return t("common.charts.apy-label", { shareSymbol: shareToken.symbol });
+  }
+  if (peggedTokenError || isShareTokenError) {
+    return "-";
+  }
+  return <Skeleton width={96} />;
+}
 
 export function ApyHistoryCard({
   peggedToken,
   peggedTokenError = false,
 }: Props) {
   const { i18n, t } = useTranslation();
-  const [period, setPeriod] = useState<ChartPeriod>("1w");
+  const [period, setPeriod] = useState<ChartPeriod>("1m");
   const [chartContainerRef, chartWidth] = useElementWidth();
   const {
     data: chartData,
@@ -47,7 +63,8 @@ export function ApyHistoryCard({
     refetch,
   } = useApyHistory({ peggedToken, period });
 
-  const isError = peggedTokenError || isHistoryError;
+  const isError =
+    peggedTokenError || (isHistoryError && chartData === undefined);
   // The API appends the current on-chain APY as the final point, so the last
   // datapoint is the current value shown on top of the card.
   const currentApy = chartData?.at(-1)?.y;
@@ -57,7 +74,10 @@ export function ApyHistoryCard({
       <div className="flex flex-col gap-3">
         <div className="flex w-full items-center justify-between">
           <span className="text-b-medium text-gray-900">
-            {t("common.charts.apy-label")}
+            <ApyLabel
+              peggedToken={peggedToken}
+              peggedTokenError={peggedTokenError}
+            />
           </span>
           <ClockRevertedIcon className="text-blue-500" />
         </div>
@@ -88,18 +108,18 @@ export function ApyHistoryCard({
         ref={chartContainerRef}
         style={{ height: chartHeight }}
       >
-        {isError ? (
+        {peggedTokenError ? (
           <div className="flex h-full items-center justify-center">
-            {isHistoryError ? (
-              <Button onClick={() => refetch()} size="xSmall" variant="primary">
-                {t("common.charts.reload-chart")}
-              </Button>
-            ) : (
-              <span className="text-gray-500">-</span>
-            )}
+            <span className="text-gray-500">-</span>
           </div>
         ) : chartData === undefined ? (
-          <Skeleton height={chartHeight} />
+          <ChartPlaceholder
+            chartWidth={chartWidth}
+            isError={isHistoryError}
+            onReload={() => refetch()}
+            period={period}
+            skeleton={<Skeleton height="100%" />}
+          />
         ) : chartData.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <span className="text-gray-500">-</span>

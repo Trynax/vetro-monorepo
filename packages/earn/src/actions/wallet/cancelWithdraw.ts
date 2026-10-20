@@ -136,7 +136,9 @@ const runCancelWithdraw = (
 export const cancelWithdraw = (...args: Parameters<typeof runCancelWithdraw>) =>
   toPromiseEvent<CancelWithdrawEvents>(runCancelWithdraw(...args));
 
-export const encodeCancelWithdraw = ({ requestId }: CancelWithdrawParams) =>
+export const encodeCancelWithdraw = ({
+  requestId,
+}: Omit<CancelWithdrawParams, "vaultAddress">) =>
   encodeFunctionData({
     abi: stakingVaultAbi,
     args: [requestId],

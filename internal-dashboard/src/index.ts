@@ -2,9 +2,9 @@
 
 /// <reference types="@cloudflare/workers-types" />
 
-import { getAddress } from "viem";
+import { type Address, getAddress, isAddress, isAddressEqual } from "viem";
 
-import type { StakeDaoCampaign } from "./lib/stakeDaoApi";
+import type { StakeDaoCampaign, StakeDaoStrategy } from "./lib/stakeDaoApi";
 
 type Env = {
   ASSETS: Fetcher;
@@ -116,6 +116,7 @@ const htmlHeaders = {
 };
 
 const brownfiSubgraphId = "D1UwhrB45geUZTNQ2QwrXwGEhk69iBESApJJzz378ZeS";
+const sushiSubgraphId = "2tGWMrDha4164KkFAfkU3rDCtuxGb4q1emXmFdLLzJ8x";
 
 const graphqlProxies: Record<
   string,
@@ -128,6 +129,10 @@ const graphqlProxies: Record<
   "/api/sushi": {
     upstream: () => "https://production.data-gcp.sushi.com/graphql",
   },
+  "/api/sushi-subgraph": {
+    upstream: (env) =>
+      `https://gateway.thegraph.com/api/${env.THEGRAPH_API_KEY}/subgraphs/id/${sushiSubgraphId}`,
+  },
   "/api/uniswap": {
     headers: { origin: "https://app.uniswap.org" },
     upstream: () => "https://interface.gateway.uniswap.org/v1/graphql",
@@ -137,13 +142,18 @@ const graphqlProxies: Record<
 const merklOpportunitiesPath = "/api/merkl/opportunities";
 const merklOpportunitiesUpstream = "https://api.merkl.xyz/v4/opportunities";
 
-// StakeDAO answers with every campaign ever created (several MB)
-// and offers no server-side filter, so the worker trims the list to
-// the requested gauges. The upstream response is cached because of this.
+// StakeDAO answers with every campaign ever created (several MB) and with
+// a large strategies file per chain, and offers no server-side filter for
+// either, so the worker trims both lists to the requested gauges. The upstream
+// responses are cached because of this.
 const stakeDaoCampaignsPath = "/api/stakedao/campaigns";
 const stakeDaoCampaignsUpstream =
   "https://api-v3.stakedao.org/votemarket/curve";
 const stakeDaoCacheSeconds = 3 * 60;
+
+const stakeDaoStrategiesPath = "/api/stakedao/strategies";
+const stakeDaoStrategiesUpstream = (chainId: number) =>
+  `https://api.stakedao.org/api/strategies/v2/curve/${chainId}.json`;
 
 const jsonResponse = ({
   body,
@@ -155,6 +165,14 @@ const jsonResponse = ({
   new Response(body, {
     headers: { "content-type": "application/json" },
     status,
+  });
+
+const fetchStakeDao = (upstream: string) =>
+  fetch(upstream, {
+    cf: {
+      cacheEverything: true,
+      cacheTtlByStatus: { "200-299": stakeDaoCacheSeconds, "400-599": 0 },
+    },
   });
 
 const servedCampaign = (campaign: StakeDaoCampaign): StakeDaoCampaign => ({
@@ -176,14 +194,36 @@ const servedCampaign = (campaign: StakeDaoCampaign): StakeDaoCampaign => ({
   totalRewardAmount: campaign.totalRewardAmount,
 });
 
+type UpstreamStakeDaoStrategy = Omit<
+  StakeDaoStrategy,
+  "gaugeAddress" | "rewards"
+> & {
+  gaugeAddress: StakeDaoStrategy["gaugeAddress"] | null;
+  // Some reward tokens come with only an address.
+  rewards: { apr: number; end: number; token: { symbol?: string } }[];
+};
+
+type GaugedUpstreamStakeDaoStrategy = UpstreamStakeDaoStrategy & {
+  gaugeAddress: StakeDaoStrategy["gaugeAddress"];
+};
+
+const servedStrategy = (
+  strategy: GaugedUpstreamStakeDaoStrategy,
+): StakeDaoStrategy => ({
+  ...(strategy.apr
+    ? { apr: { current: { total: strategy.apr.current.total } } }
+    : {}),
+  gaugeAddress: getAddress(strategy.gaugeAddress),
+  key: strategy.key,
+  rewards: strategy.rewards.flatMap(({ apr, end, token: { symbol } }) =>
+    symbol ? [{ apr, end, token: { symbol } }] : [],
+  ),
+  tradingApy: strategy.tradingApy,
+});
+
 const proxyStakeDaoCampaigns = async function (searchParams: URLSearchParams) {
   const gauges = (searchParams.get("gauges") ?? "").toLowerCase().split(",");
-  const response = await fetch(stakeDaoCampaignsUpstream, {
-    cf: {
-      cacheEverything: true,
-      cacheTtlByStatus: { "200-299": stakeDaoCacheSeconds, "400-599": 0 },
-    },
-  });
+  const response = await fetchStakeDao(stakeDaoCampaignsUpstream);
   if (!response.ok) {
     return jsonResponse({ body: response.body, status: response.status });
   }
@@ -195,6 +235,36 @@ const proxyStakeDaoCampaigns = async function (searchParams: URLSearchParams) {
       campaigns
         .filter((campaign) => gauges.includes(campaign.gauge.toLowerCase()))
         .map(servedCampaign),
+    ),
+  });
+};
+
+const proxyStakeDaoStrategies = async function (searchParams: URLSearchParams) {
+  const chainId = Number(searchParams.get("chainId"));
+  if (!Number.isSafeInteger(chainId) || chainId <= 0) {
+    return jsonResponse({ body: null, status: 400 });
+  }
+  const gauges = (searchParams.get("gauges") ?? "").split(",");
+  if (!gauges.every((gauge): gauge is Address => isAddress(gauge))) {
+    return jsonResponse({ body: null, status: 400 });
+  }
+  const hasRequestedGauge = function (
+    strategy: UpstreamStakeDaoStrategy,
+  ): strategy is GaugedUpstreamStakeDaoStrategy {
+    const { gaugeAddress } = strategy;
+    return (
+      gaugeAddress !== null &&
+      gauges.some((gauge) => isAddressEqual(gauge, gaugeAddress))
+    );
+  };
+  const response = await fetchStakeDao(stakeDaoStrategiesUpstream(chainId));
+  if (!response.ok) {
+    return jsonResponse({ body: response.body, status: response.status });
+  }
+  const strategies = (await response.json()) as UpstreamStakeDaoStrategy[];
+  return jsonResponse({
+    body: JSON.stringify(
+      strategies.filter(hasRequestedGauge).map(servedStrategy),
     ),
   });
 };
@@ -247,6 +317,8 @@ const apiHandlers: Record<
 > = {
   [`GET ${stakeDaoCampaignsPath}`]: ({ url }) =>
     proxyStakeDaoCampaigns(url.searchParams),
+  [`GET ${stakeDaoStrategiesPath}`]: ({ url }) =>
+    proxyStakeDaoStrategies(url.searchParams),
   [`QUERY ${merklOpportunitiesPath}`]: ({ request }) =>
     proxyMerklOpportunities(request),
 };

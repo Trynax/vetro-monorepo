@@ -117,10 +117,10 @@ export async function paginateSubgraphQuery<R>({
   let done = false;
 
   while (!done) {
-    const data = await graphql.runQuery<Record<string, R[]>>(url, query, {
-      ...pageVariables,
-      first: pageSize,
-      skip,
+    const data = await graphql.runQuery<Record<string, R[]>>({
+      query,
+      url,
+      variables: { ...pageVariables, first: pageSize, skip },
     });
     const rows = data[field];
     if (!Array.isArray(rows)) {

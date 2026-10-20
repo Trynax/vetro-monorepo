@@ -7,7 +7,7 @@ import { PoolInfoStakedAmount } from "../poolInfoBar/poolInfoStakedAmount";
 import { PoolToken } from "../poolInfoBar/poolToken";
 
 import { PoolDeposits } from "./poolDeposits";
-import { PoolTargetApy } from "./poolTargetApy";
+import { PoolTargetApr } from "./poolTargetApr";
 import { PoolTermState } from "./poolTermState";
 
 type Props = {
@@ -23,7 +23,7 @@ export function PoolInfoBar({ stakingVaultAddress }: Props) {
         <PoolToken peggedToken={peggedToken} />
         <PoolContract address={stakingVaultAddress} />
         <PoolDeposits stakingVaultAddress={stakingVaultAddress} />
-        <PoolTargetApy stakingVaultAddress={stakingVaultAddress} />
+        <PoolTargetApr stakingVaultAddress={stakingVaultAddress} />
         <PoolTermState stakingVaultAddress={stakingVaultAddress} />
         <PoolInfoStakedAmount stakingVaultAddress={stakingVaultAddress} />
       </div>

@@ -41,12 +41,7 @@ function getRequestStepStatus(withdrawStep: WithdrawStep) {
   if (withdrawStep === "completed") {
     return stepStatus.completed;
   }
-  if (
-    withdrawStep === "requesting" ||
-    withdrawStep === "request-unknown" ||
-    withdrawStep === "unknown" ||
-    withdrawStep === "withdrawing"
-  ) {
+  if (withdrawStep === "requesting" || withdrawStep === "withdrawing") {
     return stepStatus.progress;
   }
   if (withdrawStep === "request-failed" || withdrawStep === "failed") {

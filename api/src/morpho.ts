@@ -30,7 +30,7 @@ export async function getLoanAssetAddress({
         address: Address;
       };
     };
-  }>(morphoApiUrl, query, variables);
+  }>({ query, url: morphoApiUrl, variables });
   return marketById.loanAsset.address;
 }
 
@@ -76,7 +76,7 @@ export async function getHistoricalBorrowApy({
         }[];
       };
     };
-  }>(morphoApiUrl, query, variables);
+  }>({ query, url: morphoApiUrl, variables });
   return marketById.historicalState.borrowApy;
 }
 
@@ -103,6 +103,6 @@ export async function getCollateralAssets({
         collateralAssets: number;
       };
     };
-  }>(morphoApiUrl, query, variables);
+  }>({ query, url: morphoApiUrl, variables });
   return marketById.state.collateralAssets;
 }

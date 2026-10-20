@@ -1,18 +1,24 @@
+import { knownTokens } from "@vetro-protocol/core";
+import type { Address } from "viem";
 import { describe, expect, it } from "vitest";
 
-import type { TreasuryToken } from "../../src/types";
+import type { TreasuryToken, TvlHistoryEntry } from "../../src/types";
 import {
   assignColor,
+  getHistoryOnlyTokenAddresses,
   toCollateralizationItems,
   toReserveBufferAmount,
+  toTvlHistorySeries,
   toTvlItems,
   toYieldItems,
 } from "../../src/utils/allocations";
 
-const USDT_ADDRESS =
-  "0xdAC17F958D2ee523a2206206994597C13D831ec7" as `0x${string}`;
-const USDC_ADDRESS =
-  "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" as `0x${string}`;
+const findToken = (symbol: string) =>
+  knownTokens.find((token) => token.symbol === symbol)!;
+
+const usdtToken = findToken("USDT");
+const usdcToken = findToken("USDC");
+const frxUsdToken = findToken("frxUSD");
 
 // $1.00 expressed with 8 decimals
 const ONE_USD_PRICE = "100000000";
@@ -21,7 +27,7 @@ const baseTreasuryToken: TreasuryToken = {
   activeStrategies: [],
   latestPrice: ONE_USD_PRICE,
   priceDecimals: 8,
-  tokenAddress: USDT_ADDRESS,
+  tokenAddress: usdtToken.address,
   totalDebt: "0",
   withdrawable: "0",
 };
@@ -29,23 +35,15 @@ const baseTreasuryToken: TreasuryToken = {
 // USD prices keyed by uppercase symbol (shape returned by `usePrices`).
 const prices = { USDC: "1", USDT: "1" };
 
-const usdtToken = {
-  address: USDT_ADDRESS,
-  chainId: 1,
-  decimals: 6,
-  logoURI: "",
-  name: "Tether USD",
-  symbol: "USDT",
-};
-
-const usdcToken = {
-  address: USDC_ADDRESS,
-  chainId: 1,
-  decimals: 6,
-  logoURI: "",
-  name: "USD Coin",
-  symbol: "USDC",
-};
+const tvlHistoryEntry = (overrides: Partial<TvlHistoryEntry>) => ({
+  pegBaseUsdPrice: 1,
+  peggedTokenAddress:
+    "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3" as `0x${string}`,
+  timestamp: 1_789_084_800_000,
+  tokens: [],
+  totalSupply: "443736408129313428461563",
+  ...overrides,
+});
 
 describe("pages/analytics/utils", function () {
   describe("assignColor", function () {
@@ -131,7 +129,7 @@ describe("pages/analytics/utils", function () {
           },
           {
             ...baseTreasuryToken,
-            tokenAddress: USDC_ADDRESS,
+            tokenAddress: usdcToken.address,
             totalDebt: "50000000",
             withdrawable: "100000000",
           },
@@ -167,7 +165,7 @@ describe("pages/analytics/utils", function () {
           },
           {
             ...baseTreasuryToken,
-            tokenAddress: USDC_ADDRESS,
+            tokenAddress: usdcToken.address,
             totalDebt: "0",
             withdrawable: "1000000000",
           },
@@ -207,7 +205,7 @@ describe("pages/analytics/utils", function () {
           { ...baseTreasuryToken, withdrawable: "1000000000" },
           {
             ...baseTreasuryToken,
-            tokenAddress: USDC_ADDRESS,
+            tokenAddress: usdcToken.address,
             withdrawable: "1000000000",
           },
         ],
@@ -219,6 +217,158 @@ describe("pages/analytics/utils", function () {
     });
   });
 
+  describe("getHistoryOnlyTokenAddresses", function () {
+    it("returns each token absent from the whitelist once", function () {
+      const holding = {
+        price: ONE_USD_PRICE,
+        unitPrice: ONE_USD_PRICE,
+        withdrawable: "1000000",
+      };
+      const addresses = getHistoryOnlyTokenAddresses({
+        history: [
+          tvlHistoryEntry({
+            tokens: [
+              { ...holding, tokenAddress: usdcToken.address },
+              { ...holding, tokenAddress: usdtToken.address },
+            ],
+          }),
+          tvlHistoryEntry({
+            tokens: [
+              {
+                ...holding,
+                tokenAddress: usdtToken.address.toLowerCase() as Address,
+              },
+            ],
+          }),
+        ],
+        whitelistedTokens: [usdcToken],
+      });
+
+      expect(addresses).toEqual([usdtToken.address]);
+    });
+  });
+
+  describe("toTvlHistorySeries", function () {
+    const tokens = [usdcToken, frxUsdToken];
+
+    it("scales each holding by its decimals and oracle rate", function () {
+      const series = toTvlHistorySeries({
+        history: [
+          tvlHistoryEntry({
+            tokens: [
+              {
+                price: "99983477",
+                tokenAddress: usdcToken.address,
+                unitPrice: ONE_USD_PRICE,
+                withdrawable: "258609609875",
+              },
+              {
+                price: "99974071",
+                tokenAddress: frxUsdToken.address,
+                unitPrice: ONE_USD_PRICE,
+                withdrawable: "81443872117929824822074",
+              },
+            ],
+          }),
+        ],
+        tokens,
+      });
+
+      expect(series[0]?.data[0]?.y).toBeCloseTo(258_566.87, 1);
+      expect(series[1]?.data[0]?.y).toBeCloseTo(81_422.75, 1);
+    });
+
+    it("multiplies by the peg base USD price", function () {
+      const series = toTvlHistorySeries({
+        history: [
+          tvlHistoryEntry({
+            pegBaseUsdPrice: 77_000,
+            tokens: [
+              {
+                price: ONE_USD_PRICE,
+                tokenAddress: usdcToken.address,
+                unitPrice: ONE_USD_PRICE,
+                withdrawable: "2000000",
+              },
+            ],
+          }),
+        ],
+        tokens,
+      });
+
+      expect(series[0]?.data[0]?.y).toBeCloseTo(154_000);
+    });
+
+    it("returns zero when the peg base USD price is unknown", function () {
+      const series = toTvlHistorySeries({
+        history: [
+          tvlHistoryEntry({
+            pegBaseUsdPrice: null,
+            tokens: [
+              {
+                price: ONE_USD_PRICE,
+                tokenAddress: usdcToken.address,
+                unitPrice: ONE_USD_PRICE,
+                withdrawable: "2000000",
+              },
+            ],
+          }),
+        ],
+        tokens,
+      });
+
+      expect(series[0]?.data[0]?.y).toBe(0);
+    });
+
+    it("orders and colors the series by the token order", function () {
+      const series = toTvlHistorySeries({ history: [], tokens });
+
+      expect(series.map((s) => s.symbol)).toEqual(["USDC", "frxUSD"]);
+      expect(series[0]?.color).toBe("var(--color-emerald-400)");
+      expect(series[1]?.color).toBe("var(--color-blue-400)");
+    });
+
+    it("returns zero for a day the oracle could not price", function () {
+      const series = toTvlHistorySeries({
+        history: [
+          tvlHistoryEntry({
+            tokens: [
+              {
+                price: null,
+                tokenAddress: usdcToken.address,
+                unitPrice: null,
+                withdrawable: "258609609875",
+              },
+            ],
+          }),
+        ],
+        tokens,
+      });
+
+      expect(series[0]?.data[0]?.y).toBe(0);
+    });
+
+    it("returns zero for a token absent from that day", function () {
+      const series = toTvlHistorySeries({
+        history: [
+          tvlHistoryEntry({
+            tokens: [
+              {
+                price: ONE_USD_PRICE,
+                tokenAddress: usdcToken.address,
+                unitPrice: ONE_USD_PRICE,
+                withdrawable: "258609609875",
+              },
+            ],
+          }),
+        ],
+        tokens,
+      });
+
+      expect(series[1]?.data[0]).toEqual({ x: 1_789_084_800_000, y: 0 });
+    });
+  });
+
   describe("toYieldItems", function () {
     it("returns empty array when no treasury tokens", function () {
       expect(
@@ -226,7 +376,7 @@ describe("pages/analytics/utils", function () {
       ).toEqual([]);
     });
 
-    it("excludes strategies with zero amount", function () {
+    it("includes strategies with zero amount", function () {
       const items = toYieldItems({
         prices,
         treasuryTokens: [
@@ -243,28 +393,35 @@ describe("pages/analytics/utils", function () {
         whitelistedTokens: [usdtToken],
       });
 
-      expect(items).toHaveLength(1);
+      // 500 USDT (6 decimals) @ $1 = $500, sorted before the $0 strategy
+      expect(items).toHaveLength(2);
       expect(items[0]?.label).toBe("Active Strategy");
+      expect(items[0]?.amount).toBeCloseTo(500);
+      expect(items[0]?.color).toBe("bg-emerald-400");
+      expect(items[1]).toEqual({
+        amount: 0,
+        color: "bg-blue-400",
+        label: "Zero Strategy",
+      });
     });
 
-    it("flattens strategies across multiple tokens", function () {
+    it("flattens and sorts strategies by USD amount descending across tokens", function () {
       const items = toYieldItems({
         prices,
         treasuryTokens: [
           {
             ...baseTreasuryToken,
             activeStrategies: [
-              { name: "USDT Strategy", totalDebt: "500000000" },
+              { name: "USDT 100", totalDebt: "100000000" },
+              { name: "USDT 300", totalDebt: "300000000" },
             ],
-            totalDebt: "500000000",
-            withdrawable: "500000000",
+            totalDebt: "400000000",
+            withdrawable: "400000000",
           },
           {
             ...baseTreasuryToken,
-            activeStrategies: [
-              { name: "USDC Strategy", totalDebt: "200000000" },
-            ],
-            tokenAddress: USDC_ADDRESS,
+            activeStrategies: [{ name: "USDC 200", totalDebt: "200000000" }],
+            tokenAddress: usdcToken.address,
             totalDebt: "200000000",
             withdrawable: "200000000",
           },
@@ -272,9 +429,40 @@ describe("pages/analytics/utils", function () {
         whitelistedTokens: [usdtToken, usdcToken],
       });
 
-      expect(items).toHaveLength(2);
-      expect(items[0]?.label).toBe("USDT Strategy");
-      expect(items[1]?.label).toBe("USDC Strategy");
+      expect(items.map((item) => item.label)).toEqual([
+        "USDT 300",
+        "USDC 200",
+        "USDT 100",
+      ]);
+      expect(items.map((item) => item.color)).toEqual([
+        "bg-emerald-400",
+        "bg-blue-400",
+        "bg-amber-400",
+      ]);
+      expect(items[0]?.amount).toBeCloseTo(300);
+      expect(items[1]?.amount).toBeCloseTo(200);
+      expect(items[2]?.amount).toBeCloseTo(100);
+    });
+
+    it("keeps the original order for equal amounts", function () {
+      const items = toYieldItems({
+        prices,
+        treasuryTokens: [
+          {
+            ...baseTreasuryToken,
+            activeStrategies: [
+              { name: "First Zero", totalDebt: "0" },
+              { name: "Second Zero", totalDebt: "0" },
+            ],
+          },
+        ],
+        whitelistedTokens: [usdtToken],
+      });
+
+      expect(items).toEqual([
+        { amount: 0, color: "bg-emerald-400", label: "First Zero" },
+        { amount: 0, color: "bg-blue-400", label: "Second Zero" },
+      ]);
     });
 
     it("computes correct USD amount per strategy", function () {
@@ -313,7 +501,7 @@ describe("pages/analytics/utils", function () {
             activeStrategies: [
               { name: "USDC Strategy", totalDebt: "200000000" },
             ],
-            tokenAddress: USDC_ADDRESS,
+            tokenAddress: usdcToken.address,
             totalDebt: "200000000",
             withdrawable: "200000000",
           },

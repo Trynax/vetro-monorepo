@@ -6,6 +6,7 @@ import { AnalyticsIcon } from "./analyticsIcon";
 import { BorrowIcon } from "./borrowIcon";
 import { BridgeIcon } from "./bridgeIcon";
 import { EarnIcon } from "./earnIcon";
+import { LiquidityIcon } from "./liquidityIcon";
 import { SwapIcon } from "./swapIcon";
 
 export const navLinks = [
@@ -13,6 +14,11 @@ export const navLinks = [
   { href: "/bridge", Icon: BridgeIcon, translationKey: "nav.bridge" },
   { href: "/earn", Icon: EarnIcon, translationKey: "nav.earn" },
   { href: "/borrow", Icon: BorrowIcon, translationKey: "nav.borrow" },
+  {
+    href: "/liquidity",
+    Icon: LiquidityIcon,
+    translationKey: "nav.liquidity",
+  },
   { href: "/analytics", Icon: AnalyticsIcon, translationKey: "nav.analytics" },
 ] as const;
 

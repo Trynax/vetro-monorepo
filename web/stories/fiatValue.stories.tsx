@@ -1,13 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 import type { Token } from "@vetro-protocol/core";
 import { mocked } from "storybook/test";
 import { parseUnits } from "viem";
-import { createConfig, http, WagmiProvider } from "wagmi";
 
 import { RenderFiatValue } from "../src/components/base/fiatValue";
 import { fetchPrices } from "../src/fetchers/fetchPrices";
 import { mainnet } from "../src/networks/mainnet";
+
+import { withWagmi } from "./withWagmi";
 
 const usdc: Token = {
   address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -19,11 +20,6 @@ const usdc: Token = {
 };
 
 const prices = { USDC: "1.00" };
-
-const wagmiConfig = createConfig({
-  chains: [mainnet],
-  transports: { [mainnet.id]: http() },
-});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,15 +36,7 @@ const meta = {
     return () => mocked(fetchPrices).mockReset();
   },
   component: RenderFiatValue,
-  decorators: [
-    (Story) => (
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <Story />
-        </QueryClientProvider>
-      </WagmiProvider>
-    ),
-  ],
+  decorators: [withWagmi(queryClient)],
   title: "Components/FiatValue",
 } satisfies Meta<typeof RenderFiatValue>;
 

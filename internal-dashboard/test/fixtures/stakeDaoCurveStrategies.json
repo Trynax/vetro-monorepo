@@ -1,0 +1,420 @@
+[
+  {
+    "key": "1-0x3b6991e34dd92d574c39f085015b22e5c23e87bf",
+    "name": "WETH/KP3R",
+    "type": "",
+    "version": 2,
+    "protocol": "curve",
+    "chainId": 1,
+    "vault": "0x3b6991E34DD92D574C39F085015B22e5c23E87bf",
+    "gaugeAddress": "0x6d3328F0333f6FB0B2FaC87cF5a0FFa7e77beB60",
+    "isLending": false,
+    "streaming": true,
+    "tokensFilter": [],
+    "lpToken": {
+      "address": "0x4647B6D835f3B393C7A955df51EEfcf0db961606",
+      "name": "Curve.fi Factory Crypto Pool: KP3R/ETH",
+      "symbol": "KP3RETH-f",
+      "decimals": 18
+    },
+    "gauge": {
+      "address": "0x6d3328F0333f6FB0B2FaC87cF5a0FFa7e77beB60",
+      "totalSupply": "2023650428424373374762",
+      "totalSupplyUsd": 219121.1786405897
+    },
+    "coins": [
+      {
+        "id": "1-0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+        "name": "Wrapped Ether",
+        "symbol": "WETH",
+        "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "decimals": 18,
+        "logoURI": "/assets/1/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2.svg",
+        "price": 2724.4245
+      },
+      {
+        "id": "1-0x1ceb5cb57c4d4e2b2433641b95dd330a33185a44",
+        "name": "Keep3rV1",
+        "symbol": "KP3R",
+        "address": "0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44",
+        "decimals": 18,
+        "logoURI": "/assets/1/0x1ceb5cb57c4d4e2b2433641b95dd330a33185a44.svg",
+        "price": 1.001229748121839
+      }
+    ],
+    "underlyingCoins": [],
+    "lpPriceInUsd": 108.28015331244676,
+    "tvl": 0,
+    "apr": {
+      "boost": 2.5,
+      "current": {
+        "total": 0.02,
+        "details": [
+          {
+            "label": "Trading Fees (APY)",
+            "value": [0.02]
+          },
+          {
+            "label": "CRV APR (incl. 2.50x boost)",
+            "value": [0]
+          }
+        ]
+      }
+    },
+    "rewards": [
+      {
+        "token": {
+          "id": "1-0xd533a949740bb3306d119cc777fa900ba034cd52",
+          "strId": "crv",
+          "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+          "chainId": 1,
+          "name": "Curve DAO Token",
+          "symbol": "CRV",
+          "decimals": 18,
+          "price": 0.3769847,
+          "logoURI": "/assets/1/0xd533a949740bb3306d119cc777fa900ba034cd52.svg",
+          "tags": [],
+          "extensions": {
+            "onChainPrice": {
+              "to": "0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f",
+              "data": "0x50d25bcd",
+              "decimals": 8
+            },
+            "coingeckoId": "curve-dao-token"
+          }
+        },
+        "end": 0,
+        "rate": "0",
+        "apr": 0
+      },
+      {
+        "token": {
+          "address": "0xEdB67Ee1B171c4eC66E6c10EC43EDBbA20FaE8e9"
+        },
+        "end": 0,
+        "rate": "0",
+        "apr": 0,
+        "source": "gauge"
+      }
+    ],
+    "tradingApy": 0.02,
+    "minApr": 0,
+    "maxApr": 0,
+    "totalSupply": "0",
+    "onlyboost": {
+      "active": true,
+      "implementations": [
+        {
+          "key": "convex",
+          "address": "0xe6a44e4D6D63653D891959036fd1c464a2D6359f"
+        }
+      ],
+      "totalSupply": "0",
+      "boost": 2.5,
+      "optimalBoost": 2.5,
+      "stakeDao": {
+        "tvl": 0,
+        "supply": "0",
+        "boost": 2.5,
+        "share": null,
+        "workingBalance": "0",
+        "workingBalanceShare": "0",
+        "optimal": {
+          "tvl": 0,
+          "supply": "0",
+          "boost": 2.5,
+          "share": null
+        }
+      },
+      "sidecar": {
+        "tvl": 0,
+        "supply": "0",
+        "boost": 1.806741958316688,
+        "share": null,
+        "workingBalance": "1462439663402806409676",
+        "workingBalanceShare": "0",
+        "optimal": {
+          "tvl": 0,
+          "supply": "0",
+          "boost": 1.81447634224707,
+          "share": null
+        }
+      }
+    },
+    "sidecarPool": {
+      "id": 90,
+      "address": "0x0c2da920E577960f39991030CfBdd4cF0a0CfEBD"
+    },
+    "rewardReceiver": "0x3e85925df9088ab8314cac62ce3f28ec8fb25561"
+  },
+  {
+    "key": "1-0x102a475c8d660fde678d108dcc6d4a2227661af2",
+    "name": "VUSD/crvUSD",
+    "type": "",
+    "version": 2,
+    "protocol": "curve",
+    "chainId": 1,
+    "vault": "0x102A475c8d660fDe678D108DCc6D4A2227661AF2",
+    "gaugeAddress": "0x737e7700e03A8c451C9B72103554a40760F1B57A",
+    "isLending": false,
+    "streaming": true,
+    "tokensFilter": ["usd", "crvusd"],
+    "lpToken": {
+      "address": "0xAFbA5800252530CE71b03Ba2BCa2Dd5aE44a7F3d",
+      "name": "VUSD/crvUSD",
+      "symbol": "VUSDcrvUSD",
+      "decimals": 18
+    },
+    "gauge": {
+      "address": "0x737e7700e03A8c451C9B72103554a40760F1B57A",
+      "totalSupply": "708576058715268939736042",
+      "totalSupplyUsd": 708760.8988035423
+    },
+    "coins": [
+      {
+        "id": "1-0xca83dde9c22254f58e771be5e157773212acbac3",
+        "name": "Vetro USD",
+        "symbol": "VUSD",
+        "address": "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3",
+        "decimals": 18,
+        "logoURI": "/assets/1/0xca83dde9c22254f58e771be5e157773212acbac3.svg",
+        "price": 0.9998610320609288
+      },
+      {
+        "id": "1-0xf939e0a03fb07f59a73314e73794be0e57ac1b4e",
+        "name": "Curve.Fi USD Stablecoin",
+        "symbol": "crvUSD",
+        "address": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+        "decimals": 18,
+        "logoURI": "/assets/1/0xf939e0a03fb07f59a73314e73794be0e57ac1b4e.svg",
+        "price": 0.99957816
+      }
+    ],
+    "underlyingCoins": [],
+    "lpPriceInUsd": 1.0002608613232127,
+    "tvl": 560456.5288315004,
+    "apr": {
+      "boost": 1.4479897229080596,
+      "current": {
+        "total": 18.423951191461402,
+        "details": [
+          {
+            "label": "Trading Fees (APY)",
+            "value": [0.08]
+          },
+          {
+            "label": "CRV APR (incl. 1.45x boost)",
+            "value": [18.343951191461404]
+          }
+        ]
+      }
+    },
+    "rewards": [
+      {
+        "token": {
+          "id": "1-0xd533a949740bb3306d119cc777fa900ba034cd52",
+          "strId": "crv",
+          "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+          "chainId": 1,
+          "name": "Curve DAO Token",
+          "symbol": "CRV",
+          "decimals": 18,
+          "price": 0.3769847,
+          "logoURI": "/assets/1/0xd533a949740bb3306d119cc777fa900ba034cd52.svg",
+          "tags": [],
+          "extensions": {
+            "onChainPrice": {
+              "to": "0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f",
+              "data": "0x50d25bcd",
+              "decimals": 8
+            },
+            "coingeckoId": "curve-dao-token"
+          }
+        },
+        "end": 0,
+        "rate": "0",
+        "apr": 0
+      }
+    ],
+    "tradingApy": 0.08,
+    "minApr": 15.171933525873774,
+    "maxApr": 37.929833814684436,
+    "totalSupply": "560310365528138895403035",
+    "onlyboost": {
+      "active": false,
+      "implementations": [
+        {
+          "key": "convex",
+          "address": "0x0000000000000000000000000000000000000000"
+        }
+      ],
+      "totalSupply": "560310365528138895403035",
+      "boost": 1.4479897229080596,
+      "optimalBoost": 1.4479499058569452,
+      "stakeDao": {
+        "tvl": 560456.5288315004,
+        "supply": "560310365528138895403035",
+        "boost": 1.4479897229080596,
+        "share": 1,
+        "workingBalance": "324529460369441365728513",
+        "workingBalanceShare": "324529460369441365728513",
+        "optimal": {
+          "tvl": 560456.5288315004,
+          "supply": "560310365528138895403035",
+          "boost": 1.4479499058569452,
+          "share": 1
+        }
+      },
+      "sidecar": {
+        "tvl": 0,
+        "supply": "0",
+        "boost": 2.5,
+        "share": 0,
+        "workingBalance": "0",
+        "workingBalanceShare": "0",
+        "optimal": {
+          "tvl": 0,
+          "supply": "0",
+          "boost": 2.5,
+          "share": 0
+        }
+      }
+    },
+    "rewardReceiver": "0x3da7c724fb3eb078f2ed1ab25fcc7e661fc6b277"
+  },
+  {
+    "key": "1-0x757360820728819953937b752f6b83aeb11090c7",
+    "name": "VUSD/msUSD",
+    "type": "",
+    "version": 2,
+    "protocol": "curve",
+    "chainId": 1,
+    "vault": "0x757360820728819953937B752f6B83AeB11090c7",
+    "gaugeAddress": "0x28a72343bFf5e10b36E72d86b1041ED2447Dc0Cc",
+    "isLending": false,
+    "streaming": true,
+    "tokensFilter": ["usd"],
+    "lpToken": {
+      "address": "0x8bEA2a46D56c321A216F97Ab6b61C34098B819d2",
+      "name": "VUSD/MSUSD",
+      "symbol": "VUSD_msUSD",
+      "decimals": 18
+    },
+    "gauge": {
+      "address": "0x28a72343bFf5e10b36E72d86b1041ED2447Dc0Cc",
+      "totalSupply": "93341373162571087813542",
+      "totalSupplyUsd": 85033.74772803612
+    },
+    "coins": [
+      {
+        "id": "1-0xca83dde9c22254f58e771be5e157773212acbac3",
+        "name": "Vetro USD",
+        "symbol": "VUSD",
+        "address": "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3",
+        "decimals": 18,
+        "logoURI": "/assets/1/0xca83dde9c22254f58e771be5e157773212acbac3.svg",
+        "price": 0.9998610320609288
+      },
+      {
+        "id": "1-0xab5eb14c09d416f0ac63661e57edb7aecdb9befa",
+        "name": "Metronome Synth USD",
+        "symbol": "msUSD",
+        "address": "0xab5eB14c09D416F0aC63661E57EDB7AEcDb9BEfA",
+        "decimals": 18,
+        "logoURI": "/assets/1/0xab5eb14c09d416f0ac63661e57edb7aecdb9befa.svg",
+        "price": 0.8819663316948434
+      }
+    ],
+    "underlyingCoins": [],
+    "lpPriceInUsd": 0.9109973942630379,
+    "tvl": 85022.85460493353,
+    "apr": {
+      "boost": 1.3925050929539888,
+      "current": {
+        "total": 7.871434679506586,
+        "details": [
+          {
+            "label": "Trading Fees (APY)",
+            "value": [0.01]
+          },
+          {
+            "label": "CRV APR (incl. 1.39x boost)",
+            "value": [7.861434679506586]
+          }
+        ]
+      }
+    },
+    "rewards": [
+      {
+        "token": {
+          "id": "1-0xd533a949740bb3306d119cc777fa900ba034cd52",
+          "strId": "crv",
+          "address": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+          "chainId": 1,
+          "name": "Curve DAO Token",
+          "symbol": "CRV",
+          "decimals": 18,
+          "price": 0.3769847,
+          "logoURI": "/assets/1/0xd533a949740bb3306d119cc777fa900ba034cd52.svg",
+          "tags": [],
+          "extensions": {
+            "onChainPrice": {
+              "to": "0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f",
+              "data": "0x50d25bcd",
+              "decimals": 8
+            },
+            "coingeckoId": "curve-dao-token"
+          }
+        },
+        "end": 0,
+        "rate": "0",
+        "apr": 0
+      }
+    ],
+    "tradingApy": 0.01,
+    "minApr": 6.761118418441218,
+    "maxApr": 16.902796046103045,
+    "totalSupply": "93329415803339120849303",
+    "onlyboost": {
+      "active": false,
+      "implementations": [
+        {
+          "key": "convex",
+          "address": "0x0000000000000000000000000000000000000000"
+        }
+      ],
+      "totalSupply": "93329415803339120849303",
+      "boost": 1.3925050929539888,
+      "optimalBoost": 1.3542642026221818,
+      "stakeDao": {
+        "tvl": 85022.85460493353,
+        "supply": "93329415803339120849303",
+        "boost": 1.3925050929539888,
+        "share": 1,
+        "workingBalance": "51984674731428085699062",
+        "workingBalanceShare": "51984674731428085699062",
+        "optimal": {
+          "tvl": 85022.85460493353,
+          "supply": "93329415803339120849303",
+          "boost": 1.3542642026221818,
+          "share": 1
+        }
+      },
+      "sidecar": {
+        "tvl": 0,
+        "supply": "0",
+        "boost": 2.5,
+        "share": 0,
+        "workingBalance": "0",
+        "workingBalanceShare": "0",
+        "optimal": {
+          "tvl": 0,
+          "supply": "0",
+          "boost": 2.5,
+          "share": 0
+        }
+      }
+    },
+    "rewardReceiver": "0x75958f2548cd0909746155712705b7191ee15120"
+  }
+]

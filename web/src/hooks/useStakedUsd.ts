@@ -1,8 +1,6 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 import { fetchStakedUsd } from "fetchers/fetchStakedUsd";
-import { useEthereumClient } from "hooks/useEthereumClient";
 import type { Address, Client } from "viem";
-import { useAccount } from "wagmi";
 
 export const stakedUsdQueryKey = ({
   account,
@@ -38,12 +36,3 @@ export const stakedUsdQueryOptions = ({
       stakingVaultAddress,
     }),
   });
-
-export function useStakedUsd(stakingVaultAddress: Address) {
-  const { address: account } = useAccount();
-  const client = useEthereumClient();
-
-  return useQuery(
-    stakedUsdQueryOptions({ account, client, stakingVaultAddress }),
-  );
-}

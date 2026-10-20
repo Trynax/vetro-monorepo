@@ -38,12 +38,11 @@ function getApproveStepStatus(depositStep: DepositStep) {
     depositStep === "approved" ||
     depositStep === "completed" ||
     depositStep === "deposit-failed" ||
-    depositStep === "deposit-unknown" ||
     depositStep === "depositing"
   ) {
     return stepStatus.completed;
   }
-  if (depositStep === "approving" || depositStep === "approve-unknown") {
+  if (depositStep === "approving") {
     return stepStatus.progress;
   }
   if (depositStep === "approve-failed") {
@@ -56,7 +55,7 @@ function getConfirmStepStatus(depositStep: DepositStep) {
   if (depositStep === "completed") {
     return stepStatus.completed;
   }
-  if (depositStep === "depositing" || depositStep === "deposit-unknown") {
+  if (depositStep === "depositing") {
     return stepStatus.progress;
   }
   if (depositStep === "deposit-failed") {
@@ -69,9 +68,7 @@ function getConfirmStepStatus(depositStep: DepositStep) {
 }
 
 const isApprovalInProgress = (depositStep: DepositStep) =>
-  depositStep === "approving" ||
-  depositStep === "approve-unknown" ||
-  depositStep === "approved";
+  depositStep === "approving" || depositStep === "approved";
 
 function useDepositSteps({
   approvalCompleted,

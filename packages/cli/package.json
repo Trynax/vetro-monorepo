@@ -1,7 +1,19 @@
 {
   "name": "@vetro-protocol/cli",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0",
   "description": "CLI to read and operate on Vetro.",
+  "keywords": [
+    "cli",
+    "defi",
+    "ethereum",
+    "hemi",
+    "vetro",
+    "viem"
+  ],
+  "homepage": "https://github.com/vetro-protocol/vetro-monorepo/tree/master/packages/cli#readme",
+  "bugs": {
+    "url": "https://github.com/vetro-protocol/vetro-monorepo/issues"
+  },
   "license": "MIT",
   "files": [
     "LICENSE",
@@ -30,29 +42,32 @@
     "test:e2e": "vitest run --project e2e"
   },
   "dependencies": {
+    "@vetro-protocol/earn": "workspace:*",
     "@vetro-protocol/gateway": "workspace:*",
     "@vetro-protocol/treasury": "workspace:*",
     "commander": "15.0.0",
     "viem": "2.44.4",
-    "viem-erc20": "2.2.0"
+    "viem-erc20": "2.2.1",
+    "viem-erc4626": "1.0.0"
   },
   "devDependencies": {
     "@hemilabs/anvil-fork-setup": "2.0.0",
     "@tsconfig/node24": "24.0.4",
     "@types/node": "24.1.0",
     "@vetro-protocol/core": "workspace:*",
-    "@vitest/coverage-v8": "4.1.9",
-    "esbuild": "0.27.3",
+    "@vitest/coverage-v8": "5.0.1",
+    "esbuild": "0.28.2",
     "typescript": "5.9.3",
-    "viem-erc4626": "1.0.0",
-    "vitest": "4.1.9"
+    "viem-oz-access-control": "1.0.0",
+    "vitest": "5.0.1"
   },
   "engines": {
     "node": ">=24"
   },
   "private": false,
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "type": "module"
 }

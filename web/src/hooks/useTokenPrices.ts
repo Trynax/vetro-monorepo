@@ -25,7 +25,6 @@ export const tokenPricesOptions = <TSelect = Prices>(
       fetch(`${apiUrl}/prices`).then(({ prices }) => prices as Prices),
     queryKey: tokenPricesQueryKey(),
     refetchInterval: 60 * 1000, // 1 minute
-    retry: 2,
     staleTime: 30 * 1000, // 30 seconds
     ...options,
   });

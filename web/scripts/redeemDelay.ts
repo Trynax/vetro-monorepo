@@ -13,49 +13,26 @@ import {
   createTestClient,
   http,
   isAddress,
-  keccak256,
   parseEther,
-  stringToBytes,
 } from "viem";
 import {
   impersonateAccount,
-  readContract,
   setBalance,
   stopImpersonatingAccount,
   writeContract,
 } from "viem/actions";
 import { mainnet } from "viem/chains";
+import { roleId } from "viem-oz-access-control";
+import { defaultAdmin } from "viem-oz-access-control/actions";
 
-import { confirmTransaction } from "./utils.ts";
+import { confirmTransaction, ensureRole } from "./utils.ts";
 
 const WITHDRAWAL_DELAY_SECONDS = 72n;
 
-const MAINTAINER_ROLE = keccak256(stringToBytes("MAINTAINER_ROLE"));
+const MAINTAINER_ROLE = roleId("MAINTAINER_ROLE");
 
-const accessControlAbi = [
-  {
-    inputs: [
-      { name: "role", type: "bytes32" },
-      { name: "account", type: "address" },
-    ],
-    name: "grantRole",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { name: "role", type: "bytes32" },
-      { name: "account", type: "address" },
-    ],
-    name: "hasRole",
-    outputs: [{ type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const;
-
-// Enable or disable the gateway's withdrawal delay by impersonating its owner.
+// Enable or disable the gateway's withdrawal delay by impersonating its
+// treasury's default admin.
 // When enabling, also remove the address from the instant-redeem whitelist so it
 // is forced down the two-step (request → wait → claim) redeem path.
 export async function setRedeemDelay({
@@ -78,43 +55,29 @@ export async function setRedeemDelay({
     transport,
   });
 
-  const [owner, treasury, delayEnabledBefore] = await Promise.all([
-    readContract(publicClient, {
-      abi: gatewayAbi,
-      address: gateway,
-      functionName: "owner",
-    }),
+  const [treasury, delayEnabledBefore] = await Promise.all([
     getTreasury(publicClient, { address: gateway }),
     getWithdrawalDelayEnabled(publicClient, { address: gateway }),
   ]);
+  const admin = await defaultAdmin(publicClient, { address: treasury });
 
-  await impersonateAccount(testClient, { address: owner });
-  await setBalance(testClient, { address: owner, value: parseEther("1") });
+  await impersonateAccount(testClient, { address: admin });
+  await setBalance(testClient, { address: admin, value: parseEther("1") });
 
   try {
-    const ownerHasRole = await readContract(publicClient, {
-      abi: accessControlAbi,
-      address: treasury,
-      args: [MAINTAINER_ROLE, owner],
-      functionName: "hasRole",
+    await ensureRole({
+      account: admin,
+      client: publicClient,
+      role: MAINTAINER_ROLE,
+      transport,
+      treasury,
     });
-
-    if (!ownerHasRole) {
-      const grantHash = await writeContract(testClient, {
-        abi: accessControlAbi,
-        account: owner,
-        address: treasury,
-        args: [MAINTAINER_ROLE, owner],
-        functionName: "grantRole",
-      });
-      await confirmTransaction({ client: publicClient, hash: grantHash });
-    }
 
     if (enableDelay) {
       if (!delayEnabledBefore) {
         const hash = await writeContract(testClient, {
           abi: gatewayAbi,
-          account: owner,
+          account: admin,
           address: gateway,
           args: [true],
           functionName: "setWithdrawalDelayEnabled",
@@ -125,7 +88,7 @@ export async function setRedeemDelay({
       const [, isWhitelisted] = await Promise.all([
         writeContract(testClient, {
           abi: gatewayAbi,
-          account: owner,
+          account: admin,
           address: gateway,
           args: [WITHDRAWAL_DELAY_SECONDS],
           functionName: "updateWithdrawalDelay",
@@ -139,7 +102,7 @@ export async function setRedeemDelay({
       if (isWhitelisted) {
         const hash = await writeContract(testClient, {
           abi: gatewayAbi,
-          account: owner,
+          account: admin,
           address: gateway,
           args: [address],
           functionName: "removeFromInstantRedeemWhitelist",
@@ -149,7 +112,7 @@ export async function setRedeemDelay({
     } else if (delayEnabledBefore) {
       const hash = await writeContract(testClient, {
         abi: gatewayAbi,
-        account: owner,
+        account: admin,
         address: gateway,
         args: [false],
         functionName: "setWithdrawalDelayEnabled",
@@ -164,7 +127,7 @@ export async function setRedeemDelay({
 
     return { delay, delayEnabledAfter, delayEnabledBefore };
   } finally {
-    await stopImpersonatingAccount(testClient, { address: owner });
+    await stopImpersonatingAccount(testClient, { address: admin });
   }
 }
 

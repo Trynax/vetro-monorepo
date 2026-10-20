@@ -2,7 +2,6 @@ import type { CancelWithdrawEvents } from "@vetro-protocol/earn";
 import { cancelWithdraw } from "@vetro-protocol/earn/actions";
 import { EventEmitter } from "events";
 import type { Address, WalletClient } from "viem";
-import { mainnet } from "viem/chains";
 import { describe, expect, it, vi } from "vitest";
 
 import { useCancelWithdraw } from "../../src/hooks/useCancelWithdraw";
@@ -63,10 +62,6 @@ vi.mock("../../src/hooks/useEarnedAmountUsd", () => ({
 
 vi.mock("../../src/hooks/useEthereumWalletClient", () => ({
   useEthereumWalletClient: () => ({ data: mocks.walletClient }),
-}));
-
-vi.mock("../../src/hooks/useMainnet", () => ({
-  useMainnet: () => mainnet,
 }));
 
 vi.mock("../../src/hooks/usePoolDeposits", () => ({

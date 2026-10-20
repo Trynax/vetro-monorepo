@@ -17,6 +17,7 @@ import { CollapsibleSection } from "components/collapsibleSection";
 import { DrawerFeesContainer } from "components/feesContainer";
 import { ExclamationTriangleIcon } from "components/icons/exclamationTriangleIcon";
 import { NetworkFees } from "components/networkFees";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { TokenInput } from "components/tokenInput";
 import { Balance } from "components/tokenInput/balance";
 import type { InputError } from "components/tokenInput/utils";
@@ -31,14 +32,13 @@ import { useActivityTracking } from "hooks/useActivityTracking";
 import { useAmount } from "hooks/useAmount";
 import { useAnimatedVisibility } from "hooks/useAnimatedVisibility";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatLtvAsPercentage } from "utils/borrowReview";
 import { formatNumber } from "utils/format";
 import { isGeoRestricted } from "utils/geoRestriction";
 import { parseTokenUnits } from "utils/token";
-import { useAccount } from "wagmi";
 
 import { PositionReview } from "./positionReview";
 
@@ -81,14 +81,12 @@ const getRepayStepStatus = function (
 };
 
 type SubmitButtonProps = {
-  address: string | undefined;
   balancesLoaded: boolean;
   inputError: InputError | undefined;
   sufficientGas: boolean;
 };
 
 function SubmitButton({
-  address,
   balancesLoaded,
   inputError,
   sufficientGas,
@@ -104,31 +102,37 @@ function SubmitButton({
     );
   }
 
-  if (!address) {
+  function renderButton() {
+    if (balancesLoaded && !sufficientGas) {
+      return (
+        <Button disabled size="small" type="button" variant="primary">
+          {t("common.insufficient-gas")}
+        </Button>
+      );
+    }
+    if (balancesLoaded && inputError) {
+      return (
+        <Button disabled size="small" type="button" variant="primary">
+          {t(`common.${inputError}`)}
+        </Button>
+      );
+    }
     return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t("common.connect-wallet")}
+      <Button
+        disabled={!balancesLoaded}
+        size="small"
+        type="submit"
+        variant="primary"
+      >
+        {t("pages.borrow.repay-loan-progress.submit")}
       </Button>
     );
   }
-  if (balancesLoaded && !sufficientGas) {
-    return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t("common.insufficient-gas")}
-      </Button>
-    );
-  }
-  if (balancesLoaded && inputError) {
-    return (
-      <Button disabled size="small" type="button" variant="primary">
-        {t(`common.${inputError}`)}
-      </Button>
-    );
-  }
+
   return (
-    <Button size="small" type="submit" variant="primary">
-      {t("pages.borrow.repay-loan-progress.submit")}
-    </Button>
+    <RequireWalletConnected size="small">
+      {renderButton()}
+    </RequireWalletConnected>
   );
 }
 
@@ -221,8 +225,6 @@ type Props = {
 
 export function RepayLoanForm({ market, onClose }: Props) {
   const { t } = useTranslation();
-  const ethereumChain = useMainnet();
-  const { address } = useAccount();
 
   const [repayInput, onRepayChange] = useAmount();
   const [flowStatus, setFlowStatus] = useState<RepayFlowStatus>("idle");
@@ -250,11 +252,11 @@ export function RepayLoanForm({ market, onClose }: Props) {
     },
   );
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
 
   const { data: needsApproval } = useNeedsApproval({
     amount: repayAmountBigInt,
-    spender: getChainAddresses(ethereumChain.id).morpho,
+    spender: getChainAddresses(mainnet.id).blue,
     token: loanToken,
   });
 
@@ -409,7 +411,6 @@ export function RepayLoanForm({ market, onClose }: Props) {
         </div>
         <div className="border-y border-gray-200 bg-gray-50 px-6 py-3 *:w-full">
           <SubmitButton
-            address={address}
             balancesLoaded={
               nativeBalance !== undefined && loanBalance !== undefined
             }

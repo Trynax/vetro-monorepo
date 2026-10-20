@@ -1,11 +1,11 @@
 import { type MarketId } from "@morpho-org/blue-sdk";
 import { fetchMarket } from "@morpho-org/blue-sdk-viem";
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { mainnet } from "networks/mainnet";
 import { unixNowTimestamp } from "utils/date";
 import type { Chain, Client, Hash } from "viem";
 
 import { useEthereumClient } from "../useEthereumClient";
-import { useMainnet } from "../useMainnet";
 
 export const morphoMarketQueryKey = ({
   chainId,
@@ -34,12 +34,11 @@ export const morphoMarketOptions = ({
   });
 
 export const useMorphoMarket = function (marketId: Hash) {
-  const ethereumChain = useMainnet();
   const client = useEthereumClient();
 
   return useQuery(
     morphoMarketOptions({
-      chainId: ethereumChain.id,
+      chainId: mainnet.id,
       client: client!,
       marketId,
     }),

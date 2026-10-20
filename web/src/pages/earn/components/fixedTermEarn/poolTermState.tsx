@@ -1,11 +1,12 @@
+import { useNowTickingPast } from "hooks/useNowTickingPast";
 import { useTranslation } from "react-i18next";
 import { unixNowTimestamp } from "utils/date";
 import type { Address } from "viem";
 
-import { useTerm } from "../../hooks/targetYieldPool/useTerm";
+import { useDepositState } from "../../hooks/targetYieldPool/useDepositState";
 import { PoolInfoItem } from "../poolInfoBar/poolInfoItem";
 
-import { getTermState } from "./getTermState";
+import { isOpenToDeposits } from "./isOpenToDeposits";
 
 type Props = {
   stakingVaultAddress: Address;
@@ -13,20 +14,29 @@ type Props = {
 
 export function PoolTermState({ stakingVaultAddress }: Props) {
   const { t } = useTranslation();
-  const { data: term, isError, isPending } = useTerm(stakingVaultAddress);
+  const {
+    data: depositState,
+    isError,
+    isPending,
+  } = useDepositState(stakingVaultAddress);
+
+  useNowTickingPast(
+    depositState
+      ? [depositState.entryWindow.start, depositState.entryWindow.end]
+      : undefined,
+    (timestamp) => Number(timestamp),
+  );
 
   function getLabel() {
-    if (!term) {
+    if (!depositState) {
       return undefined;
     }
-    const state = getTermState({ ...term, now: BigInt(unixNowTimestamp()) });
-    if (state === "open-to-deposits") {
-      return t("pages.earn.fixed-term.open-to-deposits");
-    }
-    if (state === "open-to-exit") {
-      return t("pages.earn.fixed-term.open-to-exit");
-    }
-    return undefined;
+    return isOpenToDeposits({
+      ...depositState,
+      now: BigInt(unixNowTimestamp()),
+    })
+      ? t("pages.earn.fixed-term.open-to-deposits")
+      : t("pages.earn.fixed-term.deposits-closed");
   }
 
   return (

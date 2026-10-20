@@ -1,3 +1,4 @@
+import { gateways } from "@vetro-protocol/core";
 import { gatewayAddresses } from "@vetro-protocol/gateway";
 import { getPeggedToken, getTreasury } from "@vetro-protocol/gateway/actions";
 import { getWhitelistedTokens } from "@vetro-protocol/treasury/actions";
@@ -149,6 +150,20 @@ export async function resolveSwapToken({
   });
 }
 
+export async function readToken({
+  address,
+  client,
+}: {
+  address: Address;
+  client: Client;
+}) {
+  const [tokenDecimals, tokenSymbol] = await Promise.all([
+    decimals(client, { address }),
+    symbol(client, { address }),
+  ]);
+  return { address, decimals: tokenDecimals, symbol: tokenSymbol };
+}
+
 export async function getGatewayPeggedToken({
   client,
   gatewayAddress,
@@ -157,9 +172,64 @@ export async function getGatewayPeggedToken({
   gatewayAddress: Address;
 }) {
   const address = await getPeggedToken(client, { address: gatewayAddress });
-  const [tokenDecimals, tokenSymbol] = await Promise.all([
-    decimals(client, { address }),
-    symbol(client, { address }),
-  ]);
-  return { address, decimals: tokenDecimals, symbol: tokenSymbol };
+  return readToken({ address, client });
+}
+
+function withStakingVault<T extends { gatewayAddress: Address }>({
+  token,
+  value,
+}: {
+  token: T;
+  value: string;
+}) {
+  const stakingVault = gateways.find((gateway) =>
+    isAddressEqual(gateway.address, token.gatewayAddress),
+  )?.stakingVault;
+  if (!stakingVault) {
+    throw new Error(`No staking vault for pegged token: "${value}"`);
+  }
+  return { ...token, stakingVault };
+}
+
+/**
+ * Resolves a pegged token by symbol or address, along with its staking vault.
+ */
+export async function resolveStakablePeggedToken({
+  client,
+  value,
+}: {
+  client: Client;
+  value: string;
+}) {
+  const token = await resolvePeggedToken({ client, value });
+  return withStakingVault({ token, value });
+}
+
+const getShareCandidates = () =>
+  gateways.flatMap(({ address, stakingVault }) =>
+    stakingVault ? [{ address: stakingVault, gatewayAddress: address }] : [],
+  );
+
+/**
+ * Resolves either side of a stake by symbol or address, along with its
+ * staking vault: a pegged token, or its share token, which is the staking
+ * vault itself.
+ */
+export async function resolveStakingToken({
+  client,
+  value,
+}: {
+  client: Client;
+  value: string;
+}) {
+  const token = await resolveCandidate({
+    candidates: [
+      ...(await getPeggedCandidates(client)),
+      ...getShareCandidates(),
+    ],
+    client,
+    kind: "pegged or share",
+    value,
+  });
+  return withStakingVault({ token, value });
 }

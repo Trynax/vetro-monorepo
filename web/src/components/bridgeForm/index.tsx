@@ -6,8 +6,8 @@ import { ApproveSection } from "components/approveSection";
 import { Toast } from "components/base/toast";
 import { FormSection, FormSectionItem } from "components/feesContainer";
 import { SetMaxErc20Balance } from "components/setMaxErc20Balance";
-import { ToTokenBalance } from "components/swapForm/toTokenBalance";
 import { TokenInput } from "components/tokenInput";
+import { TokenBalance } from "components/tokenInput/tokenBalance";
 import { TokenSelectorModal } from "components/tokenSelectorModal";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useBridge } from "hooks/useBridge";
@@ -309,7 +309,7 @@ function BridgeFormContent({ tokens }: ContentProps) {
         onToggle={handleToggle}
         toSection={
           <TokenInput
-            balance={<ToTokenBalance token={toToken} />}
+            balance={<TokenBalance token={toToken} />}
             disabled
             fiatValue={
               <BridgeTokenFiatValue token={toToken} value={amountBigInt} />

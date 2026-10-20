@@ -48,3 +48,10 @@ export const WithRender: Story = {
     ),
   },
 };
+
+export const NullData: Story = {
+  args: {
+    data: null,
+    label: "Target fixed APR",
+  },
+};

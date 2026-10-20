@@ -11,6 +11,7 @@ vi.mock("viem/actions", () => ({
 const validParameters = {
   address: "0x1234567890123456789012345678901234567890" as Address,
   controller: "0x0987654321098765432109876543210987654321" as Address,
+  owner: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd" as Address,
 };
 
 // @ts-expect-error - We only create an empty client for testing purposes
@@ -45,6 +46,7 @@ describe("getMaxRequestDeposit", function () {
   it("should throw an error if the address is not provided", async function () {
     const parameters = {
       controller: validParameters.controller,
+      owner: validParameters.owner,
     };
     // @ts-expect-error - Testing invalid input
     await expect(getMaxRequestDeposit(client, parameters)).rejects.toThrow(
@@ -77,6 +79,7 @@ describe("getMaxRequestDeposit", function () {
   it("should throw an error if the controller is not provided", async function () {
     const parameters = {
       address: validParameters.address,
+      owner: validParameters.owner,
     };
     // @ts-expect-error - Testing invalid input
     await expect(getMaxRequestDeposit(client, parameters)).rejects.toThrow(
@@ -95,13 +98,46 @@ describe("getMaxRequestDeposit", function () {
     );
   });
 
+  it("should throw an error if the owner is not valid", async function () {
+    const parameters = {
+      ...validParameters,
+      owner: "invalid_address",
+    };
+    // @ts-expect-error - Testing invalid input
+    await expect(getMaxRequestDeposit(client, parameters)).rejects.toThrow(
+      "Owner address is invalid",
+    );
+  });
+
+  it("should throw an error if the owner is not provided", async function () {
+    const parameters = {
+      address: validParameters.address,
+      controller: validParameters.controller,
+    };
+    // @ts-expect-error - Testing invalid input
+    await expect(getMaxRequestDeposit(client, parameters)).rejects.toThrow(
+      "Owner address is invalid",
+    );
+  });
+
+  it("should throw an error if the owner is zero address", async function () {
+    const parameters = {
+      ...validParameters,
+      owner: zeroAddress,
+    };
+
+    await expect(getMaxRequestDeposit(client, parameters)).rejects.toThrow(
+      "Owner address is invalid",
+    );
+  });
+
   it("should call readContract if all parameters are valid", async function () {
     await getMaxRequestDeposit(client, validParameters);
 
     expect(readContract).toHaveBeenCalledWith(client, {
       abi: expect.anything(),
       address: validParameters.address,
-      args: [validParameters.controller],
+      args: [validParameters.controller, validParameters.owner],
       functionName: "maxRequestDeposit",
     });
   });

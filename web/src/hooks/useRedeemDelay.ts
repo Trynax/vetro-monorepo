@@ -5,11 +5,11 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { fetchRedeemDelay } from "fetchers/fetchRedeemDelay";
+import { mainnet } from "networks/mainnet";
 import type { Address, Chain, Client } from "viem";
 import { useAccount } from "wagmi";
 
 import { useEthereumClient } from "./useEthereumClient";
-import { useMainnet } from "./useMainnet";
 
 const redeemDelayQueryKey = ({
   account,
@@ -52,14 +52,13 @@ export const redeemDelayOptions = ({
 
 export const useRedeemDelay = function (gatewayAddress: Address) {
   const { address: account } = useAccount();
-  const ethereumChain = useMainnet();
   const client = useEthereumClient();
   const queryClient = useQueryClient();
 
   return useQuery(
     redeemDelayOptions({
       account,
-      chainId: ethereumChain.id,
+      chainId: mainnet.id,
       client,
       gatewayAddress,
       queryClient,

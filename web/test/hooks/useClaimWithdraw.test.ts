@@ -2,7 +2,6 @@ import type { ClaimWithdrawEvents } from "@vetro-protocol/earn";
 import { claimWithdraw } from "@vetro-protocol/earn/actions";
 import { EventEmitter } from "events";
 import type { Address, WalletClient } from "viem";
-import { mainnet } from "viem/chains";
 import { describe, expect, it, vi } from "vitest";
 
 import { useClaimWithdraw } from "../../src/hooks/useClaimWithdraw";
@@ -55,10 +54,6 @@ vi.mock("pages/earn/hooks/useExitTickets", () => ({
 
 vi.mock("../../src/hooks/useEthereumWalletClient", () => ({
   useEthereumWalletClient: () => ({ data: mocks.walletClient }),
-}));
-
-vi.mock("../../src/hooks/useMainnet", () => ({
-  useMainnet: () => mainnet,
 }));
 
 vi.mock("../../src/hooks/useStakedBalance", () => ({

@@ -59,22 +59,12 @@ export const Default: Story = {
   args: {
     data: "12.5%",
     icon: <SparkleIcon />,
-    label: "Target fixed APY",
+    label: "Target fixed APR",
     render: (data) => data,
   },
 };
 
-export const WithTextSubtitle: Story = {
-  args: {
-    data: "12.5%",
-    icon: <SparkleIcon />,
-    label: "Target fixed APY",
-    render: (data) => data,
-    subtitle: "Fixed until Feb 13, 2026",
-  },
-};
-
-export const WithBadgeSubtitle: Story = {
+export const WithSubtitle: Story = {
   args: {
     data: "192.00",
     icon: <SparkleIcon />,
@@ -86,24 +76,6 @@ export const WithBadgeSubtitle: Story = {
       </>
     ),
     subtitle: <Badge>0.101659… WETH</Badge>,
-  },
-};
-
-export const WithEmphasizedSubtitle: Story = {
-  args: {
-    data: "$4.2M",
-    icon: <SparkleIcon />,
-    label: "Pool capacity",
-    render: (data) => (
-      <>
-        {data} <span className="text-gray-500">/ $5.0M</span>
-      </>
-    ),
-    subtitle: (
-      <>
-        <span className="mr-1 text-gray-900">$800K</span> remaining
-      </>
-    ),
   },
 };
 
@@ -125,5 +97,14 @@ export const NoData: Story = {
     label: "Your staked balance",
     render: (data) => data,
     subtitle: <Badge>From 1 pool</Badge>,
+  },
+};
+
+export const NullData: Story = {
+  args: {
+    data: null,
+    icon: <SparkleIcon />,
+    label: "Target fixed APR",
+    render: (data) => data,
   },
 };

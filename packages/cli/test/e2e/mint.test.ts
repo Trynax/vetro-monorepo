@@ -132,6 +132,16 @@ describe("swap mint", function () {
     );
   });
 
+  it("rejects an amount with more decimals than the token supports", async function () {
+    const { exitCode, stderr } = await runCliRaw(
+      mintOnFork(["--amount", "0.0000001"]),
+    );
+    expect(exitCode).toBe(1);
+    expect(JSON.parse(stderr).error).toBe(
+      `Amount has more decimals than "${usdc.symbol}" supports: ${usdc.decimals}`,
+    );
+  });
+
   it("rejects an amount that would mint past the gateway's remaining capacity", async function () {
     const { to: gateway } = await runCli<TransactionRequest>(mintOnFork());
     const remainingCapacity = parseUnits("0.5", vusd.decimals);

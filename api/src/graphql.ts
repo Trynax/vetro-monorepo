@@ -5,15 +5,25 @@ type GraphQLResponse<T> = {
   errors?: { message: string }[];
 };
 
-export async function runQuery<R>(
-  url: string,
-  query: string,
-  variables?: Record<string, unknown>,
-): Promise<R> {
-  const response = (await postJson(url, {
-    query: query.replace(/\s+/g, " "),
-    ...(variables ? { variables } : {}),
-  })) as GraphQLResponse<R>;
+export async function runQuery<R>({
+  headers,
+  query,
+  url,
+  variables,
+}: {
+  headers?: Record<string, string>;
+  query: string;
+  url: string;
+  variables?: Record<string, unknown>;
+}): Promise<R> {
+  const response = (await postJson(
+    url,
+    {
+      query: query.replace(/\s+/g, " "),
+      ...(variables ? { variables } : {}),
+    },
+    headers ? { headers } : undefined,
+  )) as GraphQLResponse<R>;
   if (!response) {
     throw new Error("No response from GraphQL endpoint");
   }

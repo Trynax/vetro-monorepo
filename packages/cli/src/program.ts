@@ -1,13 +1,16 @@
-import { Command, Option } from "commander";
+import { Command, Help, Option } from "commander";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { register as gateways } from "./features/gateways/index.ts";
 import { register as swap } from "./features/swap/index.ts";
+import { register as variableYield } from "./features/variable-yield/index.ts";
 import { parseRpcUrl } from "./lib/args.ts";
+import { defaultRpcUrl } from "./lib/client.ts";
 import { redactOptionValues } from "./lib/output.ts";
 
-const features = [swap];
+const features = [gateways, swap, variableYield];
 
 /**
  * The option, paired with the redactor for the usage errors it can raise.
@@ -20,7 +23,7 @@ const createRpcUrlOption = function () {
   return {
     option: new Option(
       "--rpc-url <url>",
-      "RPC endpoint to read from, which also determines the chain the calldata is stamped with; defaults to a public Ethereum mainnet RPC",
+      `RPC endpoint to read from, which also determines the chain the calldata is stamped with; defaults to ${defaultRpcUrl}`,
     )
       .argParser(function (value: string) {
         attempted = value;
@@ -48,6 +51,13 @@ export function createProgram() {
   const { option: rpcUrlOption, redactUsageError } = createRpcUrlOption();
 
   program
+    .configureHelp({
+      optionDescription(option) {
+        const description = Help.prototype.optionDescription.call(this, option);
+        return option.mandatory ? `${description} (required)` : description;
+      },
+      showGlobalOptions: true,
+    })
     .configureOutput({
       outputError: (message, write) => write(redactUsageError(message)),
     })

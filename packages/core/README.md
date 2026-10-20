@@ -39,6 +39,18 @@ ERC-20 metadata shared by the apps. `extensions` carries optional per-token hint
 | `isVaultShare`                  | Price via the ERC-4626 vault's underlying asset |
 | `priceSymbol`                   | Symbol to price this token under                |
 
+### `DexPool`
+
+A DEX pool that holds VETRO tokens.
+
+Related types:
+
+| Type             | Purpose                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `DexPoolRange`   | The price range of a concentrated-liquidity range row (`range` on `DexPool`) |
+| `DexPoolReward`  | A reward on a pool. `source` selects the shape of `sourceMetadata`           |
+| `DexRewardToken` | A token paid by a `DexPoolReward`                                            |
+
 ### `knownTokens`
 
 `Token[]`.

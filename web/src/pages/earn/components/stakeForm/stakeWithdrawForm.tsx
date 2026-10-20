@@ -1,5 +1,4 @@
 import { useNativeBalance } from "@hemilabs/react-hooks/useNativeBalance";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import type { Token } from "@vetro-protocol/core";
 import { RenderCryptoValue } from "components/base/cryptoValue";
 import { Drawer } from "components/base/drawer";
@@ -14,9 +13,9 @@ import { TokenSelectorReadOnly } from "components/tokenSelectorReadOnly";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useCloseOnSuccess } from "hooks/useCloseOnSuccess";
 import { useInstantWithdraw } from "hooks/useInstantWithdraw";
-import { useMainnet } from "hooks/useMainnet";
 import { useStakedBalance } from "hooks/useStakedBalance";
 import { useStakeWithdraw } from "hooks/useStakeWithdraw";
+import { mainnet } from "networks/mainnet";
 import { useCanInstantWithdraw } from "pages/earn/hooks/useCanInstantWithdraw";
 import { useCooldownDuration } from "pages/earn/hooks/useCooldownDuration";
 import { useTotalWithdrawFees } from "pages/earn/hooks/useTotalWithdrawFees";
@@ -24,7 +23,6 @@ import { type FormEvent, Suspense, lazy, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TokenWithGateway } from "types";
 import { type Address, parseUnits } from "viem";
-import { useAccount } from "wagmi";
 
 import type { WithdrawStep } from "./stakeFormReducer";
 import { StakeSubmitButton } from "./stakeSubmitButton";
@@ -47,14 +45,6 @@ const getRetryHandler = ({
   onRetry: VoidFunction;
   step: WithdrawStep;
 }) => (step === "failed" || step === "request-failed" ? onRetry : undefined);
-
-const isWithdrawTransactionPending = ({
-  isMutationPending,
-  step,
-}: {
-  isMutationPending: boolean;
-  step: WithdrawStep;
-}) => isMutationPending || step === "request-unknown" || step === "unknown";
 
 type Props = {
   inputValue: string;
@@ -119,13 +109,10 @@ export function StakeWithdrawForm({
   stakingVaultAddress,
   withdrawStep,
 }: Props) {
-  const { isConnected } = useAccount();
   const { data: canInstantWithdraw } = useCanInstantWithdraw({
     stakingVaultAddress,
   });
-  const chain = useMainnet();
   const { data: cooldownDays } = useCooldownDuration(stakingVaultAddress);
-  const { openConnectModal } = useConnectModal();
   const { t } = useTranslation();
   const [requestCloseDrawer, setRequestCloseDrawer] = useState(false);
   const [submitted, setSubmitted] = useState<{
@@ -156,7 +143,7 @@ export function StakeWithdrawForm({
   const { data: stakedBalance, status: stakedBalanceStatus } =
     useStakedBalance(stakingVaultAddress);
 
-  const { data: nativeBalanceData } = useNativeBalance(chain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
   const nativeBalance = nativeBalanceData?.value;
 
   const amountBigInt = parseUnits(inputValue, peggedToken.decimals);
@@ -303,14 +290,9 @@ export function StakeWithdrawForm({
         <div className="flex border-y border-gray-200 p-3 *:flex-1">
           <StakeSubmitButton
             actionText={actionText}
-            balancesLoaded={balancesLoaded && !isWithdrawPathLoading}
             inputError={inputError}
-            isConnected={isConnected}
-            isPending={isWithdrawTransactionPending({
-              isMutationPending: withdrawMutation.isPending,
-              step: withdrawStep,
-            })}
-            onConnectWallet={openConnectModal}
+            isLoading={!balancesLoaded || isWithdrawPathLoading}
+            isPending={withdrawMutation.isPending}
             pendingText={pendingText}
           />
         </div>

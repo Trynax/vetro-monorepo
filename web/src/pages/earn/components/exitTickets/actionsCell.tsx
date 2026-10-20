@@ -1,7 +1,7 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Button, ButtonIcon } from "components/base/button";
 import { Toast } from "components/base/toast";
 import { TrashIcon } from "components/icons/trashIcon";
+import { RequireWalletConnected } from "components/requireWalletConnected";
 import { Tooltip } from "components/tooltip";
 import { useActivityTracking } from "hooks/useActivityTracking";
 import { useClaimWithdraw } from "hooks/useClaimWithdraw";
@@ -10,7 +10,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isGeoRestricted } from "utils/geoRestriction";
 import { formatAmount } from "utils/token";
-import { useAccount } from "wagmi";
 
 import type { ExitTicket } from "../../types";
 
@@ -37,17 +36,7 @@ function WithdrawButton({
   isWithdrawing,
   onWithdraw,
 }: WithdrawButtonProps) {
-  const { openConnectModal } = useConnectModal();
   const { t } = useTranslation();
-  const { isConnected } = useAccount();
-
-  if (!isConnected) {
-    return (
-      <Button onClick={openConnectModal} size="xSmall" variant="primary">
-        {t("common.connect-wallet")}
-      </Button>
-    );
-  }
 
   const button = (
     <Button
@@ -67,10 +56,14 @@ function WithdrawButton({
     </Button>
   );
 
-  return geoRestricted ? (
-    <Tooltip content={t("common.geo-restriction-title")}>{button}</Tooltip>
-  ) : (
-    button
+  return (
+    <RequireWalletConnected size="xSmall">
+      {geoRestricted ? (
+        <Tooltip content={t("common.geo-restriction-title")}>{button}</Tooltip>
+      ) : (
+        button
+      )}
+    </RequireWalletConnected>
   );
 }
 

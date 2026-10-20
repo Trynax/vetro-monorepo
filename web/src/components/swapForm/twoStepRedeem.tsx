@@ -10,12 +10,12 @@ import { SetMaxErc20Balance } from "components/setMaxErc20Balance";
 import { TokenDropdown } from "components/tokenDropdown";
 import { TokenSelectorReadOnly } from "components/tokenSelectorReadOnly";
 import { useActivityTracking } from "hooks/useActivityTracking";
-import { useMainnet } from "hooks/useMainnet";
 import { usePreviewRedeem } from "hooks/usePreviewRedeem";
 import { useRequestRedeem } from "hooks/useRequestRedeem";
 import { useSwapRequestRedeemFees } from "hooks/useSwapRequestRedeemFees";
 import { useTotalRequestRedeemFees } from "hooks/useTotalRequestRedeemFees";
 import { useWithdrawalDelay } from "hooks/useWithdrawalDelay";
+import { mainnet } from "networks/mainnet";
 import { type FormEvent, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TokenWithGateway } from "types";
@@ -69,7 +69,6 @@ export function TwoStepRedeem({
   toToken,
   whitelistedTokens,
 }: Props) {
-  const ethereumChain = useMainnet();
   const { t } = useTranslation();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -95,10 +94,10 @@ export function TwoStepRedeem({
   });
   const { data: fromTokenBalance } = useTokenBalance({
     address: fromToken.address,
-    chainId: ethereumChain.id,
+    chainId: mainnet.id,
   });
 
-  const { data: nativeBalanceData } = useNativeBalance(ethereumChain.id);
+  const { data: nativeBalanceData } = useNativeBalance(mainnet.id);
   const nativeBalance = nativeBalanceData?.value;
 
   const { data: needsApproval, isError: isNeedsApprovalError } =

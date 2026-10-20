@@ -8,10 +8,10 @@ import { BoltIcon } from "components/icons/boltIcon";
 import { TokenLogo } from "components/tokenLogo";
 import { Tooltip } from "components/tooltip";
 import { useEthereumClient } from "hooks/useEthereumClient";
-import { useMainnet } from "hooks/useMainnet";
 import { stakedBalanceQueryOptions } from "hooks/useStakedBalance";
 import { useTotalStakedUsd } from "hooks/useTotalStakedUsd";
 import { useVaultPeggedToken } from "hooks/useVaultPeggedToken";
+import { mainnet } from "networks/mainnet";
 import { useTranslation } from "react-i18next";
 import { formatUsd } from "utils/currency";
 import { formatNumber } from "utils/format";
@@ -58,7 +58,6 @@ function PoolRow({ balance, stakingVaultAddress }: PoolRowProps) {
 function FromPoolsBadge() {
   const { t } = useTranslation();
   const { address: account } = useAccount();
-  const chain = useMainnet();
   const client = useEthereumClient();
   const queryClient = useQueryClient();
 
@@ -66,7 +65,7 @@ function FromPoolsBadge() {
     queries: stakingVaultAddresses.map((stakingVaultAddress) =>
       stakedBalanceQueryOptions({
         account,
-        chainId: chain.id,
+        chainId: mainnet.id,
         client,
         queryClient,
         stakingVaultAddress,

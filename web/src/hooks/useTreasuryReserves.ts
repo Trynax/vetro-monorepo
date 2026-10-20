@@ -5,10 +5,10 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { fetchTreasuryReserves } from "fetchers/fetchTreasuryReserves";
+import { mainnet } from "networks/mainnet";
 import type { Address, Chain, Client } from "viem";
 
 import { useEthereumClient } from "./useEthereumClient";
-import { useMainnet } from "./useMainnet";
 
 export const treasuryReservesQueryKey = ({
   chainId,
@@ -37,13 +37,12 @@ export const treasuryReservesOptions = ({
   });
 
 export const useTreasuryReserves = function (gatewayAddress: Address) {
-  const ethereumChain = useMainnet();
   const client = useEthereumClient();
   const queryClient = useQueryClient();
 
   return useQuery(
     treasuryReservesOptions({
-      chainId: ethereumChain.id,
+      chainId: mainnet.id,
       client: client!,
       gatewayAddress,
       queryClient,

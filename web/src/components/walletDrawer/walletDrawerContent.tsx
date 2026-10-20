@@ -1,6 +1,6 @@
 import { useNativeBalance } from "@hemilabs/react-hooks/useNativeBalance";
 import { useEthPrice } from "hooks/useEthPrice";
-import { useMainnet } from "hooks/useMainnet";
+import { mainnet } from "networks/mainnet";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { splitDecimalParts } from "utils/currency";
@@ -32,9 +32,8 @@ const PowerIcon = () => (
 );
 
 function useBalanceInUsd() {
-  const chain = useMainnet();
   const { data: balanceData, isError: isNativeBalanceError } = useNativeBalance(
-    chain.id,
+    mainnet.id,
   );
   const { data: ethPrice, isError: isEthPriceError } = useEthPrice();
 
@@ -55,14 +54,13 @@ const allFilters = ["borrow", "bridge", "completed", "earn", "failed", "swap"];
 
 export function WalletDrawerContent() {
   const { address } = useAccount();
-  const chain = useMainnet();
   const { isError, usd } = useBalanceInUsd();
   const { disconnect } = useDisconnect();
   const { t } = useTranslation();
   const [selectedFilters, setSelectedFilters] = useState(allFilters);
 
   const activities = useActivities(address);
-  const explorerBaseUrl = chain.blockExplorers!.default.url;
+  const explorerBaseUrl = mainnet.blockExplorers!.default.url;
 
   const filteredActivities = activities.filter(
     (a) =>

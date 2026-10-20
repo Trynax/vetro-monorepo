@@ -1,4 +1,5 @@
 import fetchJson from "tiny-fetch-json";
+import type { Address, Hash } from "viem";
 
 import { queryStringObjectToString } from "./querystring-object-to-string.ts";
 
@@ -60,6 +61,21 @@ type MerklOpportunityResponse = {
   status: "LIVE" | "PAST";
 };
 
+type MerklLiveCampaign = {
+  apr: number;
+  campaignId: Hash;
+  endTimestamp: number | string;
+  rewardToken: Omit<RewardToken, "symbol">;
+  startTimestamp: number | string;
+};
+
+type MerklLiveOpportunity = {
+  campaigns: MerklLiveCampaign[];
+  chainId: number;
+  id: string;
+  identifier: Address;
+};
+
 const fetchMerkl = function <R>(
   endpoint: string,
   options?: {
@@ -118,3 +134,29 @@ export const getOpportunityCampaigns = async ({
   fetchMerkl<MerklOpportunityResponse>(
     `/opportunities/${opportunityId}/campaigns`,
   );
+
+/**
+ * Gets the live opportunities, with their campaigns, that target one of the
+ * given addresses.
+ *
+ * @param params - Configuration object
+ * @param params.chainIds - The chains to search
+ * @param params.identifiers - The addresses the opportunities target
+ * @returns The live opportunities
+ */
+export const getLiveOpportunities = ({
+  chainIds,
+  identifiers,
+}: {
+  chainIds: number[];
+  identifiers: Address[];
+}) =>
+  fetchMerkl<MerklLiveOpportunity[]>("/opportunities", {
+    query: {
+      campaigns: "true",
+      chainId: chainIds.join(","),
+      identifier: identifiers.join(","),
+      items: "100",
+      status: "LIVE",
+    },
+  });

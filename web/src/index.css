@@ -53,6 +53,9 @@
   --spacing-26: 6.5rem; /* 104px */
   --spacing-30: 7.5rem; /* 120px */
   --spacing-112: 28rem; /* 448px */
+
+  --transition-property-margin: margin;
+
   --width-22-5: 5.625rem; /* 90px */
 }
 

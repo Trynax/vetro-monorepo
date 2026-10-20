@@ -1,17 +1,21 @@
 import {
   encodeDeposit,
   getMaxMint,
-  getTreasury,
   previewDeposit,
 } from "@vetro-protocol/gateway/actions";
 import { type Command } from "commander";
-import { type Address, formatUnits, parseUnits } from "viem";
+import { type Address, formatUnits } from "viem";
 
-import { parseAddress, parseAmount, parseSlippage } from "../../../lib/args.ts";
+import {
+  parseAddress,
+  parseAmount,
+  parseSlippage,
+  parseTokenAmount,
+} from "../../../lib/args.ts";
 import { type GlobalOptions, createVetroClient } from "../../../lib/client.ts";
 import { printTransactionRequest } from "../../../lib/output.ts";
 import { DEFAULT_SLIPPAGE, applySlippage } from "../../../lib/slippage.ts";
-import { readTokenConfig } from "../../../lib/tokenConfig.ts";
+import { readGatewayTokenConfig } from "../../../lib/tokenConfig.ts";
 import {
   getGatewayPeggedToken,
   isTokenMatch,
@@ -59,6 +63,11 @@ export function register(swap: Command) {
         client,
         value: options.from,
       });
+      const amountIn = parseTokenAmount({
+        amount: options.amount,
+        decimals: tokenIn.decimals,
+        token: options.from,
+      });
 
       if (options.to !== undefined) {
         const peggedToken = await getGatewayPeggedToken({
@@ -72,28 +81,18 @@ export function register(swap: Command) {
         }
       }
 
-      const amountIn = parseUnits(options.amount, tokenIn.decimals);
-
-      const isDepositActive = async function () {
-        const treasury = await getTreasury(client, {
-          address: tokenIn.gatewayAddress,
-        });
-        const { depositActive } = await readTokenConfig({
-          client,
-          token: tokenIn.address,
-          treasury,
-        });
-        return depositActive;
-      };
-
-      const [peggedTokenOut, maxMint, depositActive] = await Promise.all([
+      const [peggedTokenOut, maxMint, { depositActive }] = await Promise.all([
         previewDeposit(client, {
           address: tokenIn.gatewayAddress,
           amountIn,
           tokenIn: tokenIn.address,
         }),
         getMaxMint(client, { address: tokenIn.gatewayAddress }),
-        isDepositActive(),
+        readGatewayTokenConfig({
+          client,
+          gatewayAddress: tokenIn.gatewayAddress,
+          token: tokenIn.address,
+        }),
       ]);
 
       if (!depositActive) {

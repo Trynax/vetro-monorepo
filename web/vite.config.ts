@@ -2,7 +2,8 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, type Plugin, type UserConfig } from "vite";
+import { execFileSync } from "node:child_process";
+import { defineConfig, loadEnv, type Plugin, type UserConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 function injectUmamiIfEnabled() {
@@ -38,6 +39,39 @@ function injectUmamiIfEnabled() {
       order: "post",
     },
   } satisfies Plugin;
+}
+
+function getLocalBuildInfo() {
+  try {
+    const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+      encoding: "utf8",
+    }).trim();
+    const commit = execFileSync("git", ["rev-parse", "HEAD"], {
+      encoding: "utf8",
+    }).trim();
+    const dirty = execFileSync("git", ["status", "--porcelain"], {
+      encoding: "utf8",
+    }).trim();
+
+    return { branch, version: `${commit}${dirty ? "-dirty" : ""}` };
+  } catch {
+    return { branch: "dev", version: "dev" };
+  }
+}
+
+function getBuildInfo(env: Record<string, string>) {
+  const localBuildInfo = getLocalBuildInfo();
+
+  return {
+    branch:
+      env.VITE_BUILD_BRANCH ||
+      process.env.WORKERS_CI_BRANCH ||
+      localBuildInfo.branch,
+    version:
+      env.VITE_BUILD_VERSION ||
+      process.env.WORKERS_CI_COMMIT_SHA ||
+      localBuildInfo.version,
+  };
 }
 
 const config = {
@@ -80,4 +114,14 @@ if (process.env.VITE_DEPLOY_ENV) {
   );
 }
 
-export default defineConfig(config);
+export default defineConfig(function ({ mode }) {
+  const buildInfo = getBuildInfo(loadEnv(mode, process.cwd(), ""));
+
+  return {
+    ...config,
+    define: {
+      "import.meta.env.VITE_BUILD_BRANCH": JSON.stringify(buildInfo.branch),
+      "import.meta.env.VITE_BUILD_VERSION": JSON.stringify(buildInfo.version),
+    },
+  };
+});

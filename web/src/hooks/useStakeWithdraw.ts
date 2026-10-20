@@ -5,9 +5,9 @@ import { useUpdateNativeBalanceAfterReceipt } from "@hemilabs/react-hooks/useUpd
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { stakingVaultAbi } from "@vetro-protocol/earn";
 import { requestWithdraw } from "@vetro-protocol/earn/actions";
+import { mainnet } from "networks/mainnet";
 import { exitTicketsQueryKey } from "pages/earn/hooks/useExitTickets";
 import type { ExitTicket } from "pages/earn/types";
-import { useRef } from "react";
 import { type CostBases, reduceCostBasisProportionally } from "utils/costBasis";
 import { type Address, type TransactionReceipt, parseEventLogs } from "viem";
 import { useAccount } from "wagmi";
@@ -15,16 +15,11 @@ import { useAccount } from "wagmi";
 import { costBasisQueryKey } from "./useCostBasis";
 import { earnedAmountUsdQueryKey } from "./useEarnedAmountUsd";
 import { useEthereumWalletClient } from "./useEthereumWalletClient";
-import { useMainnet } from "./useMainnet";
 import { poolDepositsQueryKey } from "./usePoolDeposits";
 import { stakedBalanceQueryKey } from "./useStakedBalance";
 import { stakedUsdQueryKey } from "./useStakedUsd";
 
-type WithdrawStatus =
-  | "completed"
-  | "request-failed"
-  | "request-unknown"
-  | "requesting";
+type WithdrawStatus = "completed" | "request-failed" | "requesting";
 
 type Params = {
   assets: bigint;
@@ -42,30 +37,28 @@ export const useStakeWithdraw = function ({
   stakingVaultAddress,
 }: Params) {
   const { address: account } = useAccount();
-  const chain = useMainnet();
   const { data: walletClient } = useEthereumWalletClient();
   const ensureConnectedTo = useEnsureConnectedTo();
   const queryClient = useQueryClient();
-  const submittedTransaction = useRef(false);
 
-  const { queryKey: nativeBalanceKey } = useNativeBalance(chain.id);
+  const { queryKey: nativeBalanceKey } = useNativeBalance(mainnet.id);
   const updateNativeBalanceAfterReceipt = useUpdateNativeBalanceAfterReceipt(
-    chain.id,
+    mainnet.id,
   );
 
   const sharesBalanceKey = tokenBalanceQueryKey(
-    { address: stakingVaultAddress, chainId: chain.id },
+    { address: stakingVaultAddress, chainId: mainnet.id },
     account,
   );
 
   const stakedKey = stakedBalanceQueryKey({
     account: account!,
-    chainId: chain.id,
+    chainId: mainnet.id,
     stakingVaultAddress,
   });
 
   const poolDepositsKey = poolDepositsQueryKey({
-    chainId: chain.id,
+    chainId: mainnet.id,
     stakingVaultAddress,
   });
 
@@ -77,11 +70,8 @@ export const useStakeWithdraw = function ({
       if (!walletClient) {
         throw new Error("No wallet client available");
       }
-      if (submittedTransaction.current) {
-        throw new Error("Previous transaction outcome is unknown");
-      }
 
-      await ensureConnectedTo(chain.id);
+      await ensureConnectedTo(mainnet.id);
 
       const { emitter, promise } = requestWithdraw(walletClient, {
         assets,
@@ -90,7 +80,6 @@ export const useStakeWithdraw = function ({
       });
 
       emitter.on("user-signed-request-withdraw", function (hash) {
-        submittedTransaction.current = true;
         onTransactionHash?.(hash);
         onStatusChange?.("requesting");
       });
@@ -100,9 +89,7 @@ export const useStakeWithdraw = function ({
       });
 
       emitter.on("request-withdraw-failed", function () {
-        onStatusChange?.(
-          submittedTransaction.current ? "request-unknown" : "request-failed",
-        );
+        onStatusChange?.("request-failed");
       });
 
       emitter.on("request-withdraw-failed-validation", function () {
@@ -110,15 +97,12 @@ export const useStakeWithdraw = function ({
       });
 
       emitter.on("unexpected-error", function () {
-        onStatusChange?.(
-          submittedTransaction.current ? "request-unknown" : "request-failed",
-        );
+        onStatusChange?.("request-failed");
       });
 
       emitter.on(
         "request-withdraw-transaction-reverted",
         function (receipt: TransactionReceipt) {
-          submittedTransaction.current = false;
           updateNativeBalanceAfterReceipt(receipt);
           onStatusChange?.("request-failed");
         },
@@ -127,7 +111,6 @@ export const useStakeWithdraw = function ({
       emitter.on(
         "request-withdraw-transaction-succeeded",
         function (receipt: TransactionReceipt) {
-          submittedTransaction.current = false;
           updateNativeBalanceAfterReceipt(receipt);
           onStatusChange?.("completed");
           onSuccess?.();
@@ -185,9 +168,7 @@ export const useStakeWithdraw = function ({
       return promise;
     },
     onError() {
-      onStatusChange?.(
-        submittedTransaction.current ? "request-unknown" : "request-failed",
-      );
+      onStatusChange?.("request-failed");
     },
     async onSettled() {
       queryClient.invalidateQueries({
@@ -204,7 +185,7 @@ export const useStakeWithdraw = function ({
       queryClient.invalidateQueries({
         queryKey: stakedUsdQueryKey({
           account,
-          chainId: chain.id,
+          chainId: mainnet.id,
           stakingVaultAddress,
         }),
       });
@@ -212,7 +193,7 @@ export const useStakeWithdraw = function ({
       queryClient.invalidateQueries({
         queryKey: earnedAmountUsdQueryKey({
           account,
-          chainId: chain.id,
+          chainId: mainnet.id,
           stakingVaultAddress,
         }),
       });

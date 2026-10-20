@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Skeleton from "react-loading-skeleton";
 
 type Props<T> = {
-  data: T | undefined;
+  data: T | null | undefined;
   icon: ReactNode;
   isLoading?: boolean;
   label: ReactNode;
@@ -19,6 +19,9 @@ export function InfoCard<T>({
   subtitle,
 }: Props<T>) {
   const renderData = function () {
+    if (data === null) {
+      return "-";
+    }
     if (data !== undefined) {
       return render(data);
     }
@@ -37,9 +40,7 @@ export function InfoCard<T>({
         </div>
         <span className="text-h3 text-gray-900">{renderData()}</span>
         {subtitle ? (
-          <span className="text-caption text-gray-500 empty:hidden">
-            {subtitle}
-          </span>
+          <div className="w-full empty:hidden">{subtitle}</div>
         ) : null}
       </div>
     </div>

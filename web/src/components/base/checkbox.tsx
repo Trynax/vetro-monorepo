@@ -5,7 +5,7 @@ type Props = Omit<ComponentProps<"input">, "className" | "type">;
 export const Checkbox = (props: Props) => (
   <span className="relative inline-flex size-4 shrink-0">
     <input
-      className="peer size-4 cursor-pointer appearance-none rounded bg-white shadow-sm transition-colors checked:bg-blue-500 checked:shadow-none hover:bg-gray-50 checked:hover:bg-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+      className="peer size-4 cursor-pointer appearance-none rounded bg-white shadow-sm transition-colors checked:bg-blue-500 checked:shadow-none not-disabled:hover:bg-gray-50 checked:not-disabled:hover:bg-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
       type="checkbox"
       {...props}
     />

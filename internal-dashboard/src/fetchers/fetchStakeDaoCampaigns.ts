@@ -1,9 +1,5 @@
 import { campaignKey } from "../lib/campaigns";
-import {
-  fetchCurveCampaigns,
-  type StakeDaoCampaign,
-  votemarketGaugeUrl,
-} from "../lib/stakeDaoApi";
+import { fetchCurveCampaigns, type StakeDaoCampaign } from "../lib/stakeDaoApi";
 import { type PoolCampaign, type StakeDaoPoolCampaign } from "../lib/types";
 
 const week = 7 * 24 * 60 * 60;
@@ -34,10 +30,6 @@ const toPoolCampaign = function (
     rewardTokenSymbol: symbol,
     source: "stakeDao",
     totalRewardUsd: Number(campaign.totalRewardAmount) * price,
-    url: votemarketGaugeUrl({
-      chainId: campaign.gaugeChainId,
-      gauge: campaign.gauge,
-    }),
     usdPerVote: Number(campaign.currentPeriod.rewardPerVote) * price,
     weeklyRewardUsd: Number(campaign.currentPeriod.rewardPerPeriod) * price,
   };

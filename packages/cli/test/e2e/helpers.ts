@@ -2,6 +2,7 @@ import {
   TEST_ADDRESS,
   TEST_PRIVATE_KEY,
 } from "@hemilabs/anvil-fork-setup/utils";
+import { stakingVaultAbi } from "@vetro-protocol/earn";
 import { gatewayAbi as vetroGatewayAbi } from "@vetro-protocol/gateway";
 import {
   getMaxMint,
@@ -31,15 +32,26 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import {
   impersonateAccount,
+  increaseTime,
+  mine,
   readContract,
+  revert,
   sendTransaction,
   setBalance,
   setStorageAt,
+  snapshot,
   stopImpersonatingAccount,
   waitForTransactionReceipt,
   writeContract,
 } from "viem/actions";
 import { mainnet } from "viem/chains";
+import { approve } from "viem-erc20/actions";
+import { deposit } from "viem-erc4626/actions";
+import {
+  defaultAdmin,
+  grantRole,
+  hasRole,
+} from "viem-oz-access-control/actions";
 
 import { type GlobalOptions } from "../../src/lib/client.ts";
 import { printError } from "../../src/lib/output.ts";
@@ -53,8 +65,16 @@ export const usdc = {
   symbol: "USDC",
 } as const;
 
+export const vetBtc = {
+  address: "0xf196C68233464A16CFDa319a47c21f4cECa62001",
+  balanceSlot: 0,
+  decimals: 18,
+  symbol: "vetBTC",
+} as const;
+
 export const vusd = {
   address: "0xCa83DDE9c22254f58e771bE5E157773212AcBAc3",
+  balanceSlot: 0,
   decimals: 18,
   symbol: "VUSD",
 } as const;
@@ -66,8 +86,18 @@ export type TransactionRequest = {
   value: Hex;
 };
 
+export type RedeemRequest = {
+  amountLocked: string;
+  claimableAt: string;
+  status: "cooldown" | "none" | "ready";
+};
+
 export const depositAbi = parseAbi([
   "function deposit(address tokenIn, uint256 amountIn, uint256 minPeggedTokenOut, address receiver)",
+]);
+
+export const redeemAbi = parseAbi([
+  "function redeem(address tokenOut, uint256 peggedTokenIn, uint256 minAmountOut, address receiver)",
 ]);
 
 export const requestRedeemAbi = parseAbi([
@@ -99,14 +129,37 @@ export const sendToQueueArgs = (extra: string[] = []) => [
   ...extra,
 ];
 
-export const approveArgs = (token: string) => [
+export const redeemArgs = (extra: string[] = []) => [
   "swap",
-  "approve",
-  "--token",
-  token,
+  "redeem",
+  "--to",
+  usdc.symbol,
   "--amount",
   swapAmount,
+  "--receiver",
+  TEST_ADDRESS,
+  ...extra,
 ];
+
+export const requestArgs = (extra: string[] = []) => [
+  "swap",
+  "request",
+  ...extra,
+];
+
+export const cancelRedeemArgs = (extra: string[] = []) => [
+  "swap",
+  "cancel-redeem",
+  ...extra,
+];
+
+export const approveArgs = ({
+  extra = [],
+  token,
+}: {
+  extra?: string[];
+  token: string;
+}) => ["swap", "approve", "--token", token, "--amount", swapAmount, ...extra];
 
 const captureStream = function (stream: NodeJS.WriteStream) {
   const chunks: string[] = [];
@@ -189,12 +242,42 @@ export const createClients = function (rpcUrl: string) {
   };
 };
 
+export const fastForward = async function ({
+  rpcUrl,
+  seconds,
+}: {
+  rpcUrl: string;
+  seconds: bigint;
+}) {
+  const { testClient } = createClients(rpcUrl);
+  await increaseTime(testClient, { seconds: Number(seconds) });
+  await mine(testClient, { blocks: 1 });
+};
+
+export const withSnapshot = async function ({
+  rpcUrl,
+  run,
+}: {
+  rpcUrl: string;
+  run: () => Promise<void>;
+}) {
+  const { testClient } = createClients(rpcUrl);
+  const id = await snapshot(testClient);
+  try {
+    await run();
+  } finally {
+    await revert(testClient, { id });
+  }
+};
+
 export const fundTestAccount = async function ({
   amount,
   rpcUrl,
+  token = usdc,
 }: {
   amount: string;
   rpcUrl: string;
+  token?: { address: Address; balanceSlot: number; decimals: number };
 }) {
   const { testClient } = createClients(rpcUrl);
   await setBalance(testClient, {
@@ -202,14 +285,14 @@ export const fundTestAccount = async function ({
     value: parseEther("10"),
   });
   await setStorageAt(testClient, {
-    address: usdc.address,
+    address: token.address,
     index: keccak256(
       encodePacked(
         ["bytes32", "bytes32"],
-        [pad(TEST_ADDRESS), pad(toHex(usdc.balanceSlot))],
+        [pad(TEST_ADDRESS), pad(toHex(token.balanceSlot))],
       ),
     ),
-    value: pad(toHex(parseUnits(amount, usdc.decimals))),
+    value: pad(toHex(parseUnits(amount, token.decimals))),
   });
 };
 
@@ -259,7 +342,7 @@ export const setMaxMint = async function ({
   return { maxMintAfter, maxMintBefore };
 };
 
-const confirmWrite = async function ({
+export const confirmWrite = async function ({
   client,
   hash,
 }: {
@@ -272,24 +355,56 @@ const confirmWrite = async function ({
   }
 };
 
-const treasuryAbi = parseAbi([
-  "function defaultAdmin() view returns (address)",
-  "function grantRole(bytes32 role, address account)",
-  "function hasRole(bytes32 role, address account) view returns (bool)",
-  "function setDepositActive(address token, bool active)",
-]);
-
-/** Flips the treasury's `depositActive` for a whitelisted token, as a keeper. */
-export const setDepositActive = async function ({
-  active,
-  gateway,
+export const stake = async function ({
+  amount,
   rpcUrl,
   token,
+  vault,
 }: {
+  amount: bigint;
+  rpcUrl: string;
+  token: Address;
+  vault: Address;
+}) {
+  const { publicClient, walletClient } = createClients(rpcUrl);
+  await confirmWrite({
+    client: publicClient,
+    hash: await approve(walletClient, {
+      address: token,
+      amount,
+      spender: vault,
+    }),
+  });
+  await confirmWrite({
+    client: publicClient,
+    hash: await deposit(walletClient, {
+      address: vault,
+      assets: amount,
+      receiver: TEST_ADDRESS,
+    }),
+  });
+};
+
+const treasuryAbi = parseAbi([
+  "function setDepositActive(address token, bool active)",
+  "function setWithdrawActive(address token, bool active)",
+]);
+
+type SetTokenActiveParams = {
   active: boolean;
   gateway: Address;
   rpcUrl: string;
   token: Address;
+};
+
+const setTokenActive = async function ({
+  active,
+  functionName,
+  gateway,
+  rpcUrl,
+  token,
+}: SetTokenActiveParams & {
+  functionName: "setDepositActive" | "setWithdrawActive";
 }) {
   const { publicClient, testClient } = createClients(rpcUrl);
 
@@ -299,11 +414,7 @@ export const setDepositActive = async function ({
     functionName: "treasury",
   });
   const [admin, keeperRole] = await Promise.all([
-    readContract(publicClient, {
-      abi: treasuryAbi,
-      address: treasury,
-      functionName: "defaultAdmin",
-    }),
+    defaultAdmin(publicClient, { address: treasury }),
     getKeeperRole(publicClient, { address: treasury }),
   ]);
 
@@ -311,22 +422,22 @@ export const setDepositActive = async function ({
   await setBalance(testClient, { address: admin, value: parseEther("1") });
 
   try {
-    const isKeeper = await readContract(publicClient, {
-      abi: treasuryAbi,
+    const isKeeper = await hasRole(publicClient, {
+      account: admin,
       address: treasury,
-      args: [keeperRole, admin],
-      functionName: "hasRole",
+      role: keeperRole,
     });
     if (!isKeeper) {
       await confirmWrite({
         client: publicClient,
-        hash: await writeContract(testClient, {
-          abi: treasuryAbi,
-          account: admin,
-          address: treasury,
-          args: [keeperRole, admin],
-          functionName: "grantRole",
-        }),
+        hash: await grantRole(
+          createWalletClient({
+            account: admin,
+            chain: mainnet,
+            transport: http(rpcUrl),
+          }),
+          { account: admin, address: treasury, role: keeperRole },
+        ),
       });
     }
     await confirmWrite({
@@ -336,13 +447,19 @@ export const setDepositActive = async function ({
         account: admin,
         address: treasury,
         args: [token, active],
-        functionName: "setDepositActive",
+        functionName,
       }),
     });
   } finally {
     await stopImpersonatingAccount(testClient, { address: admin });
   }
 };
+
+export const setDepositActive = (params: SetTokenActiveParams) =>
+  setTokenActive({ ...params, functionName: "setDepositActive" });
+
+export const setWithdrawActive = (params: SetTokenActiveParams) =>
+  setTokenActive({ ...params, functionName: "setWithdrawActive" });
 
 const maintainerRoleAbi = parseAbi([
   "function MAINTAINER_ROLE() view returns (bytes32)",
@@ -365,32 +482,28 @@ const impersonateMaintainer = async function ({
     }),
     getTreasury(publicClient, { address: gateway }),
   ]);
-  const admin = await readContract(publicClient, {
-    abi: treasuryAbi,
-    address: treasury,
-    functionName: "defaultAdmin",
-  });
+  const admin = await defaultAdmin(publicClient, { address: treasury });
 
   await impersonateAccount(testClient, { address: admin });
   await setBalance(testClient, { address: admin, value: parseEther("1") });
 
   try {
-    const isMaintainer = await readContract(publicClient, {
-      abi: treasuryAbi,
+    const isMaintainer = await hasRole(publicClient, {
+      account: admin,
       address: treasury,
-      args: [maintainerRole, admin],
-      functionName: "hasRole",
+      role: maintainerRole,
     });
     if (!isMaintainer) {
       await confirmWrite({
         client: publicClient,
-        hash: await writeContract(testClient, {
-          abi: treasuryAbi,
-          account: admin,
-          address: treasury,
-          args: [maintainerRole, admin],
-          functionName: "grantRole",
-        }),
+        hash: await grantRole(
+          createWalletClient({
+            account: admin,
+            chain: mainnet,
+            transport: http(rpcUrl),
+          }),
+          { account: admin, address: treasury, role: maintainerRole },
+        ),
       });
     }
   } catch (error) {
@@ -500,6 +613,100 @@ export const setRedeemQueueEnabled = async function ({
   });
   await setWithdrawalDelay({ enabled, gateway, rpcUrl });
   return () => setWithdrawalDelay({ enabled: enabledBefore, gateway, rpcUrl });
+};
+
+const updateCooldownDurationAbi = parseAbi([
+  "function updateCooldownDuration(uint256 duration_)",
+]);
+
+const impersonateVaultOwner = async function ({
+  rpcUrl,
+  vault,
+}: {
+  rpcUrl: string;
+  vault: Address;
+}) {
+  const { publicClient, testClient } = createClients(rpcUrl);
+  const owner = await readContract(publicClient, {
+    abi: stakingVaultAbi,
+    address: vault,
+    functionName: "owner",
+  });
+
+  await impersonateAccount(testClient, { address: owner });
+  await setBalance(testClient, { address: owner, value: parseEther("1") });
+  return owner;
+};
+
+/** Turns the staking vault's unstake cooldown on or off, and sets its duration when given. */
+export const setStakingCooldown = async function ({
+  duration,
+  enabled,
+  rpcUrl,
+  vault,
+}: {
+  duration?: bigint;
+  enabled: boolean;
+  rpcUrl: string;
+  vault: Address;
+}) {
+  const { publicClient, testClient } = createClients(rpcUrl);
+  const owner = await impersonateVaultOwner({ rpcUrl, vault });
+  try {
+    if (duration !== undefined) {
+      await confirmWrite({
+        client: publicClient,
+        hash: await writeContract(testClient, {
+          abi: updateCooldownDurationAbi,
+          account: owner,
+          address: vault,
+          args: [duration],
+          functionName: "updateCooldownDuration",
+        }),
+      });
+    }
+    await confirmWrite({
+      client: publicClient,
+      hash: await writeContract(testClient, {
+        abi: stakingVaultAbi,
+        account: owner,
+        address: vault,
+        args: [enabled],
+        functionName: "updateCooldownEnabled",
+      }),
+    });
+  } finally {
+    await stopImpersonatingAccount(testClient, { address: owner });
+  }
+};
+
+export const setInstantWithdrawWhitelisted = async function ({
+  account,
+  rpcUrl,
+  vault,
+  whitelisted,
+}: {
+  account: Address;
+  rpcUrl: string;
+  vault: Address;
+  whitelisted: boolean;
+}) {
+  const { publicClient, testClient } = createClients(rpcUrl);
+  const owner = await impersonateVaultOwner({ rpcUrl, vault });
+  try {
+    await confirmWrite({
+      client: publicClient,
+      hash: await writeContract(testClient, {
+        abi: stakingVaultAbi,
+        account: owner,
+        address: vault,
+        args: [account, whitelisted],
+        functionName: "updateInstantWithdrawWhitelist",
+      }),
+    });
+  } finally {
+    await stopImpersonatingAccount(testClient, { address: owner });
+  }
 };
 
 /** Broadcasts a TransactionRequest the CLI emitted, exactly as an agent would. */

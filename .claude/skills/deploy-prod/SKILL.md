@@ -1,0 +1,73 @@
+---
+name: deploy-prod
+description: Show what is ready to deploy from `master` to `prod`, grouped into the real changes that the merged PRs deliver, then open the release PR after the user confirms. Use when the user invokes `/deploy-prod`, asks to deploy, release, or open the master → prod PR, or asks what is ready to deploy.
+---
+
+# deploy-prod
+
+Run the scripts in this order, from the repo root. Do not run other commands, except `gh issue view` in step 2.
+
+## 1. List the PRs to release
+
+```bash
+.claude/skills/deploy-prod/scripts/list-prs.sh
+```
+
+It prints one line per PR in `master` that is not in `prod`, newest first:
+
+```markdown
+https://github.com/vetro-protocol/vetro-monorepo/pull/845 | Add historic TVL chart to the analytics page | branch: tvl-historic-chart-pt3 | closes: https://github.com/vetro-protocol/vetro-monorepo/issues/825 (Add TVL stacked bar chart with historic data)
+https://github.com/vetro-protocol/vetro-monorepo/pull/844 | Add swap redeem command to the CLI | branch: cli-swap-redeem | refs: https://github.com/vetro-protocol/vetro-monorepo/issues/445
+```
+
+`closes` lists the issues that the PR closes, with their titles. `refs` lists the other issues and PRs that its description mentions. All issues and PRs are full URLs, because some are in other repositories.
+
+If it exits with an error, show the error to the user and stop. If it prints a warning, show the warning to the user.
+
+## 2. Group the PRs into changes
+
+The goal: a reader of the PR description knows which changes go to production. A change is one thing that a user or developer gets from the release. Group the PRs into changes on a best-effort basis. Some signs that PRs are one change:
+
+- They close or refer to the same issue.
+- One PR refers to another PR in the list.
+- They work toward the same result, for example the branches `tvl-historic-chart-pt1`, `-pt2` and `-pt3`.
+
+These signs are not rules. A PR can mention a new issue for follow-up work, or a PR that gave an idea, and these do not make it part of the same change. If you do not know what a `refs` issue is about, read its title with `gh issue view <url> --json title -q .title`.
+
+Write each change as one short line in imperative mood, then the PRs that deliver it as `#<number>`. Include every PR exactly once. Put each change in one of these sections, in this order, and omit empty sections:
+
+- **Features**: new or changed behavior for users or for developers that use the packages, API, or CLI.
+- **Bug fixes**: corrections of wrong behavior.
+- **Chores**: all other changes, for example tests, refactors, tooling, and dependencies.
+
+## 3. Confirm the changes
+
+Show the user what is ready to deploy, and do not open the PR yet:
+
+- The full PR description, as step 4 will send it.
+- The grouping decisions that the user can disagree with, one line each. For example, a PR that you put in a change because it refers to another PR, or a PR that could go in a different section.
+
+Then stop and ask the user to confirm. Do not run step 4 until the user confirms. If the user asks for changes, apply them, show the updated description, and ask again. If the user does not want to deploy, stop.
+
+## 4. Create the PR
+
+Pass the description on stdin:
+
+```bash
+.claude/skills/deploy-prod/scripts/create-pr.sh <<'EOF'
+### Features
+
+- Add a historic TVL chart to Analytics (#823, #835, #845)
+- Add swap redeem commands to the CLI (#844, #848)
+
+### Bug fixes
+
+- Reconcile pending activity on reload (#805)
+
+### Chores
+
+- Add E2E test for borrowing more on a position (#841)
+EOF
+```
+
+The script creates the PR titled `Deploy <YYYY-MM-DD>` and prints its URL. If a master → prod PR is already open, `gh` shows an error with the URL of that PR. Show the URL to the user.
