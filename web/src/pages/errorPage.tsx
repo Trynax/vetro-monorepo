@@ -17,20 +17,21 @@ export const ErrorPage = function () {
     <div className="my-auto flex size-full flex-col justify-center">
       <div className="flex flex-col items-center border-t border-gray-200 bg-gray-100">
         <div className="flex flex-col items-center py-17">
-          <StatusMessage
-            action={
-              <Button onClick={() => window.location.reload()} size="xSmall">
-                {t("pages.server-error.refresh", defaultTexts.refresh)}
-              </Button>
-            }
-            className="w-max max-w-full"
-            description={t(
-              "pages.server-error.description",
-              defaultTexts.description,
-            )}
-            icon={<WarningCircleIcon />}
-            title={t("pages.server-error.title", defaultTexts.title)}
-          />
+          <div className="*:w-max *:max-w-full">
+            <StatusMessage
+              action={
+                <Button onClick={() => window.location.reload()} size="xSmall">
+                  {t("pages.server-error.refresh", defaultTexts.refresh)}
+                </Button>
+              }
+              description={t(
+                "pages.server-error.description",
+                defaultTexts.description,
+              )}
+              icon={<WarningCircleIcon />}
+              title={t("pages.server-error.title", defaultTexts.title)}
+            />
+          </div>
         </div>
         <div className="w-full border-y border-gray-200 px-1">
           <StripedDivider variant="small" />
